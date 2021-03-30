@@ -28,14 +28,6 @@
 #include "mali_kbase_config_platform.h"
 #include "mali_scaling.h"
 
-static void enable_gpu_power_control(struct kbase_device *kbdev)
-{
-}
-
-static void disable_gpu_power_control(struct kbase_device *kbdev)
-{
-}
-
 void *reg_base_reset = NULL;
 static int first = 1;
 
@@ -182,59 +174,52 @@ static void mali_reset(void)
 	Wr(pmali_plat->module_reset.reg_level, value);
 }
 
+/*
+ * 1.mali-reset;2.init pwr_override1;3.pwr_on one core manully
+ */
+static int mali_hw_init(struct kbase_device *kbdev)
+{
+	mali_reset();
+	udelay(10); // OR POLL for reset done
+	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
+	Mali_WrReg(GPU_CONTROL_REG(PWR_OVERRIDE1), 0xfff | (0x20<<16));
+	Mali_pwr_on_with_kdev(kbdev, 0x1);
+}
+
 static int pm_callback_power_on(struct kbase_device *kbdev)
 {
-	int ret = 1; /* Assume GPU has been powered off */
-	int error;
+	int ret = 0;
 
-	/* remove this if sc2 worked fine. */
 	struct mali_plat_info_t *mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
 	reg_base_reset = mpdata->reg_base_reset;
 
 
 	if (first == 0) goto out;
-	pm_runtime_enable(kbdev->dev);
-	error = pm_runtime_get_sync(kbdev->dev);
-	if (error == 1) {
-		/*
-		 * Let core know that the chip has not been
-		 * powered off, so we can save on re-initialization.
-		 */
-		ret = 0;
+	if (!pm_runtime_enabled(kbdev->dev)) {
+		pm_runtime_enable(kbdev->dev);
+		dev_info(kbdev->dev, "pm_runtime not enabled, enable it here\n");
+		ret = pm_runtime_get_sync(kbdev->dev);
+		udelay(100);
+		dev_info(kbdev->dev, "pm_runtime_get_sync returned %d\n", ret);
+	} else {
+		dev_info(kbdev->dev, "pm_runtime enabled\n");
 	}
-	udelay(100);
-	dev_info(kbdev->dev, "pm_runtime_get_sync returned %d\n", error);
 
 	first = 0;
-
-	mali_reset();
-	udelay(10); // OR POLL for reset done
-	dev_dbg(kbdev->dev, "delay 10us\n");
-
-	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
-	Mali_WrReg(GPU_CONTROL_REG(PWR_OVERRIDE1), 0xfff | (0x20<<16));
-	Mali_pwr_on_with_kdev(kbdev, 0x1);
-	dev_dbg(kbdev->dev, "pm_callback_power_on %p\n",
-			(void *)kbdev->dev->pm_domain);
-
-	enable_gpu_power_control(kbdev);
+	mali_hw_init(kbdev);
 out:
 	return ret;
 }
 
+/*
+ * pm_callback_power_off will be called when gpu have no job todo.
+ * the pm_runtime_put_autosuspend will trigger gpu power reset
+ * which will affect gpu work on T7,so we can't do put here
+ * the out power of gpu on t7 will be power off by platform when suspend
+ */
 static void pm_callback_power_off(struct kbase_device *kbdev)
 {
 	dev_dbg(kbdev->dev, "pm_callback_power_off\n");
-	/*
-	 * the pm_runtime is no use for ic before t7,
-	 * todo: add dynamic switch power on/off for t7 with external top gpu power domain
-	 */
-	//pm_runtime_mark_last_busy(kbdev->dev);
-	//pm_runtime_put_autosuspend(kbdev->dev);
-
-#ifndef KBASE_PM_RUNTIME
-	//disable_gpu_power_control(kbdev);
-#endif
 }
 
 #ifdef KBASE_PM_RUNTIME
@@ -242,52 +227,71 @@ static int kbase_device_runtime_init(struct kbase_device *kbdev)
 {
 	int ret = 0;
 
-	pm_runtime_set_autosuspend_delay(kbdev->dev, AUTO_SUSPEND_DELAY);
-	pm_runtime_use_autosuspend(kbdev->dev);
-	pm_runtime_set_active(kbdev->dev);
-	dev_dbg(kbdev->dev, "kbase_device_runtime_init\n");
+	dev_info(kbdev->dev, "kbase_device_runtime_init\n");
 	pm_runtime_enable(kbdev->dev);
-
-	if (!pm_runtime_enabled(kbdev->dev)) {
-		dev_warn(kbdev->dev, "pm_runtime not enabled");
-		ret = -ENOSYS;
-	}
+	ret = pm_runtime_get_sync(kbdev->dev);
+	dev_info(kbdev->dev, "pm_runtime_get_sync ret=%d\n", ret);
 
 	return ret;
 }
 
 static void kbase_device_runtime_disable(struct kbase_device *kbdev)
 {
-	dev_dbg(kbdev->dev, "kbase_device_runtime_disable\n");
+	dev_info(kbdev->dev, "kbase_device_runtime_disable\n");
 	pm_runtime_disable(kbdev->dev);
 }
 #endif
 
 static int pm_callback_runtime_on(struct kbase_device *kbdev)
 {
-	dev_dbg(kbdev->dev, "pm_callback_runtime_on\n");
+	dev_info(kbdev->dev, "pm_callback_runtime_on\n");
 
-	enable_gpu_power_control(kbdev);
 	return 0;
 }
 
 static void pm_callback_runtime_off(struct kbase_device *kbdev)
 {
-	dev_dbg(kbdev->dev, "pm_callback_runtime_off\n");
-
-	disable_gpu_power_control(kbdev);
+	dev_info(kbdev->dev, "pm_callback_runtime_off\n");
 }
 
+/*
+ * the out power of gpu on t7[vdd_gpu] will be power off by platform when suspend,
+ * which will result in the gpu internal register reset to default.
+ * all of the ic before t7 use the vdd_ee,which will never power down even suspend,
+ * so we need do once init and check by pwr_override1.
+ */
 static void pm_callback_resume(struct kbase_device *kbdev)
 {
-	int ret = pm_callback_runtime_on(kbdev);
+	int ret;
+	u32 pwr_override1;
 
-	WARN_ON(ret);
+	dev_info(kbdev->dev, "pm_callback_resume in\n");
+	if (!pm_runtime_enabled(kbdev->dev)) {
+		pm_runtime_enable(kbdev->dev);
+		dev_info(kbdev->dev, "pm_runtime not enable, enable here\n");
+	} else {
+		dev_info(kbdev->dev, "pm_runtime enabled already\n");
+	}
+	ret = pm_runtime_get_sync(kbdev->dev);
+	dev_info(kbdev->dev, "pm_runtime_get_sync ret=%d\n", ret);
+	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
+	pwr_override1 = Mali_RdReg(GPU_CONTROL_REG(PWR_OVERRIDE1));
+	if (!pwr_override1) {
+		dev_info(kbdev->dev, "pwr_override1=0,need do once init\n");
+		mali_hw_init(kbdev);
+	}
+	ret = pm_callback_runtime_on(kbdev);
+	dev_info(kbdev->dev, "pm_callback_resume out\n");
 }
 
+/* the out power of gpu on t7 will be power off by platform when suspend */
 static void pm_callback_suspend(struct kbase_device *kbdev)
 {
+	dev_info(kbdev->dev, "pm_callback_suspend in\n");
 	pm_callback_runtime_off(kbdev);
+	pm_runtime_put_sync(kbdev->dev);
+	pm_runtime_disable(kbdev->dev);
+	dev_info(kbdev->dev, "pm_callback_suspend out\n");
 }
 
 struct kbase_pm_callback_conf pm_callbacks = {
