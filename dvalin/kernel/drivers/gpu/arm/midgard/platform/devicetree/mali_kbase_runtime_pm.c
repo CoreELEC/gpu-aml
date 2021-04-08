@@ -177,7 +177,7 @@ static void mali_reset(void)
 /*
  * 1.mali-reset;2.init pwr_override1;3.pwr_on one core manully
  */
-static int mali_hw_init(struct kbase_device *kbdev)
+static void mali_hw_init(struct kbase_device *kbdev)
 {
 	mali_reset();
 	udelay(10); // OR POLL for reset done
