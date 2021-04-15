@@ -1,40 +1,45 @@
-$(warning src is $(src))
-$(warning MAKEFILE_LIST is $(MAKEFILE_LIST))
+#
+# Copyright (C) 2015 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-GPU_DRV_VERSION?=r7p0
 
-KDIR?=${HOME}/source/br-wayland/output/meson8b_m201/build/linux/
-ARCH?=arm
-CROSS_COMPILE?=arm-linux-gnueabihf-
-MALI400?=m
-EXTRA_CFLAGS+="-DCONFIG_MALI400=m"
-UTGARD_MAKEFILE:=$(shell pwd)/$(lastword $(MAKEFILE_LIST))
-UTGARD_DIR=$(dir $(UTGARD_MAKEFILE))
+GPU_TYPE:=mali450
+GPU_ARCH:=utgard
+GPU_DRV_VERSION?=r10p1
 
-.ONESHELL:
-gpu:
-	echo "utgard makefile dir is $(UTGARD_MAKEFILE)"; \
-	echo "utgard dir is $(UTGARD_DIR)"; \
-	echo "gpu build"; \
-	echo "MAKE is $(MAKE)"; \
-	echo "MAKE1 is $(MAKE1)"; \
-	if [ ! -d $(GPU_DRV_VERSION) ]; then \
-		ln -s $(UTGARD_DIR)../mali $(GPU_DRV_VERSION); \
-	fi ;\
-	cd $(GPU_DRV_VERSION); \
-	if [ ! -d platform ]; then \
-		ln -s $(UTGARD_DIR)platform platform; \
-	fi ;\
-	$(MAKE) -C $(KDIR) M=`pwd` CONFIG_MALI400=$(MALI400) modules
+EXTRA_INCLUDE := -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/include \
+		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/linux/license/gpl \
+		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/common \
+		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/linux \
+		 -I$(KERNEL_SRC)/$(M)/../utgard/platform/meson_bu
+
+KBUILD_CFLAGS_MODULE += $(GKI_EXT_MODULE_PREDEFINE)
+
+modules:
+	cd $(M)/$(GPU_DRV_VERSION); \
+	ln -s $(M)/platform platform; \
+	$(MAKE) -C $(KERNEL_SRC) M=$(M)/$(GPU_DRV_VERSION)  \
+	EXTRA_CFLAGS="-DCONFIG_MALI400=m -DCONFIG_MALI450=m" \
+	EXTRA_CFLAGS+="-Wno-error -Wno-pointer-sign -Wno-error=frame-larger-than= $(EXTRA_INCLUDE) $(KBUILD_CFLAGS_MODULE)" \
+	EXTRA_LDFLAGS+="--strip-debug" \
+	CONFIG_MALI400=m  CONFIG_MALI450=m CONFIG_AM_VDEC_H264_4K2K=y modules
+
+modules_install:
+	@$(MAKE) INSTALL_MOD_STRIP=1 M=$(M)/$(GPU_DRV_VERSION) -C $(KERNEL_SRC) modules_install
+	mkdir -p ${OUT_DIR}/../vendor_lib/modules
+	cd ${OUT_DIR}/$(M)/; find -name "*.ko" -exec cp {} ${OUT_DIR}/../vendor_lib/modules/mali.ko \;
 
 clean:
-	echo "clean this module"
-	cd $(UTGARD_DIR)
-	-cd $(GPU_DRV_VERSION)
-	find . -name "*.o" -o -name "*.cmd" -o -name "*~" | xargs rm -rf
-	find . -name "Module.symvers" -o -name "*.ko" -o -name "*.mod.c" \
-	-o -name "modules.order" -o -name "*pyc" -o -name __malidrv_build_info.c | xargs rm -f
-	-cd $(UTGARD_DIR)
-	find . -name "*.o" -o -name "*.cmd" -o -name "*~" | xargs rm -rf
-	find . -name "Module.symvers" -o -name "*.ko" -o -name "*.mod.c" \
-	-o -name "modules.order" -o -name "*pyc" -o -name __malidrv_build_info.c | xargs rm -f
+	$(MAKE) -C $(KERNEL_SRC) M=$(M)/$(GPU_DRV_VERSION) clean

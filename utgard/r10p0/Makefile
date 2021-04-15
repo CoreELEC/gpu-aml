@@ -54,7 +54,7 @@ endif
 
 # Include the mapping between TARGET_PLATFORM and KDIR + MALI_PLATFORM
 -include MALI_CONFIGURATION
-export KDIR ?= $(KERNEL_SRC)
+export KDIR ?= $(KDIR-$(TARGET_PLATFORM))
 export MALI_PLATFORM ?= $(MALI_PLATFORM-$(TARGET_PLATFORM))
 
 ifneq ($(TARGET_PLATFORM),)
@@ -88,6 +88,8 @@ endif
 
 # Define host system directory
 KDIR-$(shell uname -m):=/lib/modules/$(shell uname -r)/build
+
+include $(KDIR)/.config
 
 ifeq ($(ARCH), arm)
 # when compiling for ARM we're cross compiling
