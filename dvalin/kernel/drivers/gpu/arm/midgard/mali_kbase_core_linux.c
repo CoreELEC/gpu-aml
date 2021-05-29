@@ -1980,14 +1980,13 @@ static ssize_t show_gpu_memory(struct device *dev, struct device_attribute *attr
 {
 	struct kbase_device *kbdev;
 	ssize_t ret = 0;
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
 
 	kbdev = to_kbase_device(dev);
 
 	if (!kbdev)
 		return -ENODEV;
-
-	struct list_head *entry;
-	const struct list_head *kbdev_list;
 
 	kbdev_list = kbase_device_get_list();
 	list_for_each(entry, kbdev_list) {
@@ -2030,11 +2029,7 @@ static ssize_t show_gpu_memory(struct device *dev, struct device_attribute *attr
 static ssize_t set_gpu_memory(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct kbase_device *kbdev;
-	u64 new_core_mask[3];
-	int items, i;
 	ssize_t err = count;
-	unsigned long flags;
-	u64 shader_present, group0_core_mask;
 
 	kbdev = to_kbase_device(dev);
 
@@ -2048,15 +2043,14 @@ static DEVICE_ATTR(gpu_memory, S_IRUGO | S_IWUSR, show_gpu_memory, set_gpu_memor
 
 static ssize_t show_ctx_mem_pool_size(struct device *dev, struct device_attribute *attr, char * const buf)
 {
-	struct kbase_device *const kbdev = to_kbase_device(dev);
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
 	ssize_t ret = 0;
 	int i = 0;
+	struct kbase_device *const kbdev = to_kbase_device(dev);
 
 	if (!kbdev)
 		return -ENODEV;
-	pr_info("show_ctx_mem_pool_size");
-	struct list_head *entry;
-	const struct list_head *kbdev_list;
 
 	kbdev_list = kbase_device_get_list();
 	list_for_each(entry, kbdev_list) {
@@ -2073,12 +2067,12 @@ static ssize_t show_ctx_mem_pool_size(struct device *dev, struct device_attribut
 		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
 			/* output the memory cached and cap for each kctx
 			* opened on this device */
-				ssize_t cached_mem = 0;
+				unsigned long cached_mem = 0;
 				for (i = 0; i < MEMORY_GROUP_MANAGER_NR_GROUPS; i++)
 					//pr_info("[%d]:kctx->mem_pools.small[%d] = %d", kctx->tgid, i, kctx->mem_pools.small[i].cur_size);
 					cached_mem += kctx->mem_pools.small[i].cur_size;
 				ret += scnprintf(buf + ret, PAGE_SIZE - ret,
-				"%p %10u %10u\n",
+				"%p %10u %10lu\n",
 				kctx,
 				kctx->tgid,
 				cached_mem);
@@ -2094,16 +2088,14 @@ static ssize_t show_ctx_mem_pool_size(struct device *dev, struct device_attribut
 static ssize_t set_ctx_mem_pool_size(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct kbase_device *kbdev;
-	u64 new_core_mask[3];
-	int items, i;
 	ssize_t err = count;
-	unsigned long flags;
-	u64 shader_present, group0_core_mask;
 
 	kbdev = to_kbase_device(dev);
 
 	if (!kbdev)
 		return -ENODEV;
+
+	return err;
 }
 
 static DEVICE_ATTR(ctx_mem_pool_size, S_IRUGO | S_IWUSR, show_ctx_mem_pool_size, set_ctx_mem_pool_size);
