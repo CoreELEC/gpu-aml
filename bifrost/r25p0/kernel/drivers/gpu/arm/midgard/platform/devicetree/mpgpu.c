@@ -129,6 +129,7 @@ quit:
 	return count;
 }
 
+#ifdef CONFIG_MALI_MIDGARD_DVFS
 static ssize_t scale_mode_read(struct class *class,
 		struct class_attribute *attr, char *buf)
 {
@@ -233,6 +234,7 @@ static ssize_t freq_write(struct class *class,
 
 	return count;
 }
+#endif /* end of #ifndef CONFIG_MALI_DEVFREQ */
 
 static ssize_t utilization_read(struct class *class,
 		struct class_attribute *attr, char *buf)
@@ -249,16 +251,16 @@ static ssize_t util_gl_share_read(struct class *class,
 static ssize_t util_cl_share_read(struct class *class,
 		struct class_attribute *attr, char *buf)
 {
-    u32 val[2];
+	u32 val[2];
 
-    mpgpu_get_util_cl_share(val);
+	mpgpu_get_util_cl_share(val);
 
 	return sprintf(buf, "%d  %d\n", val[0], val[1]);
 }
 
 u32 mpgpu_get_gpu_err_count(void)
 {
-    return (meson_gpu_fault + meson_gpu_data_invalid_count);
+	return (meson_gpu_fault + meson_gpu_data_invalid_count);
 }
 
 static ssize_t meson_gpu_get_err_count(struct class *class,
@@ -285,10 +287,12 @@ static ssize_t mpgpu_set_err_count(struct class *class,
 static struct class_attribute mali_class_attrs[] = {
 	__ATTR(domain_stat,	0644, domain_stat_read, NULL),
 	__ATTR(mpgpucmd,	0644, NULL,		mpgpu_write),
+#ifdef CONFIG_MALI_MIDGARD_DVFS
 	__ATTR(scale_mode,	0644, scale_mode_read,  scale_mode_write),
 	__ATTR(min_freq,	0644, min_freq_read,  	min_freq_write),
 	__ATTR(max_freq,	0644, max_freq_read,	max_freq_write),
 	__ATTR(cur_freq,	0644, freq_read,	freq_write),
+#endif
 	__ATTR(utilization,	0644, utilization_read, NULL),
 	__ATTR(util_gl,	    0644, util_gl_share_read, NULL),
 	__ATTR(util_cl,	    0644, util_cl_share_read, NULL),

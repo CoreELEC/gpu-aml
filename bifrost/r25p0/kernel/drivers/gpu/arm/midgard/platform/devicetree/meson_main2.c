@@ -102,25 +102,3 @@ struct kbase_platform_funcs_conf dt_funcs_conf = {
     .platform_init_func = platform_dt_init_func,
     .platform_term_func = platform_dt_term_func,
 };
-#if 0
-static const struct of_device_id gpu_dvfs_ids[] = {
-	{ .compatible = "meson, gpu-dvfs-1.00.a" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, gpu_dvfs_ids);
-
-static struct platform_driver gpu_dvfs_driver = {
-	.driver = {
-		.name = "meson-gpu-dvfs",
-		.owner = THIS_MODULE,
-		.of_match_table = gpu_dvfs_ids,
-	},
-	.probe = gpu_dvfs_probe,
-	.remove = gpu_dvfs_remove,
-};
-module_platform_driver(gpu_dvfs_driver);
-
-MODULE_LICENSE("GPL v2");
-MODULE_AUTHOR("Amlogic SH, MM");
-MODULE_DESCRIPTION("Driver for the Meson GPU dvfs");
-#endif

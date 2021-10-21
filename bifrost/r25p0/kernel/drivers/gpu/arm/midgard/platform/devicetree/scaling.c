@@ -37,7 +37,7 @@
 #include "mali_clock.h"
 
 static int currentStep;
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 static int num_cores_enabled;
 static int lastStep;
 static struct work_struct wq_work;
@@ -63,7 +63,7 @@ MODULE_PARM_DESC(scaling_dbg_level , "scaling debug level");
 		printk(fmt , ## arg);						   \
 	} while (0)
 
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 static int mali_stay_count = 0;
 static inline void mali_clk_exected(void)
 {
@@ -175,7 +175,7 @@ static void do_scaling(struct work_struct *work)
 u32 revise_set_clk(u32 val, u32 flush)
 {
 	u32 ret = 0;
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	mali_scale_info_t* pinfo;
 
 	pinfo = &pmali_plat->scale_info;
@@ -198,7 +198,7 @@ u32 revise_set_clk(u32 val, u32 flush)
 
 void get_mali_rt_clkpp(u32* clk, u32* pp)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	*clk = currentStep;
 	*pp = num_cores_enabled;
 #endif
@@ -207,7 +207,7 @@ void get_mali_rt_clkpp(u32* clk, u32* pp)
 u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 {
 	u32 ret = 0;
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	mali_scale_info_t* pinfo;
 	u32 flush_work = 0;
 
@@ -249,19 +249,19 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 
 void revise_mali_rt(void)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	set_mali_rt_clkpp(currentStep, num_cores_enabled, 1);
 #endif
 }
 
 void flush_scaling_job(void)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	cancel_work_sync(&wq_work);
 #endif
 }
 
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 static u32 enable_one_core(void)
 {
 	scalingdbg(2, "meson:	 one more pp, curent has %d pp cores\n",  num_cores_enabled + 1);
@@ -288,7 +288,7 @@ static u32 enable_pp_cores(u32 val)
 
 int mali_core_scaling_init(mali_plat_info_t *mali_plat)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	if (mali_plat == NULL) {
 		scalingdbg(2, " Mali platform data is NULL!!!\n");
 		return -1;
@@ -315,7 +315,7 @@ int mali_core_scaling_init(mali_plat_info_t *mali_plat)
 
 void mali_core_scaling_term(void)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	flush_scheduled_work();
 #if AMLOGIC_GPU_USE_GPPLL
 	gp_pll_user_unregister(gp_pll_user_gpu);
@@ -323,7 +323,7 @@ void mali_core_scaling_term(void)
 #endif
 }
 
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 static u32 mali_threshold [] = {
 	40, /* 40% */
 	50, /* 50% */
@@ -333,7 +333,7 @@ static u32 mali_threshold [] = {
 
 void mali_pp_scaling_update(int utilization_pp)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	int ret = 0;
 
 	if (mali_threshold[2] < utilization_pp)
@@ -344,10 +344,12 @@ void mali_pp_scaling_update(int utilization_pp)
 		ret = disable_one_core();
 	if (ret == 1)
 		schedule_work(&wq_work);
+
+	printk("devfreq: CONFIG_MALI_DEVFREQ=y\n");
 #endif
 }
 
-#if LOG_MALI_SCALING
+#if LOG_MALI_SCALING && !defined(CONFIG_MALI_DEVFREQ)
 void trace_utilization(int utilization_gpu, u32 current_idx, u32 next,
 		u32 current_pp, u32 next_pp)
 {
@@ -370,7 +372,7 @@ void trace_utilization(int utilization_gpu, u32 current_idx, u32 next,
 }
 #endif
 
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 static void mali_decide_next_status(int utilization_pp, int* next_fs_idx,
 		int* pp_change_flag)
 {
@@ -480,7 +482,7 @@ static void mali_decide_next_status(int utilization_pp, int* next_fs_idx,
 
 void mali_pp_fs_scaling_update(int utilization_pp)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	int ret = 0;
 	int pp_change_flag = 0;
 	u32 next_idx = 0;
@@ -528,7 +530,7 @@ u32 get_mali_schel_mode(void)
 
 void set_mali_schel_mode(u32 mode)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	if (mode >= MALI_SCALING_MODE_MAX)
 		return;
 	scaling_mode = mode;
@@ -568,7 +570,7 @@ u32 get_current_frequency(void)
 
 void mali_gpu_utilization_callback(int utilization_pp)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
 	if (mali_pm_statue)
 		return;
 
@@ -583,24 +585,4 @@ void mali_gpu_utilization_callback(int utilization_pp)
 			break;
 	}
 #endif
-}
-static u32 clk_cntl_save = 0;
-void mali_dev_freeze(void)
-{
-	clk_cntl_save = mplt_read(HHI_MALI_CLK_CNTL);
-}
-
-void mali_dev_restore(void)
-{
-	u32 reg = 0;
-	if (!pmali_plat  || !pmali_plat->pdev) {
-		printk("error: init clock failed, pmali_plat=%p, pmali_plat->pdev=%p\n",
-				pmali_plat, pmali_plat == NULL ? NULL: pmali_plat->pdev);
-		return ;
-	}
-
-	reg = pmali_plat->clk_cntl_reg;
-
-	mplt_write(reg, clk_cntl_save);
-	mali_clock_init_clk_tree(pmali_plat->pdev);
 }

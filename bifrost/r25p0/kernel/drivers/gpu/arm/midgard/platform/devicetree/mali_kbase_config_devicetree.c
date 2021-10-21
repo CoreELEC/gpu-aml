@@ -23,13 +23,24 @@
 #define FALLBACK_STATIC_TEMPERATURE 55000
 
 #ifdef CONFIG_MALI_DEVFREQ
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0))
 static unsigned long t83x_static_power(unsigned long voltage)
+#else
+static unsigned long t83x_static_power(struct devfreq *devfreq,
+				       unsigned long voltage)
+#endif
 {
 	return 0;
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0))
 static unsigned long t83x_dynamic_power(unsigned long freq,
-		unsigned long voltage)
+					unsigned long voltage)
+#else
+static unsigned long t83x_dynamic_power(struct devfreq *devfreq,
+					unsigned long freq,
+					unsigned long voltage)
+#endif
 {
 	/* The inputs: freq (f) is in Hz, and voltage (v) in mV.
 	 * The coefficient (c) is in mW/(MHz mV mV).

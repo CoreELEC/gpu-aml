@@ -57,7 +57,7 @@ static mali_plat_info_t mali_plat_data = {
 
 static void mali_plat_preheat(void)
 {
-#ifndef CONFIG_MALI_DVFS
+#ifndef CONFIG_MALI_DEVFREQ
     u32 pre_fs;
     u32 clk, pp;
 
