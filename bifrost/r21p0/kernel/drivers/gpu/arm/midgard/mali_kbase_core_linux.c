@@ -620,6 +620,8 @@ static int kbase_file_create_kctx(struct kbase_file *const kfile,
 #ifdef CONFIG_DEBUG_FS
 	snprintf(kctx_name, 64, "%d_%d", kctx->tgid, kctx->id);
 
+	mutex_init(&kctx->mem_profile_lock);
+
 	kctx->kctx_dentry = debugfs_create_dir(kctx_name,
 			kbdev->debugfs_ctx_directory);
 
@@ -632,8 +634,6 @@ static int kbase_file_create_kctx(struct kbase_file *const kfile,
 		debugfs_create_file("force_same_va", 0600,
 				kctx->kctx_dentry, kctx,
 				&kbase_force_same_va_fops);
-
-		mutex_init(&kctx->mem_profile_lock);
 
 		kbasep_jd_debugfs_ctx_init(kctx);
 		kbase_debug_mem_view_init(kctx);
