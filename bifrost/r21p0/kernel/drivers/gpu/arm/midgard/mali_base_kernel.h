@@ -1,6 +1,6 @@
 /*
  *
- * (C) COPYRIGHT 2010-2019 ARM Limited. All rights reserved.
+ * (C) COPYRIGHT 2010-2022 ARM Limited. All rights reserved.
  *
  * This program is free software and is provided to you under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -1240,8 +1240,9 @@ typedef enum base_jd_event_code {
  * @li ::BASE_JD_SW_EVENT_INFO : base_jd_event::data not used
  */
 typedef struct base_jd_event_v2 {
-	base_jd_event_code event_code;  /**< event code */
+	__u32 event_code;  /**< event code */
 	base_atom_id atom_number;       /**< the atom number that has completed */
+	__u8 padding[3];
 	struct base_jd_udata udata;     /**< user data */
 } base_jd_event_v2;
 
