@@ -26,10 +26,12 @@ EXTRA_INCLUDE := -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/include \
 		 -I$(KERNEL_SRC)/$(M)/../utgard/platform/meson_bu
 
 KBUILD_CFLAGS_MODULE += $(GKI_EXT_MODULE_PREDEFINE)
-
+ $(warning "mali the value of KERNEL_SRC is $(KERNEL_SRC)")
+ $(warning "mali the value of M is $(M)")
+ $(warning "mali the value of OUT_DIR is ${OUT_DIR}")
 modules:
-	cd $(M)/$(GPU_DRV_VERSION); \
-	ln -s $(M)/platform platform; \
+	cd $(KERNEL_SRC)/$(M)/$(GPU_DRV_VERSION); \
+	ln -s $(KERNEL_SRC)/$(M)/platform platform; \
 	$(MAKE) -C $(KERNEL_SRC) M=$(M)/$(GPU_DRV_VERSION)  \
 	EXTRA_CFLAGS="-DCONFIG_MALI400=m -DCONFIG_MALI450=m" \
 	EXTRA_CFLAGS+="-Wno-error -Wno-pointer-sign -Wno-error=frame-larger-than= $(EXTRA_INCLUDE) $(KBUILD_CFLAGS_MODULE)" \
