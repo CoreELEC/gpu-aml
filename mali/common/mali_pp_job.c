@@ -163,7 +163,7 @@ void mali_pp_job_delete(struct mali_pp_job *job)
 			mali_mem_backend *mem_backend = NULL;
 			u32 mali_addr  = mali_pp_job_get_memory_cookie(job, i);
 
-			mem_backend = __mali_mem_backend_struct_search(session, mali_addr);
+			mem_backend = __mali_mem_backend_struct_search_with_lock(session, mali_addr);
 			if (mem_backend &&
 				(mem_backend->flags & MALI_MEM_BACKEND_FLAG_VIDEO_LAZY_MAP)) {
 				have_video = 1;
