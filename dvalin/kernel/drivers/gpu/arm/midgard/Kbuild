@@ -48,6 +48,10 @@ ifeq ($(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND),n)
     $(error CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND must be set in Kernel configuration)
 endif
 
+ifeq ($(CONFIG_FW_LOADER), n)
+    $(error CONFIG_FW_LOADER must be set in Kernel configuration)
+endif
+
 ifeq ($(CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS), y)
     ifneq ($(CONFIG_DEBUG_FS), y)
         $(error CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS depends on CONFIG_DEBUG_FS to be set in Kernel configuration)
@@ -67,7 +71,7 @@ endif
 #
 
 # Driver version string which is returned to userspace via an ioctl
-MALI_RELEASE_NAME ?= '"r32p1-01bet0"'
+MALI_RELEASE_NAME ?= '"r37p0-01eac0"'
 # Set up defaults if not defined by build system
 ifeq ($(CONFIG_MALI_DEBUG), y)
     MALI_UNIT_TEST = 1
@@ -77,8 +81,6 @@ else
     MALI_CUSTOMER_RELEASE ?= 1
 endif
 MALI_COVERAGE ?= 0
-
-CONFIG_MALI_PLATFORM_NAME ?= "devicetree"
 
 # Kconfig passes in the name with quotes for in-tree builds - remove them.
 MALI_PLATFORM_DIR := $(shell echo $(CONFIG_MALI_PLATFORM_NAME))
@@ -90,6 +92,7 @@ else
     MALI_JIT_PRESSURE_LIMIT_BASE ?= 1
     MALI_USE_CSF ?= 0
 endif
+
 
 ifneq ($(CONFIG_MALI_KUTF), n)
     MALI_KERNEL_TEST_API ?= 1
@@ -103,7 +106,7 @@ endif
 #
 # Experimental features must default to disabled, e.g.:
 # MALI_EXPERIMENTAL_FEATURE ?= 0
-MALI_INCREMENTAL_RENDERING ?= 0
+MALI_INCREMENTAL_RENDERING_JM ?= 0
 
 #
 # ccflags
@@ -116,8 +119,7 @@ ccflags-y = \
     -DMALI_COVERAGE=$(MALI_COVERAGE) \
     -DMALI_RELEASE_NAME=$(MALI_RELEASE_NAME) \
     -DMALI_JIT_PRESSURE_LIMIT_BASE=$(MALI_JIT_PRESSURE_LIMIT_BASE) \
-    -DMALI_INCREMENTAL_RENDERING=$(MALI_INCREMENTAL_RENDERING) \
-    -DMALI_KBASE_BUILD \
+    -DMALI_INCREMENTAL_RENDERING_JM=$(MALI_INCREMENTAL_RENDERING_JM) \
     -DMALI_PLATFORM_DIR=$(MALI_PLATFORM_DIR)
 
 
@@ -156,12 +158,14 @@ mali_kbase-y := \
     mali_kbase_gpuprops.o \
     mali_kbase_pm.o \
     mali_kbase_config.o \
+    mali_kbase_kinstr_prfcnt.o \
     mali_kbase_vinstr.o \
     mali_kbase_hwcnt.o \
     mali_kbase_hwcnt_gpu.o \
-    mali_kbase_hwcnt_legacy.o \
+    mali_kbase_hwcnt_gpu_narrow.o \
     mali_kbase_hwcnt_types.o \
     mali_kbase_hwcnt_virtualizer.o \
+    mali_kbase_hwcnt_watchdog_if_timer.o \
     mali_kbase_softjobs.o \
     mali_kbase_hw.o \
     mali_kbase_debug.o \
@@ -171,6 +175,7 @@ mali_kbase-y := \
     mali_kbase_mem_profile_debugfs.o \
     mali_kbase_disjoint_events.o \
     mali_kbase_debug_mem_view.o \
+    mali_kbase_debug_mem_zones.o \
     mali_kbase_smc.o \
     mali_kbase_mem_pool.o \
     mali_kbase_mem_pool_debugfs.o \
@@ -180,7 +185,10 @@ mali_kbase-y := \
     mali_kbase_regs_history_debugfs.o \
     mali_kbase_dvfs_debugfs.o \
     mali_power_gpu_frequency_trace.o \
-    mali_kbase_trace_gpu_mem.o
+    mali_kbase_trace_gpu_mem.o \
+    mali_kbase_pbha.o
+
+mali_kbase-$(CONFIG_DEBUG_FS) += mali_kbase_pbha_debugfs.o
 
 mali_kbase-$(CONFIG_MALI_CINSTR_GWT) += mali_kbase_gwt.o
 
@@ -201,6 +209,7 @@ else
     mali_kbase-y += \
         mali_kbase_jm.o \
         mali_kbase_hwcnt_backend_jm.o \
+        mali_kbase_hwcnt_backend_jm_watchdog.o \
         mali_kbase_dummy_job_wa.o \
         mali_kbase_debug_job_fault.o \
         mali_kbase_event.o \

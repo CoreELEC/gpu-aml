@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
 /*
  *
- * (C) COPYRIGHT 2010-2021 ARM Limited. All rights reserved.
+ * (C) COPYRIGHT 2010-2022 ARM Limited. All rights reserved.
  *
  * This program is free software and is provided to you under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -49,18 +49,13 @@ static u64 kbase_job_write_affinity(struct kbase_device *kbdev,
 				int js, const u64 limited_core_mask)
 {
 	u64 affinity;
+	bool skip_affinity_check = false;
 
 	if ((core_req & (BASE_JD_REQ_FS | BASE_JD_REQ_CS | BASE_JD_REQ_T)) ==
 			BASE_JD_REQ_T) {
-		/* Tiler-only atom */
-		/* If the hardware supports XAFFINITY then we'll only enable
-		 * the tiler (which is the default so this is a no-op),
-		 * otherwise enable shader core 0.
-		 */
-		if (!kbase_hw_has_feature(kbdev, BASE_HW_FEATURE_XAFFINITY))
-			affinity = 1;
-		else
-			affinity = 0;
+		/* Tiler-only atom, affinity value can be programed as 0 */
+		affinity = 0;
+		skip_affinity_check = true;
 	} else if ((core_req & (BASE_JD_REQ_COHERENT_GROUP |
 			BASE_JD_REQ_SPECIFIC_COHERENT_GROUP))) {
 		unsigned int num_core_groups = kbdev->gpu_props.num_core_groups;
@@ -90,7 +85,7 @@ static u64 kbase_job_write_affinity(struct kbase_device *kbdev,
 		affinity = kbasep_apply_limited_core_mask(kbdev, affinity, limited_core_mask);
 	}
 
-	if (unlikely(!affinity)) {
+	if (unlikely(!affinity && !skip_affinity_check)) {
 #ifdef CONFIG_MALI_DEBUG
 		u64 shaders_ready =
 			kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_SHADER);
@@ -268,16 +263,13 @@ void kbase_job_hw_submit(struct kbase_device *kbdev,
 	    (katom->core_req & BASE_JD_REQ_END_RENDERPASS))
 		cfg |= JS_CONFIG_DISABLE_DESCRIPTOR_WR_BK;
 
-	if (kbase_hw_has_feature(kbdev,
-				BASE_HW_FEATURE_JOBCHAIN_DISAMBIGUATION)) {
-		if (!ptr_slot_rb->job_chain_flag) {
-			cfg |= JS_CONFIG_JOB_CHAIN_FLAG;
-			katom->atom_flags |= KBASE_KATOM_FLAGS_JOBCHAIN;
-			ptr_slot_rb->job_chain_flag = true;
-		} else {
-			katom->atom_flags &= ~KBASE_KATOM_FLAGS_JOBCHAIN;
-			ptr_slot_rb->job_chain_flag = false;
-		}
+	if (!ptr_slot_rb->job_chain_flag) {
+		cfg |= JS_CONFIG_JOB_CHAIN_FLAG;
+		katom->atom_flags |= KBASE_KATOM_FLAGS_JOBCHAIN;
+		ptr_slot_rb->job_chain_flag = true;
+	} else {
+		katom->atom_flags &= ~KBASE_KATOM_FLAGS_JOBCHAIN;
+		ptr_slot_rb->job_chain_flag = false;
 	}
 
 	kbase_reg_write(kbdev, JOB_SLOT_REG(js, JS_CONFIG_NEXT), cfg);
@@ -289,7 +281,7 @@ void kbase_job_hw_submit(struct kbase_device *kbdev,
 	/* Write an approximate start timestamp.
 	 * It's approximate because there might be a job in the HEAD register.
 	 */
-	katom->start_timestamp = ktime_get();
+	katom->start_timestamp = ktime_get_raw();
 
 	/* GO ! */
 	dev_dbg(kbdev->dev, "JS: Submitting atom %pK from ctx %pK to js[%d] with head=0x%llx",
@@ -405,7 +397,7 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 
 	KBASE_KTRACE_ADD_JM(kbdev, JM_IRQ, NULL, NULL, 0, done);
 
-	end_timestamp = ktime_get();
+	end_timestamp = ktime_get_raw();
 
 	while (done) {
 		u32 failed = done >> 16;
@@ -433,6 +425,8 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 					JOB_SLOT_REG(i, JS_STATUS));
 
 				if (completion_code == BASE_JD_EVENT_STOPPED) {
+					u64 job_head;
+
 					KBASE_TLSTREAM_AUX_EVENT_JOB_SLOT(
 						kbdev, NULL,
 						i, 0, TL_JS_EVENT_SOFT_STOP);
@@ -449,6 +443,21 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 						((u64)kbase_reg_read(kbdev,
 						JOB_SLOT_REG(i, JS_TAIL_HI))
 						 << 32);
+					job_head = (u64)kbase_reg_read(kbdev,
+						JOB_SLOT_REG(i, JS_HEAD_LO)) |
+						((u64)kbase_reg_read(kbdev,
+						JOB_SLOT_REG(i, JS_HEAD_HI))
+						 << 32);
+					/* For a soft-stopped job chain js_tail should
+					 * same as the js_head, but if not then the
+					 * job chain was incorrectly marked as
+					 * soft-stopped. In such case we should not
+					 * be resuming the job chain from js_tail and
+					 * report the completion_code as UNKNOWN.
+					 */
+					if (job_tail != job_head)
+						completion_code = BASE_JD_EVENT_UNKNOWN;
+
 				} else if (completion_code ==
 						BASE_JD_EVENT_NOT_STARTED) {
 					/* PRLAM-10673 can cause a TERMINATED
@@ -581,7 +590,7 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 			failed = done >> 16;
 			finished = (done & 0xFFFF) | failed;
 			if (done)
-				end_timestamp = ktime_get();
+				end_timestamp = ktime_get_raw();
 		} while (finished & (1 << i));
 
 		kbasep_job_slot_update_head_start_timestamp(kbdev, i,
@@ -639,25 +648,17 @@ void kbasep_job_slot_soft_or_hard_stop_do_action(struct kbase_device *kbdev,
 		/* Mark the point where we issue the soft-stop command */
 		KBASE_TLSTREAM_TL_EVENT_ATOM_SOFTSTOP_ISSUE(kbdev, target_katom);
 
-		if (kbase_hw_has_feature(
-				kbdev,
-				BASE_HW_FEATURE_JOBCHAIN_DISAMBIGUATION)) {
-			action = (target_katom->atom_flags &
-					KBASE_KATOM_FLAGS_JOBCHAIN) ?
-				JS_COMMAND_SOFT_STOP_1 :
-				JS_COMMAND_SOFT_STOP_0;
-		}
+		action = (target_katom->atom_flags &
+			  KBASE_KATOM_FLAGS_JOBCHAIN) ?
+				 JS_COMMAND_SOFT_STOP_1 :
+				 JS_COMMAND_SOFT_STOP_0;
 	} else if (action == JS_COMMAND_HARD_STOP) {
 		target_katom->atom_flags |= KBASE_KATOM_FLAG_BEEN_HARD_STOPPED;
 
-		if (kbase_hw_has_feature(
-				kbdev,
-				BASE_HW_FEATURE_JOBCHAIN_DISAMBIGUATION)) {
-			action = (target_katom->atom_flags &
-					KBASE_KATOM_FLAGS_JOBCHAIN) ?
-				JS_COMMAND_HARD_STOP_1 :
-				JS_COMMAND_HARD_STOP_0;
-		}
+		action = (target_katom->atom_flags &
+			  KBASE_KATOM_FLAGS_JOBCHAIN) ?
+				 JS_COMMAND_HARD_STOP_1 :
+				 JS_COMMAND_HARD_STOP_0;
 	}
 
 	kbase_reg_write(kbdev, JOB_SLOT_REG(js, JS_COMMAND), action);
@@ -743,40 +744,11 @@ void kbase_backend_jm_kill_running_jobs_from_kctx(struct kbase_context *kctx)
 		kbase_job_slot_hardstop(kctx, i, NULL);
 }
 
-/**
- * kbase_is_existing_atom_submitted_later_than_ready
- * @ready: sequence number of the ready atom
- * @existing: sequence number of the existing atom
- *
- * Returns true if the existing atom has been submitted later than the
- * ready atom. It is used to understand if an atom that is ready has been
- * submitted earlier than the currently running atom, so that the currently
- * running atom should be preempted to allow the ready atom to run.
- */
-static inline bool kbase_is_existing_atom_submitted_later_than_ready(u64 ready, u64 existing)
-{
-	/* No seq_nr set? */
-	if (!ready || !existing)
-		return false;
-
-	/* Efficiently handle the unlikely case of wrapping.
-	 * The following code assumes that the delta between the sequence number
-	 * of the two atoms is less than INT64_MAX.
-	 * In the extremely unlikely case where the delta is higher, the comparison
-	 * defaults for no preemption.
-	 * The code also assumes that the conversion from unsigned to signed types
-	 * works because the signed integers are 2's complement.
-	 */
-	return (s64)(ready - existing) < 0;
-}
-
 void kbase_job_slot_ctx_priority_check_locked(struct kbase_context *kctx,
 				struct kbase_jd_atom *target_katom)
 {
 	struct kbase_device *kbdev;
-	int js = target_katom->slot_nr;
-	int priority = target_katom->sched_priority;
-	int seq_nr = target_katom->seq_nr;
+	int target_js = target_katom->slot_nr;
 	int i;
 	bool stop_sent = false;
 
@@ -786,26 +758,21 @@ void kbase_job_slot_ctx_priority_check_locked(struct kbase_context *kctx,
 
 	lockdep_assert_held(&kbdev->hwaccess_lock);
 
-	for (i = 0; i < kbase_backend_nr_atoms_on_slot(kbdev, js); i++) {
-		struct kbase_jd_atom *katom;
+	for (i = 0; i < kbase_backend_nr_atoms_on_slot(kbdev, target_js); i++) {
+		struct kbase_jd_atom *slot_katom;
 
-		katom = kbase_gpu_inspect(kbdev, js, i);
-		if (!katom)
+		slot_katom = kbase_gpu_inspect(kbdev, target_js, i);
+		if (!slot_katom)
 			continue;
 
-		if ((kbdev->js_ctx_scheduling_mode ==
-			KBASE_JS_PROCESS_LOCAL_PRIORITY_MODE) &&
-				(katom->kctx != kctx))
-			continue;
-
-		if ((katom->sched_priority > priority) ||
-		    (katom->kctx == kctx && kbase_is_existing_atom_submitted_later_than_ready(seq_nr, katom->seq_nr))) {
+		if (kbase_js_atom_runs_before(kbdev, target_katom, slot_katom,
+					      KBASE_ATOM_ORDERING_FLAG_SEQNR)) {
 			if (!stop_sent)
 				KBASE_TLSTREAM_TL_ATTRIB_ATOM_PRIORITIZED(
 						kbdev,
 						target_katom);
 
-			kbase_job_slot_softstop(kbdev, js, katom);
+			kbase_job_slot_softstop(kbdev, target_js, slot_katom);
 			stop_sent = true;
 		}
 	}
@@ -972,33 +939,12 @@ void kbase_job_slot_softstop_swflags(struct kbase_device *kbdev, int js,
 			JS_COMMAND_SOFT_STOP | sw_flags);
 }
 
-/**
- * kbase_job_slot_softstop - Soft-stop the specified job slot
- * @kbdev:         The kbase device
- * @js:            The job slot to soft-stop
- * @target_katom:  The job that should be soft-stopped (or NULL for any job)
- * Context:
- *   The job slot lock must be held when calling this function.
- *   The job slot must not already be in the process of being soft-stopped.
- *
- * Where possible any job in the next register is evicted before the soft-stop.
- */
 void kbase_job_slot_softstop(struct kbase_device *kbdev, int js,
 				struct kbase_jd_atom *target_katom)
 {
 	kbase_job_slot_softstop_swflags(kbdev, js, target_katom, 0u);
 }
 
-/**
- * kbase_job_slot_hardstop - Hard-stop the specified job slot
- * @kctx:         The kbase context that contains the job(s) that should
- *                be hard-stopped
- * @js:           The job slot to hard-stop
- * @target_katom: The job that should be hard-stopped (or NULL for all
- *                jobs from the context)
- * Context:
- *   The job slot lock must be held when calling this function.
- */
 void kbase_job_slot_hardstop(struct kbase_context *kctx, int js,
 				struct kbase_jd_atom *target_katom)
 {
@@ -1008,28 +954,9 @@ void kbase_job_slot_hardstop(struct kbase_context *kctx, int js,
 	stopped = kbase_backend_soft_hard_stop_slot(kbdev, kctx, js,
 							target_katom,
 							JS_COMMAND_HARD_STOP);
+	CSTD_UNUSED(stopped);
 }
 
-/**
- * kbase_job_check_enter_disjoint - potentiall enter disjoint mode
- * @kbdev: kbase device
- * @action: the event which has occurred
- * @core_reqs: core requirements of the atom
- * @target_katom: the atom which is being affected
- *
- * For a certain soft-stop action, work out whether to enter disjoint
- * state.
- *
- * This does not register multiple disjoint events if the atom has already
- * started a disjoint period
- *
- * @core_reqs can be supplied as 0 if the atom had not started on the hardware
- * (and so a 'real' soft/hard-stop was not required, but it still interrupted
- * flow, perhaps on another context)
- *
- * kbase_job_check_leave_disjoint() should be used to end the disjoint
- * state when the soft/hard-stop action is complete
- */
 void kbase_job_check_enter_disjoint(struct kbase_device *kbdev, u32 action,
 		base_jd_core_req core_reqs, struct kbase_jd_atom *target_katom)
 {
@@ -1051,14 +978,6 @@ void kbase_job_check_enter_disjoint(struct kbase_device *kbdev, u32 action,
 	kbase_disjoint_state_up(kbdev);
 }
 
-/**
- * kbase_job_check_enter_disjoint - potentially leave disjoint state
- * @kbdev: kbase device
- * @target_katom: atom which is finishing
- *
- * Work out whether to leave disjoint state when finishing an atom that was
- * originated by kbase_job_check_enter_disjoint().
- */
 void kbase_job_check_leave_disjoint(struct kbase_device *kbdev,
 		struct kbase_jd_atom *target_katom)
 {
@@ -1135,7 +1054,7 @@ static void kbasep_reset_timeout_worker(struct work_struct *data)
 {
 	unsigned long flags;
 	struct kbase_device *kbdev;
-	ktime_t end_timestamp = ktime_get();
+	ktime_t end_timestamp = ktime_get_raw();
 	struct kbasep_js_device_data *js_devdata;
 	bool silent = false;
 	u32 max_loops = KBASE_CLEAN_CACHE_MAX_LOOPS;
@@ -1389,8 +1308,7 @@ static void kbasep_try_reset_gpu_early(struct kbase_device *kbdev)
  * This function soft-stops all the slots to ensure that as many jobs as
  * possible are saved.
  *
- * Return:
- *   The function returns a boolean which should be interpreted as follows:
+ * Return: boolean which should be interpreted as follows:
  *   true - Prepared for reset, kbase_reset_gpu_locked should be called.
  *   false - Another thread is performing a reset, kbase_reset_gpu should
  *   not be called.
@@ -1567,9 +1485,9 @@ static u64 kbasep_apply_limited_core_mask(const struct kbase_device *kbdev,
 #ifdef CONFIG_MALI_DEBUG
 	dev_dbg(kbdev->dev,
 				"Limiting affinity due to BASE_JD_REQ_LIMITED_CORE_MASK from 0x%lx to 0x%lx (mask is 0x%lx)\n",
-				(unsigned long int)affinity,
-				(unsigned long int)result,
-				(unsigned long int)limited_core_mask);
+				(unsigned long)affinity,
+				(unsigned long)result,
+				(unsigned long)limited_core_mask);
 #else
 	CSTD_UNUSED(kbdev);
 #endif

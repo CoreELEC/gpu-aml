@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
 #
-# (C) COPYRIGHT 2021 ARM Limited. All rights reserved.
+# (C) COPYRIGHT 2021-2022 ARM Limited. All rights reserved.
 #
 # This program is free software and is provided to you under the terms of the
 # GNU General Public License version 2 as published by the Free Software
@@ -38,9 +38,11 @@ ifeq ($(CONFIG_MALI_BASE_MODULES),y)
     CONFIG_MALI_CSF_SUPPORT ?= n
 
     ifneq ($(CONFIG_DMA_SHARED_BUFFER),n)
+        CONFIG_DMA_BUF_LOCK ?= y
         CONFIG_DMA_SHARED_BUFFER_TEST_EXPORTER ?= y
     else
         # Prevent misuse when CONFIG_DMA_SHARED_BUFFER=n
+        CONFIG_DMA_BUF_LOCK = n
         CONFIG_DMA_SHARED_BUFFER_TEST_EXPORTER = n
     endif
 
@@ -52,6 +54,7 @@ ifeq ($(CONFIG_MALI_BASE_MODULES),y)
 
 else
     # Prevent misuse when CONFIG_MALI_BASE_MODULES=n
+    CONFIG_DMA_BUF_LOCK = n
     CONFIG_DMA_SHARED_BUFFER_TEST_EXPORTER = n
     CONFIG_MALI_MEMORY_GROUP_MANAGER = n
     CONFIG_MALI_PROTECTED_MEMORY_ALLOCATOR = n
@@ -61,6 +64,7 @@ endif
 CONFIGS := \
     CONFIG_MALI_BASE_MODULES \
     CONFIG_MALI_CSF_SUPPORT \
+    CONFIG_DMA_BUF_LOCK \
     CONFIG_DMA_SHARED_BUFFER_TEST_EXPORTER \
     CONFIG_MALI_MEMORY_GROUP_MANAGER \
     CONFIG_MALI_PROTECTED_MEMORY_ALLOCATOR
@@ -87,6 +91,26 @@ MAKE_ARGS := $(foreach config,$(CONFIGS), \
 EXTRA_CFLAGS := $(foreach config,$(CONFIGS), \
                     $(if $(filter y m,$(value $(value config))), \
                         -D$(value config)=1))
+
+# The following were added to align with W=1 in scripts/Makefile.extrawarn
+# from the Linux source tree
+KBUILD_CFLAGS += -Wall -Werror
+KBUILD_CFLAGS += -Wextra -Wunused -Wno-unused-parameter
+KBUILD_CFLAGS += -Wmissing-declarations
+KBUILD_CFLAGS += -Wmissing-format-attribute
+KBUILD_CFLAGS += -Wmissing-prototypes
+KBUILD_CFLAGS += -Wold-style-definition
+KBUILD_CFLAGS += -Wmissing-include-dirs
+KBUILD_CFLAGS += $(call cc-option, -Wunused-but-set-variable)
+KBUILD_CFLAGS += $(call cc-option, -Wunused-const-variable)
+KBUILD_CFLAGS += $(call cc-option, -Wpacked-not-aligned)
+KBUILD_CFLAGS += $(call cc-option, -Wstringop-truncation)
+# The following turn off the warnings enabled by -Wextra
+KBUILD_CFLAGS += -Wno-missing-field-initializers
+KBUILD_CFLAGS += -Wno-sign-compare
+KBUILD_CFLAGS += -Wno-type-limits
+
+KBUILD_CPPFLAGS += -DKBUILD_EXTRA_WARN1
 
 all:
 	$(MAKE) -C $(KDIR) M=$(CURDIR) $(MAKE_ARGS) EXTRA_CFLAGS="$(EXTRA_CFLAGS)" KBUILD_EXTRA_SYMBOLS="$(EXTRA_SYMBOLS)" modules
