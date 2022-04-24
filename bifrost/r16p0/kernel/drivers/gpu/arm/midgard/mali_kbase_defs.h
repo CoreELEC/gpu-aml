@@ -155,8 +155,15 @@
 /** setting in kbase_context::as_nr that indicates it's invalid */
 #define KBASEP_AS_NR_INVALID     (-1)
 
-#define KBASE_LOCK_REGION_MAX_SIZE (63)
-#define KBASE_LOCK_REGION_MIN_SIZE (11)
+/**
+ * Maximum size in bytes of a MMU lock region, as a logarithm
+ */
+#define KBASE_LOCK_REGION_MAX_SIZE_LOG2 (48) /*  256 TB */
+
+/**
+ * Minimum size in bytes of a MMU lock region, as a logarithm
+ */
+#define KBASE_LOCK_REGION_MIN_SIZE_LOG2 (15) /* 32 kB */
 
 #define KBASE_TRACE_SIZE_LOG2 8	/* 256 entries */
 #define KBASE_TRACE_SIZE (1 << KBASE_TRACE_SIZE_LOG2)
