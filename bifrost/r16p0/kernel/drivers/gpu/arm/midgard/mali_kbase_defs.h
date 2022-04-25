@@ -943,6 +943,21 @@ struct kbase_mmu_table {
 	struct kbase_context *kctx;
 };
 
+/**
+ * struct kbase_reg_zone - Information about GPU memory region zones
+ * @base_pfn: Page Frame Number in GPU virtual address space for the start of
+ *            the Zone
+ * @va_size_pages: Size of the Zone in pages
+ *
+ * Track information about a zone KBASE_REG_ZONE() and related macros.
+ * In future, this could also store the &rb_root that are currently in
+ * &kbase_context and &kbase_csf_device.
+ */
+struct kbase_reg_zone {
+	u64 base_pfn;
+	u64 va_size_pages;
+};
+
 static inline int kbase_as_has_bus_fault(struct kbase_as *as)
 {
 	return as->fault_type == KBASE_MMU_FAULT_TYPE_BUS;

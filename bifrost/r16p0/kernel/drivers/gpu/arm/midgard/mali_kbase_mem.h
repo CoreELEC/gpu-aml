@@ -317,6 +317,23 @@ struct kbase_va_region {
 /* Memory has permanent kernel side mapping */
 #define KBASE_REG_PERMANENT_KERNEL_MAPPING (1ul << 25)
 
+/* GPU VA region has been freed by the userspace, but still remains allocated
+ * due to the reference held by CPU mappings created on the GPU VA region.
+ *
+ * A region with this flag set has had kbase_gpu_munmap() called on it, but can
+ * still be looked-up in the region tracker as a non-free region. Hence must
+ * not create or update any more GPU mappings on such regions because they will
+ * not be unmapped when the region is finally destroyed.
+ *
+ * Since such regions are still present in the region tracker, new allocations
+ * attempted with BASE_MEM_SAME_VA might fail if their address intersects with
+ * a region with this flag set.
+ *
+ * In addition, this flag indicates the gpu_alloc member might no longer valid
+ * e.g. in infinite cache simulation.
+ */
+#define KBASE_REG_VA_FREED (1ul << 26)
+
 #define KBASE_REG_ZONE_SAME_VA      KBASE_REG_ZONE(0)
 
 /* only used with 32-bit clients */
@@ -354,7 +371,85 @@ struct kbase_va_region {
 	u16 jit_usage_id;
 	/* The JIT bin this allocation came from */
 	u8 jit_bin_id;
+
+	int    va_refcnt; /* number of users of this va */
 };
+
+/**
+ * kbase_is_ctx_reg_zone - determine whether a KBASE_REG_ZONE_<...> is for a
+ *                         context or for a device
+ * @zone_bits: A KBASE_REG_ZONE_<...> to query
+ *
+ * Return: True if the zone for @zone_bits is a context zone, False otherwise
+ */
+static inline bool kbase_is_ctx_reg_zone(unsigned long zone_bits)
+{
+	WARN_ON((zone_bits & KBASE_REG_ZONE_MASK) != zone_bits);
+	return (zone_bits == KBASE_REG_ZONE_SAME_VA ||
+		zone_bits == KBASE_REG_ZONE_CUSTOM_VA ||
+		zone_bits == KBASE_REG_ZONE_EXEC_VA);
+}
+
+static inline bool kbase_is_region_free(struct kbase_va_region *reg)
+{
+	return (!reg || reg->flags & KBASE_REG_FREE);
+}
+
+static inline bool kbase_is_region_invalid(struct kbase_va_region *reg)
+{
+	return (!reg || reg->flags & KBASE_REG_VA_FREED);
+}
+
+static inline bool kbase_is_region_invalid_or_free(struct kbase_va_region *reg)
+{
+	/* Possibly not all functions that find regions would be using this
+	 * helper, so they need to be checked when maintaining this function.
+	 */
+	return (kbase_is_region_invalid(reg) ||	kbase_is_region_free(reg));
+}
+
+void kbase_remove_va_region(struct kbase_device *kbdev,
+			    struct kbase_va_region *reg);
+static inline void kbase_region_refcnt_free(struct kbase_device *kbdev,
+					    struct kbase_va_region *reg)
+{
+	/* If region was mapped then remove va region*/
+	if (reg->start_pfn)
+		kbase_remove_va_region(kbdev, reg);
+
+	/* To detect use-after-free in debug builds */
+	KBASE_DEBUG_CODE(reg->flags |= KBASE_REG_FREE);
+	kfree(reg);
+}
+
+static inline struct kbase_va_region *kbase_va_region_alloc_get(
+		struct kbase_context *kctx, struct kbase_va_region *region)
+{
+	lockdep_assert_held(&kctx->reg_lock);
+
+	WARN_ON(!region->va_refcnt);
+
+	/* non-atomic as kctx->reg_lock is held */
+	region->va_refcnt++;
+
+	return region;
+}
+
+static inline struct kbase_va_region *kbase_va_region_alloc_put(
+		struct kbase_context *kctx, struct kbase_va_region *region)
+{
+	lockdep_assert_held(&kctx->reg_lock);
+
+	WARN_ON(region->va_refcnt <= 0);
+	WARN_ON(region->flags & KBASE_REG_FREE);
+
+	/* non-atomic as kctx->reg_lock is held */
+	region->va_refcnt--;
+	if (!region->va_refcnt)
+		kbase_region_refcnt_free(kctx->kbdev, region);
+
+	return NULL;
+}
 
 /* Common functions */
 static inline struct tagged_addr *kbase_get_cpu_phy_pages(
@@ -872,7 +967,6 @@ int kbase_add_va_region(struct kbase_context *kctx, struct kbase_va_region *reg,
 int kbase_add_va_region_rbtree(struct kbase_device *kbdev,
 		struct kbase_va_region *reg, u64 addr, size_t nr_pages,
 		size_t align);
-int kbase_remove_va_region(struct kbase_va_region *reg);
 
 bool kbase_check_alloc_flags(unsigned long flags);
 bool kbase_check_import_flags(unsigned long flags);

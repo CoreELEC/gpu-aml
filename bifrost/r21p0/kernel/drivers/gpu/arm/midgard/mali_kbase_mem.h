@@ -277,8 +277,13 @@ struct kbase_va_region {
 #define KBASE_REG_SHARE_BOTH        (1ul << 10)
 
 /* Space for 4 different zones */
-#define KBASE_REG_ZONE_MASK         (3ul << 11)
-#define KBASE_REG_ZONE(x)           (((x) & 3) << 11)
+#define KBASE_REG_ZONE_MASK         ((KBASE_REG_ZONE_MAX - 1ul) << 11)
+#define KBASE_REG_ZONE(x)           (((x) & (KBASE_REG_ZONE_MAX - 1ul)) << 11)
+#define KBASE_REG_ZONE_IDX(x)       (((x) & KBASE_REG_ZONE_MASK) >> 11)
+
+#if ((KBASE_REG_ZONE_MAX - 1) & 0x3) != (KBASE_REG_ZONE_MAX - 1)
+#error KBASE_REG_ZONE_MAX too large for allocation of KBASE_REG_<...> bits
+#endif
 
 /* GPU read access */
 #define KBASE_REG_GPU_RD            (1ul<<13)
@@ -372,6 +377,21 @@ struct kbase_va_region {
 	int    va_refcnt; /* number of users of this va */
 };
 
+/**
+ * kbase_is_ctx_reg_zone - determine whether a KBASE_REG_ZONE_<...> is for a
+ *                         context or for a device
+ * @zone_bits: A KBASE_REG_ZONE_<...> to query
+ *
+ * Return: True if the zone for @zone_bits is a context zone, False otherwise
+ */
+static inline bool kbase_is_ctx_reg_zone(unsigned long zone_bits)
+{
+	WARN_ON((zone_bits & KBASE_REG_ZONE_MASK) != zone_bits);
+	return (zone_bits == KBASE_REG_ZONE_SAME_VA ||
+		zone_bits == KBASE_REG_ZONE_CUSTOM_VA ||
+		zone_bits == KBASE_REG_ZONE_EXEC_VA);
+}
+
 static inline bool kbase_is_region_free(struct kbase_va_region *reg)
 {
 	return (!reg || reg->flags & KBASE_REG_FREE);
@@ -390,12 +410,14 @@ static inline bool kbase_is_region_invalid_or_free(struct kbase_va_region *reg)
 	return (kbase_is_region_invalid(reg) ||	kbase_is_region_free(reg));
 }
 
-int kbase_remove_va_region(struct kbase_va_region *reg);
-static inline void kbase_region_refcnt_free(struct kbase_va_region *reg)
+void kbase_remove_va_region(struct kbase_device *kbdev,
+			    struct kbase_va_region *reg);
+static inline void kbase_region_refcnt_free(struct kbase_device *kbdev,
+					    struct kbase_va_region *reg)
 {
 	/* If region was mapped then remove va region*/
 	if (reg->start_pfn)
-		kbase_remove_va_region(reg);
+		kbase_remove_va_region(kbdev, reg);
 
 	/* To detect use-after-free in debug builds */
 	KBASE_DEBUG_CODE(reg->flags |= KBASE_REG_FREE);
@@ -426,7 +448,7 @@ static inline struct kbase_va_region *kbase_va_region_alloc_put(
 	/* non-atomic as kctx->reg_lock is held */
 	region->va_refcnt--;
 	if (!region->va_refcnt)
-		kbase_region_refcnt_free(region);
+		kbase_region_refcnt_free(kctx->kbdev, region);
 
 	return NULL;
 }
@@ -1683,5 +1705,78 @@ void kbase_mem_umm_unmap(struct kbase_context *kctx,
  */
 int kbase_mem_do_sync_imported(struct kbase_context *kctx,
 		struct kbase_va_region *reg, enum kbase_sync_type sync_fn);
+
+/**
+ * kbase_reg_zone_end_pfn - return the end Page Frame Number of @zone
+ * @zone: zone to query
+ *
+ * Return: The end of the zone corresponding to @zone
+ */
+static inline u64 kbase_reg_zone_end_pfn(struct kbase_reg_zone *zone)
+{
+	return zone->base_pfn + zone->va_size_pages;
+}
+
+/**
+ * kbase_ctx_reg_zone_init - initialize a zone in @kctx
+ * @kctx: Pointer to kbase context
+ * @zone_bits: A KBASE_REG_ZONE_<...> to initialize
+ * @base_pfn: Page Frame Number in GPU virtual address space for the start of
+ *            the Zone
+ * @va_size_pages: Size of the Zone in pages
+ */
+static inline void kbase_ctx_reg_zone_init(struct kbase_context *kctx,
+					   unsigned long zone_bits,
+					   u64 base_pfn, u64 va_size_pages)
+{
+	struct kbase_reg_zone *zone;
+
+	lockdep_assert_held(&kctx->reg_lock);
+	WARN_ON(!kbase_is_ctx_reg_zone(zone_bits));
+
+	zone = &kctx->reg_zone[KBASE_REG_ZONE_IDX(zone_bits)];
+	*zone = (struct kbase_reg_zone){
+		.base_pfn = base_pfn,
+		.va_size_pages = va_size_pages,
+	};
+}
+
+/**
+ * kbase_ctx_reg_zone_get_nolock - get a zone from @kctx where the caller does
+ *                                 not have @kctx 's region lock
+ * @kctx: Pointer to kbase context
+ * @zone_bits: A KBASE_REG_ZONE_<...> to retrieve
+ *
+ * This should only be used in performance-critical paths where the code is
+ * resilient to a race with the zone changing.
+ *
+ * Return: The zone corresponding to @zone_bits
+ */
+static inline struct kbase_reg_zone *
+kbase_ctx_reg_zone_get_nolock(struct kbase_context *kctx,
+			      unsigned long zone_bits)
+{
+	WARN_ON(!kbase_is_ctx_reg_zone(zone_bits));
+
+	return &kctx->reg_zone[KBASE_REG_ZONE_IDX(zone_bits)];
+}
+
+/**
+ * kbase_ctx_reg_zone_get - get a zone from @kctx
+ * @kctx: Pointer to kbase context
+ * @zone_bits: A KBASE_REG_ZONE_<...> to retrieve
+ *
+ * The get is not refcounted - there is no corresponding 'put' operation
+ *
+ * Return: The zone corresponding to @zone_bits
+ */
+static inline struct kbase_reg_zone *
+kbase_ctx_reg_zone_get(struct kbase_context *kctx, unsigned long zone_bits)
+{
+	lockdep_assert_held(&kctx->reg_lock);
+	WARN_ON(!kbase_is_ctx_reg_zone(zone_bits));
+
+	return &kctx->reg_zone[KBASE_REG_ZONE_IDX(zone_bits)];
+}
 
 #endif				/* _KBASE_MEM_H_ */
