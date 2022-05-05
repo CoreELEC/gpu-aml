@@ -2297,6 +2297,130 @@ static const struct file_operations kbase_fops = {
 	.get_unmapped_area = kbase_get_unmapped_area,
 };
 
+static ssize_t show_gpu_memory(struct device *dev, struct device_attribute *attr, char * const buf)
+{
+	struct kbase_device *kbdev;
+	ssize_t ret = 0;
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = NULL;
+		struct kbase_context *kctx;
+
+		kbdev = list_entry(entry, struct kbase_device, entry);
+		/* output the total memory usage and cap for this device */
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %-16s %10u\n",
+				kbdev->devname,
+				"total used_pages",
+				atomic_read(&(kbdev->memdev.used_pages)));
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------\n");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %-16s %-16s\n",
+				"kctx", "pid", "used_pages");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------\n");
+		mutex_lock(&kbdev->kctx_list_lock);
+		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
+			/* output the memory usage and cap for each kctx
+			* opened on this device */
+				ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%p %10u %10u\n",
+				kctx,
+				kctx->tgid,
+				atomic_read(&(kctx->used_pages)));
+		}
+		mutex_unlock(&kbdev->kctx_list_lock);
+	}
+
+	kbase_device_put_list(kbdev_list);
+
+
+	return ret;
+}
+
+static ssize_t set_gpu_memory(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct kbase_device *kbdev;
+	ssize_t err = count;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	return err;
+}
+
+static DEVICE_ATTR(gpu_memory, S_IRUGO | S_IWUSR, show_gpu_memory, set_gpu_memory);
+
+static ssize_t show_ctx_mem_pool_size(struct device *dev, struct device_attribute *attr, char * const buf)
+{
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+	ssize_t ret = 0;
+	int i = 0;
+	struct kbase_device *const kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = NULL;
+		struct kbase_context *kctx;
+
+		kbdev = list_entry(entry, struct kbase_device, entry);
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %-16s %-16s\n",
+				"kctx", "pid", "cached_pages");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------\n");
+		mutex_lock(&kbdev->kctx_list_lock);
+		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
+			/* output the memory cached and cap for each kctx
+			* opened on this device */
+				unsigned long cached_mem = 0;
+				for (i = 0; i < MEMORY_GROUP_MANAGER_NR_GROUPS; i++)
+					//pr_info("[%d]:kctx->mem_pools.small[%d] = %d", kctx->tgid, i, kctx->mem_pools.small[i].cur_size);
+					cached_mem += kctx->mem_pools.small[i].cur_size;
+				ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%p %10u %10lu\n",
+				kctx,
+				kctx->tgid,
+				cached_mem);
+		}
+		mutex_unlock(&kbdev->kctx_list_lock);
+	}
+
+	kbase_device_put_list(kbdev_list);
+
+	return ret;
+}
+
+static ssize_t set_ctx_mem_pool_size(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct kbase_device *kbdev;
+	ssize_t err = count;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	return err;
+}
+
+static DEVICE_ATTR(ctx_mem_pool_size, S_IRUGO | S_IWUSR, show_ctx_mem_pool_size, set_ctx_mem_pool_size);
+
 /**
  * power_policy_show - Show callback for the power_policy sysfs file.
  *
@@ -5306,6 +5430,7 @@ static struct attribute *kbase_attrs[] = {
 #endif /* !MALI_USE_CSF */
 	&dev_attr_power_policy.attr,
 	&dev_attr_core_mask.attr,
+	&dev_attr_gpu_memory.attr,
 	&dev_attr_mem_pool_size.attr,
 	&dev_attr_mem_pool_max_size.attr,
 	&dev_attr_lp_mem_pool_size.attr,
@@ -5339,6 +5464,15 @@ static const struct attribute_group kbase_attr_group = {
 	.attrs = kbase_attrs,
 };
 
+static struct attribute *ctx_attrs[] = {
+	&dev_attr_ctx_mem_pool_size.attr,
+	NULL
+};
+
+static const struct attribute_group kbase_ctx_attr_group = {
+	.attrs = ctx_attrs,
+};
+
 int kbase_sysfs_init(struct kbase_device *kbdev)
 {
 	int err = 0;
@@ -5350,6 +5484,7 @@ int kbase_sysfs_init(struct kbase_device *kbdev)
 	kbdev->mdev.mode = 0666;
 
 	err = sysfs_create_group(&kbdev->dev->kobj, &kbase_attr_group);
+	err += sysfs_create_group(&kbdev->dev->kobj, &kbase_ctx_attr_group);
 	if (err)
 		return err;
 
@@ -5379,6 +5514,7 @@ int kbase_sysfs_init(struct kbase_device *kbdev)
 
 void kbase_sysfs_term(struct kbase_device *kbdev)
 {
+	sysfs_remove_group(&kbdev->dev->kobj, &kbase_ctx_attr_group);
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_mempool_attr_group);
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_scheduling_attr_group);
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_attr_group);
