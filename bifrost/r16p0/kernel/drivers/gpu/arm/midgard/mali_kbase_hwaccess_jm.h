@@ -29,6 +29,16 @@
 #define _KBASE_HWACCESS_JM_H_
 
 /**
+ * RESET_FLAGS_NONE - Flags for kbase_prepare_to_reset_gpu
+ */
+#define RESET_FLAGS_NONE (0U)
+
+/**
+ * This reset should be treated as an unrecoverable error by HW counter logic
+ */
+#define RESET_FLAGS_HWC_UNRECOVERABLE_ERROR ((unsigned int)(1 << 0))
+
+/**
  * kbase_backend_run_atom() - Run an atom on the GPU
  * @kbdev:	Device pointer
  * @atom:	Atom to run

@@ -1431,7 +1431,8 @@ static void kbase_pm_timed_out(struct kbase_device *kbdev)
 					L2_PWRTRANS_LO)));
 
 	dev_err(kbdev->dev, "Sending reset to GPU - all running jobs will be lost\n");
-	if (kbase_prepare_to_reset_gpu(kbdev))
+	if (kbase_prepare_to_reset_gpu(kbdev,
+				       RESET_FLAGS_HWC_UNRECOVERABLE_ERROR))
 		kbase_reset_gpu(kbdev);
 }
 

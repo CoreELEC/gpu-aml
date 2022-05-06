@@ -32,6 +32,7 @@
 #include <mali_kbase_hwaccess_jm.h>
 #include <mali_kbase_reset_gpu.h>
 #include <mali_kbase_ctx_sched.h>
+#include <mali_kbase_hwaccess_instr.h>
 #include <mali_kbase_hwcnt_context.h>
 #include <backend/gpu/mali_kbase_device_internal.h>
 #include <backend/gpu/mali_kbase_irq_internal.h>
@@ -335,7 +336,8 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 				 * allowing any other jobs on the slot to continue. */
 				if (kbase_hw_has_issue(kbdev, BASE_HW_ISSUE_TTRX_3076)) {
 					if (completion_code == BASE_JD_EVENT_JOB_BUS_FAULT) {
-						if (kbase_prepare_to_reset_gpu_locked(kbdev))
+						if (kbase_prepare_to_reset_gpu_locked(kbdev,
+										      RESET_FLAGS_NONE))
 							kbase_reset_gpu_locked(kbdev);
 					}
 				}
@@ -678,7 +680,7 @@ void kbase_jm_wait_for_zero_jobs(struct kbase_context *kctx)
 	if (timeout != 0)
 		goto exit;
 
-	if (kbase_prepare_to_reset_gpu(kbdev)) {
+	if (kbase_prepare_to_reset_gpu(kbdev, RESET_FLAGS_HWC_UNRECOVERABLE_ERROR)) {
 		dev_err(kbdev->dev,
 			"Issueing GPU soft-reset because jobs failed to be killed (within %d ms) as part of context termination (e.g. process exit)\n",
 			ZAP_TIMEOUT);
@@ -995,6 +997,13 @@ static void kbasep_reset_timeout_worker(struct work_struct *data)
 	kbase_pm_metrics_update(kbdev, NULL);
 	spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 
+	/* Tell hardware counters a reset is about to occur.
+	 * If the instr backend is in an unrecoverable error state (e.g. due to
+	 * HW being unresponsive), this will transition the backend out of
+	 * it, on the assumption a reset will fix whatever problem there was.
+	 */
+	kbase_instr_hwcnt_on_before_reset(kbdev);
+
 	/* Reset the GPU */
 	kbase_pm_init_hw(kbdev, 0);
 
@@ -1123,8 +1132,9 @@ static void kbasep_try_reset_gpu_early(struct kbase_device *kbdev)
 /**
  * kbase_prepare_to_reset_gpu_locked - Prepare for resetting the GPU
  * @kbdev: kbase device
+ * @flags: Bitfield indicating impact of reset (see flag defines)
  *
- * This function just soft-stops all the slots to ensure that as many jobs as
+ * This function soft-stops all the slots to ensure that as many jobs as
  * possible are saved.
  *
  * Return:
@@ -1133,11 +1143,15 @@ static void kbasep_try_reset_gpu_early(struct kbase_device *kbdev)
  *   false - Another thread is performing a reset, kbase_reset_gpu should
  *   not be called.
  */
-bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev)
+bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev,
+				       unsigned int flags)
 {
 	int i;
 
 	KBASE_DEBUG_ASSERT(kbdev);
+
+	if (flags & RESET_FLAGS_HWC_UNRECOVERABLE_ERROR)
+		kbase_instr_hwcnt_on_unrecoverable_error(kbdev);
 
 	if (atomic_cmpxchg(&kbdev->hwaccess.backend.reset_gpu,
 						KBASE_RESET_GPU_NOT_PENDING,
@@ -1155,14 +1169,14 @@ bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev)
 	return true;
 }
 
-bool kbase_prepare_to_reset_gpu(struct kbase_device *kbdev)
+bool kbase_prepare_to_reset_gpu(struct kbase_device *kbdev, unsigned int flags)
 {
-	unsigned long flags;
+	unsigned long lock_flags;
 	bool ret;
 
-	spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
-	ret = kbase_prepare_to_reset_gpu_locked(kbdev);
-	spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
+	spin_lock_irqsave(&kbdev->hwaccess_lock, lock_flags);
+	ret = kbase_prepare_to_reset_gpu_locked(kbdev, flags);
+	spin_unlock_irqrestore(&kbdev->hwaccess_lock, lock_flags);
 
 	return ret;
 }
