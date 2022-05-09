@@ -24,6 +24,9 @@
 #include <mali_kbase_config_defaults.h>
 
 #include "mali_kbase_ctx_sched.h"
+#if !MALI_USE_CSF
+#include <mali_kbase_hwaccess_jm.h>
+#endif
 
 int kbase_ctx_sched_init(struct kbase_device *kbdev)
 {
