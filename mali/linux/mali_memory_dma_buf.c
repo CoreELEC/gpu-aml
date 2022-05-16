@@ -154,9 +154,9 @@ static void mali_dma_buf_unmap(mali_mem_allocation *alloc, struct mali_dma_buf_a
 	MALI_DEBUG_PRINT(5, ("Mali DMA-buf: unmap attachment %p, new map_ref = %d\n", mem, mem->map_ref));
 	MALI_DEBUG_PRINT(5, ("Mali DMA-buf: unmap is_mapped %d\n", mem->is_mapped));
 	if (0 == mem->map_ref) {
-		if (NULL != mem->sgt) {
+		if (!IS_ERR_OR_NULL(mem->sgt)) {
 			dma_buf_unmap_attachment(mem->attachment, mem->sgt, DMA_BIDIRECTIONAL);
-			 mem->sgt = NULL;
+			mem->sgt = NULL;
 		}
 		if (MALI_TRUE == mem->is_mapped) {
 			mali_mem_mali_map_free(alloc->session, alloc->psize, alloc->mali_vma_node.vm_node.start,
