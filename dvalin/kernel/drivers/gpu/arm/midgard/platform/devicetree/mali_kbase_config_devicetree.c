@@ -23,6 +23,8 @@
 #include <mali_kbase_config.h>
 #include <backend/gpu/mali_kbase_pm_internal.h>
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+
 #ifdef CONFIG_DEVFREQ_THERMAL
 #include <linux/version.h>
 #include <linux/devfreq_cooling.h>
@@ -62,6 +64,8 @@ struct devfreq_cooling_power t83x_model_ops = {
 	.get_dynamic_power = t83x_dynamic_power,
 #endif
 };
+
+#endif
 
 #endif
 

@@ -147,7 +147,9 @@ static int gp_pll_user_cb_gpu(struct gp_pll_user_handle_s *user,
 
 int mali_perf_set_num_pp_cores(int cores)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
     cores = cores;
+#endif
     return 0;
 }
 
