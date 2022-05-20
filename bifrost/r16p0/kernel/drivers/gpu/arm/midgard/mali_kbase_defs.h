@@ -1194,21 +1194,6 @@ struct kbase_mmu_mode const *kbase_mmu_mode_get_aarch64(void);
 
 
 /**
- * struct kbase_reg_zone - Information about GPU memory region zones
- * @base_pfn: Page Frame Number in GPU virtual address space for the start of
- *            the Zone
- * @va_size_pages: Size of the Zone in pages
- *
- * Track information about a zone KBASE_REG_ZONE() and related macros.
- * In future, this could also store the &rb_root that are currently in
- * &kbase_context
- */
-struct kbase_reg_zone {
-	u64 base_pfn;
-	u64 va_size_pages;
-};
-
-/**
  * struct kbase_device   - Object representing an instance of GPU platform device,
  *                         allocated from the probe method of mali driver.
  * @hw_quirks_sc:          Configuration to be used for the shader cores as per
