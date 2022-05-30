@@ -269,11 +269,13 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 {
 	int ret;
 	u32 pwr_override1;
+	struct mali_plat_info_t *mpdata;
+	struct clk *clk_mali;
 
 	dev_info(kbdev->dev, "pm_callback_resume in\n");
 	/* clock resume avoid clk be changed by system */
-	struct mali_plat_info_t *mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
-	struct clk *clk_mali = mpdata->clk_mali;
+	mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
+	clk_mali = mpdata->clk_mali;
 	dev_dbg(kbdev->dev, "clk_mali = %lu\n", clk_get_rate(clk_mali));
 	if (__clk_is_enabled(clk_mali))
 		clk_disable_unprepare(clk_mali);
