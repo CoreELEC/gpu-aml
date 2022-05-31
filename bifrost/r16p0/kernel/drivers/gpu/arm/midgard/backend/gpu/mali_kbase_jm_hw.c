@@ -1014,7 +1014,7 @@ void kbase_job_slot_hardstop(struct kbase_context *kctx, int js,
 		 * Workaround for HW issue 8401 has an issue,so after
 		 * hard-stopping just reset the GPU. This will ensure that the
 		 * jobs leave the GPU.*/
-		if (kbase_prepare_to_reset_gpu_locked(kbdev)) {
+		if (kbase_prepare_to_reset_gpu_locked(kbdev, RESET_FLAGS_NONE)) {
 			dev_err(kbdev->dev, "Issueing GPU soft-reset after hard stopping due to hardware issue");
 			kbase_reset_gpu_locked(kbdev);
 		}

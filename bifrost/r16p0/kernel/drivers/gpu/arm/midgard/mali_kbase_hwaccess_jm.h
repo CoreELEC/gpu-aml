@@ -288,6 +288,7 @@ u32 kbase_backend_get_current_flush_id(struct kbase_device *kbdev);
 /**
  * kbase_prepare_to_reset_gpu - Prepare for resetting the GPU.
  * @kbdev: Device pointer
+ * @flags: Bitfield indicating impact of reset (see flag defines)
  *
  * This function just soft-stops all the slots to ensure that as many jobs as
  * possible are saved.
@@ -297,7 +298,7 @@ u32 kbase_backend_get_current_flush_id(struct kbase_device *kbdev);
  * - false - Another thread is performing a reset, kbase_reset_gpu should
  *                not be called.
  */
-bool kbase_prepare_to_reset_gpu(struct kbase_device *kbdev);
+bool kbase_prepare_to_reset_gpu(struct kbase_device *kbdev, unsigned int flags);
 
 /**
  * kbase_reset_gpu - Reset the GPU
@@ -316,6 +317,7 @@ void kbase_reset_gpu(struct kbase_device *kbdev);
 /**
  * kbase_prepare_to_reset_gpu_locked - Prepare for resetting the GPU.
  * @kbdev: Device pointer
+ * @flags: Bitfield indicating impact of reset (see flag defines)
  *
  * This function just soft-stops all the slots to ensure that as many jobs as
  * possible are saved.
@@ -325,7 +327,8 @@ void kbase_reset_gpu(struct kbase_device *kbdev);
  * - false - Another thread is performing a reset, kbase_reset_gpu should
  *                not be called.
  */
-bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev);
+bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev,
+				       unsigned int flags);
 
 /**
  * kbase_reset_gpu_locked - Reset the GPU

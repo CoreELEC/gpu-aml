@@ -2101,7 +2101,8 @@ void bus_fault_worker(struct work_struct *data)
 		 * are evicted from the GPU before the switch.
 		 */
 		dev_err(kbdev->dev, "GPU bus error occurred. For this GPU version we now soft-reset as part of bus error recovery\n");
-		reset_status = kbase_prepare_to_reset_gpu(kbdev);
+		reset_status = kbase_prepare_to_reset_gpu(kbdev,
+							  RESET_FLAGS_HWC_UNRECOVERABLE_ERROR);
 	}
 	/* NOTE: If GPU already powered off for suspend, we don't need to switch to unmapped */
 	if (!kbase_pm_context_active_handle_suspend(kbdev, KBASE_PM_SUSPEND_HANDLER_DONT_REACTIVATE)) {
@@ -2399,7 +2400,8 @@ static void kbase_mmu_report_fault_and_kill(struct kbase_context *kctx,
 		 * are evicted from the GPU before the switch.
 		 */
 		dev_err(kbdev->dev, "Unhandled page fault. For this GPU version we now soft-reset the GPU as part of page fault recovery.");
-		reset_status = kbase_prepare_to_reset_gpu(kbdev);
+		reset_status = kbase_prepare_to_reset_gpu(kbdev,
+							  RESET_FLAGS_HWC_UNRECOVERABLE_ERROR);
 	}
 	/* switch to UNMAPPED mode, will abort all jobs and stop any hw counter dumping */
 	spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
@@ -2612,7 +2614,8 @@ void kbase_mmu_interrupt_process(struct kbase_device *kbdev,
 			 * point.
 			 */
 			dev_err(kbdev->dev, "GPU bus error occurred. For this GPU version we now soft-reset as part of bus error recovery\n");
-			reset_status = kbase_prepare_to_reset_gpu_locked(kbdev);
+			reset_status = kbase_prepare_to_reset_gpu_locked(kbdev,
+									 RESET_FLAGS_NONE);
 			if (reset_status)
 				kbase_reset_gpu_locked(kbdev);
 		}
