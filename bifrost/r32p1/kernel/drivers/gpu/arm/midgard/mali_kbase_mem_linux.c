@@ -22,7 +22,7 @@
 /**
  * DOC: Base kernel memory APIs, Linux implementation.
  */
-
+#include <asm/div64.h>
 #include <linux/compat.h>
 #include <linux/kernel.h>
 #include <linux/bug.h>
@@ -1714,7 +1714,7 @@ u64 kbase_mem_alias(struct kbase_context *kctx, u64 *flags, u64 stride,
 		    u64 *num_pages)
 {
 	struct kbase_va_region *reg;
-	u64 gpu_va;
+	u64 gpu_va, u64_max, result;
 	size_t i;
 	bool coherent;
 
@@ -1742,6 +1742,12 @@ u64 kbase_mem_alias(struct kbase_context *kctx, u64 *flags, u64 stride,
 
 	if (!nents)
 		goto bad_nents;
+
+	u64_max = U64_MAX;
+	do_div(u64_max, nents);
+	result = u64_max;      /* result = U64_MAX / nents */
+	if (stride > result)
+		goto bad_size;
 
 	if ((nents * stride) > (U64_MAX / PAGE_SIZE))
 		/* 64-bit address range is the max */
