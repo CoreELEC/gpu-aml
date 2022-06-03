@@ -773,4 +773,8 @@ void kbase_device_pcm_dev_term(struct kbase_device *const kbdev);
 	#define UINT64_MAX ((uint64_t)0xFFFFFFFFFFFFFFFFULL)
 #endif
 
+/*meson graphics start */
+extern int meson_gpu_data_invalid_count;
+extern int meson_gpu_fault;
+/*meson graphics end*/
 #endif
