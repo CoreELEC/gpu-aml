@@ -163,8 +163,8 @@ void kbase_ctx_sched_retain_ctx_refcount(struct kbase_context *kctx)
 	WARN_ON(!atomic_read(&kctx->refcount) && !kbase_reset_gpu_is_active(kbdev));
 #else
 	/* We expect the context to be active (and thus refcount should be non-zero)
-	* when this function is called
-	*/
+	 * when this function is called
+	 */
 	WARN_ON(!atomic_read(&kctx->refcount));
 #endif
 	WARN_ON(kctx->as_nr == KBASEP_AS_NR_INVALID);
