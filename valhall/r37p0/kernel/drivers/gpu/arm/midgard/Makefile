@@ -231,10 +231,15 @@ KBUILD_CFLAGS += -Wmissing-format-attribute
 KBUILD_CFLAGS += -Wmissing-prototypes
 KBUILD_CFLAGS += -Wold-style-definition
 KBUILD_CFLAGS += -Wmissing-include-dirs
-KBUILD_CFLAGS += $(call cc-option, -Wunused-but-set-variable)
-KBUILD_CFLAGS += $(call cc-option, -Wunused-const-variable)
-KBUILD_CFLAGS += $(call cc-option, -Wpacked-not-aligned)
-KBUILD_CFLAGS += $(call cc-option, -Wstringop-truncation)
+# An error will be reported when assign the rvalues to KBUILD_CFLAGS directly.
+# # So the work-around scheme is adopted, that is: using temporary variables to
+# # receive the following four rvalues, and then assigning them to KBUILD_CFLAGS.
+TEMPORARY_CFLAGS := $(call cc-option, -Wunused-but-set-variable)
+TEMPORARY_CFLAGS += $(call cc-option, -Wunused-const-variable)
+TEMPORARY_CFLAGS += $(call cc-option, -Wpacked-not-aligned)
+TEMPORARY_CFLAGS += $(call cc-option, -Wstringop-truncation)
+KBUILD_CFLAGS += $(TEMPORARY_CFLAGS)
+$(info $(KBUILD_CFLAGS))
 # The following turn off the warnings enabled by -Wextra
 KBUILD_CFLAGS += -Wno-missing-field-initializers
 KBUILD_CFLAGS += -Wno-sign-compare
