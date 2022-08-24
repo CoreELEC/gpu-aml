@@ -139,7 +139,7 @@
  *  - call kbasep_js_policy_log_job_result() <em>in the context of the irq
  * handler.</em>
  *  - This must happen regardless of whether the job completed successfully or
- * not (otherwise the context gets away with DoS'ing the system with faulty jobs)
+ * not (otherwise the context gets away with DoSing the system with faulty jobs)
  * - What was the result of the job?
  *  - If Completed: job is just removed from the system
  *  - If Hard-stop or failure: job is removed from the system
@@ -207,7 +207,7 @@
  * more than one high priority context quickly.
  *
  * In terms of the functions used in the IRQ handler directly, these are the
- * perfomance considerations:
+ * performance considerations:
  * - kbase_js_policy_log_job_result():
  *  - This is just adding to a 64-bit value (possibly even a 32-bit value if we
  * only store the time the job's recently spent - see below on 'priority weighting')
@@ -236,7 +236,7 @@
  * Context :
  * - As soon as job is made 'ready to 'run', then is must be registerd with the Job
  * Scheduler Policy:
- *  - 'Ready to run' means they've satisified their dependencies in the
+ *  - 'Ready to run' means they've satisfied their dependencies in the
  * Kernel-side Job Dispatch system.
  *  - Call kbasep_js_policy_enqueue_job()
  *  - This indicates that the job should be scheduled (it is ready to run).
@@ -294,7 +294,7 @@
  * @section sec_kbase_js_policy_operation_submit_hipri Submission path for High Priority Contexts
  *
  * For High Priority Contexts on Mali-T600, we can make sure that at least 1 of
- * them can be scheduled in immediately to start high prioriy jobs. In general,
+ * them can be scheduled in immediately to start high priority jobs. In general,
  * (no. ASs) - (no JSs) high priority contexts may be started immediately. The
  * following describes how this happens:
  *
@@ -486,7 +486,7 @@ bool kbasep_js_policy_try_evict_ctx(union kbasep_js_policy *js_policy, struct kb
  * @brief Call a function on all jobs belonging to a non-queued, non-running
  * context, optionally detaching the jobs from the context as it goes.
  *
- * At the time of the call, the context is guarenteed to be not-currently
+ * At the time of the call, the context is guaranteed to be not-currently
  * scheduled on the Run Pool (is_scheduled == false), and not present in
  * the Policy Queue. This is because one of the following functions was used
  * recently on the context:
@@ -520,12 +520,12 @@ void kbasep_js_policy_foreach_ctx_job(union kbasep_js_policy *js_policy, struct 
  * The number of contexts present in the Run Pool will never be more than the
  * number of Address Spaces.
  *
- * The following guarentees are made about the state of the system when this
+ * The following guarantees are made about the state of the system when this
  * is called:
  * - kctx->as_nr member is valid
  * - the context has its submit_allowed flag set
  * - kbasep_js_device_data::runpool_irq::per_as_data[kctx->as_nr] is valid
- * - The refcount of the context is guarenteed to be zero.
+ * - The refcount of the context is guaranteed to be zero.
  * - kbasep_js_kctx_info::ctx::is_scheduled will be true.
  *
  * The locking conditions on the caller are as follows:
@@ -543,7 +543,7 @@ void kbasep_js_policy_runpool_add_ctx(union kbasep_js_policy *js_policy, struct 
  * The kctx->as_nr member is valid and the context has its submit_allowed flag
  * set when this is called. The state of
  * kbasep_js_device_data::runpool_irq::per_as_data[kctx->as_nr] is also
- * valid. The refcount of the context is guarenteed to be zero.
+ * valid. The refcount of the context is guaranteed to be zero.
  *
  * The locking conditions on the caller are as follows:
  * - it will be holding kbasep_js_kctx_info::ctx::jsctx_mutex.

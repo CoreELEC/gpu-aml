@@ -227,7 +227,7 @@ void kbasep_trace_timeline_debugfs_init(struct kbase_device *kbdev);
 	} while (0)
 
 /** Trace beginning/end of a call to kbase_pm_check_transitions_nolock from a
- * certin caller */
+ * certain caller */
 #define KBASE_TIMELINE_PM_CHECKTRANS(kbdev, trace_code)                      \
 	do {                                                                 \
 		struct timespec ts;                                          \

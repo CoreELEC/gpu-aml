@@ -19,7 +19,7 @@
 
 /**
  * @file
- * Base cross-proccess sync API.
+ * Base cross-process sync API.
  */
 
 #ifndef _BASE_KERNEL_SYNC_H_

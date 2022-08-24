@@ -447,7 +447,7 @@ int mali_module_init(void)
 #if defined(CONFIG_MALI400_INTERNAL_PROFILING)
 	err = _mali_internal_profiling_init(mali_boot_profiling ? MALI_TRUE : MALI_FALSE);
 	if (err != 0) {
-		/* No biggie if we wheren't able to initialize the profiling */
+		/* No biggie if we weren't able to initialize the profiling */
 		MALI_PRINT_ERROR(("Failed to initialize profiling, feature will be unavailable\n"));
 	}
 #endif
@@ -551,7 +551,7 @@ static int mali_probe(struct platform_device *pdev)
 	mdev->dev = &pdev->dev;
 	dev_set_drvdata(mdev->dev, mdev);
 
-	/*Initilization clock and regulator*/
+	/*Initialization clock and regulator*/
 #if (KERNEL_VERSION(3, 12, 0) <= LINUX_VERSION_CODE) && defined(CONFIG_OF) \
 			&& defined(CONFIG_REGULATOR)
 	mdev->regulator = regulator_get_optional(mdev->dev, "mali");
@@ -583,7 +583,7 @@ static int mali_probe(struct platform_device *pdev)
 		}
 	}
 
-	/* initilize pm metrics related */
+	/* initialize pm metrics related */
 	if (mali_pm_metrics_init(mdev) < 0) {
 		MALI_DEBUG_PRINT(2, ("mali pm metrics init failed\n"));
 		goto pm_metrics_init_failed;

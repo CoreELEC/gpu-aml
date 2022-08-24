@@ -28,7 +28,7 @@
  * - MALI_DEBUG_ASSERT_POINTER(pointer)  Triggers if the pointer is a zero pointer.
  * - MALI_DEBUG_CODE( X )       The code inside the macro is only compiled in Debug builds.
  *
- * The (X) means that you must add an extra parenthesis around the argumentlist.
+ * The (X) means that you must add an extra parenthesis around the argument list.
  *
  * The  printf function: MALI_PRINTF(...) is routed to _mali_osk_debugmsg
  *

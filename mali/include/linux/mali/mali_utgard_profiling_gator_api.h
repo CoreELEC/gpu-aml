@@ -218,7 +218,7 @@ typedef enum {
 #define MALI_PROFILING_SW_COUNTERS_NUM  (LAST_SW_COUNTER - FIRST_SW_COUNTER + 1)
 
 /**
- * Define the stream header type for porfiling stream.
+ * Define the stream header type for profiling stream.
  */
 #define  STREAM_HEADER_FRAMEBUFFER 0x05         /* The stream packet header type for framebuffer dumping. */
 #define STREAM_HEADER_COUNTER_VALUE  0x09       /* The stream packet header type for hw/sw/memory counter sampling. */

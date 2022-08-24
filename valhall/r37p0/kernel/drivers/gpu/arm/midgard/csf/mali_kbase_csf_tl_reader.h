@@ -78,7 +78,7 @@ struct kbase_ts_converter {
  * @stream:            Timeline stream where to the tracebuffer content
  *                     is copied.
  * @kbdev:             KBase device.
- * @trace_buffer:      CSF Firmware timeline tracebuffer.
+ * @trace_buffer:      CSF firmware timeline tracebuffer.
  * @tl_header:         CSFFW Timeline header
  * @tl_header.data:    CSFFW Timeline header content.
  * @tl_header.size:    CSFFW Timeline header size.

@@ -46,7 +46,7 @@ The other core concept in kds is consumer of resources.
 kds is requested to allow a client to consume a set of resources and the client will be notified when it can consume the resources.
 
 Exclusive access allows only one client to consume a resource.
-Shared access permits multiple consumers to acceess a resource concurrently.
+Shared access permits multiple consumers to access a resource concurrently.
 
 
 APIs
@@ -250,7 +250,7 @@ same rset pointer.  Here is a simplified example of bad usage that must be avoid
 
 Senario 3 - Bad release from multiple contexts:
 
-	This scenaro is highlighting bad usage of the kds API
+	This scenario is highlighting bad usage of the kds API
 
 	kds_resource_set * rset;
 	kds_resource_set * rset_copy;

@@ -551,7 +551,7 @@ static void kbase_arbiter_pm_vm_gpu_start(struct kbase_device *kbdev)
 		kbase_install_interrupts(kbdev);
 		/*
 		 * GPU GRANTED received while in stop can be a result of a
-		 * repartitioning.
+		 * repartition.
 		 */
 		kbase_gpuprops_req_curr_config_update(kbdev);
 		/* curr_config will be updated while resuming the PM. */
@@ -630,7 +630,7 @@ static void kbase_arbiter_pm_vm_gpu_stop(struct kbase_device *kbdev)
  * kbase_gpu_lost() - Kbase signals GPU is lost on a lost event signal
  * @kbdev: The kbase device structure for the device (must be a valid pointer)
  *
- * On GPU lost event signals GPU_LOST to the aribiter
+ * On GPU lost event signals GPU_LOST to the arbiter
  */
 static void kbase_gpu_lost(struct kbase_device *kbdev)
 {
@@ -1020,7 +1020,7 @@ int kbase_arbiter_pm_ctx_active_handle_suspend(struct kbase_device *kbdev,
 /**
  * kbase_arbiter_pm_update_gpu_freq() - Updates GPU clock frequency received
  * from arbiter.
- * @arb_freq - Pointer to struchture holding GPU clock frequenecy data
+ * @arb_freq - Pointer to structure holding GPU clock frequency data
  * @freq - New frequency value in KHz
  */
 void kbase_arbiter_pm_update_gpu_freq(struct kbase_arbiter_freq *arb_freq,

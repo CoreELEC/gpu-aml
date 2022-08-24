@@ -120,7 +120,7 @@ void mali_dvfs_policy_realize(struct mali_gpu_utilization_data *data, u64 time_p
 	u32 window_render_fps;
 
 	if (NULL == gpu_clk) {
-		MALI_DEBUG_PRINT(2, ("Enable DVFS but patform doesn't Support freq change. \n"));
+		MALI_DEBUG_PRINT(2, ("Enable DVFS but platform doesn't Support freq change. \n"));
 		return;
 	}
 
@@ -182,7 +182,7 @@ void mali_dvfs_policy_realize(struct mali_gpu_utilization_data *data, u64 time_p
 			target_clk_mhz = gpu_clk->item[cur_clk_step].clock * current_gpu_util * mali_desired_fps / under_perform_boundary_value / current_fps;
 			pick_clock_up = MALI_TRUE;
 		} else if (current_gpu_util < over_perform_boundary_value) {
-			/* when over perform, did't need to consider fps, system didn't want to reach desired fps */
+			/* when over perform, didn't need to consider fps, system didn't want to reach desired fps */
 			target_clk_mhz = gpu_clk->item[cur_clk_step].clock * current_gpu_util / under_perform_boundary_value;
 			pick_clock_up = MALI_FALSE;
 		}

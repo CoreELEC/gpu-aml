@@ -61,7 +61,7 @@ void kbase_csf_firmware_cfg_term(struct kbase_device *kbdev);
  * Return: 0 if successful, negative error code on failure
  *
  * @kbdev:     Kbase device structure
- * @fw:        Firmware image containing the section
+ * @fw:        firmware image containing the section
  * @entry:     Pointer to the section
  * @size:      Size (in bytes) of the section
  * @updatable: Indicates if entry can be updated with FIRMWARE_CONFIG_UPDATE

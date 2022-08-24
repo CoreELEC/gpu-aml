@@ -65,7 +65,7 @@ struct rb_entry {
  *			cores. In slot job submission, if there is a kctx
  *			change, and the relevant katom is configured with
  *			BASE_JD_REQ_SKIP_CACHE_START, a L1 read only cache
- *			maintenace operation is enforced.
+ *			maintenance operation is enforced.
  * @read_idx:		Current read index of buffer
  * @write_idx:		Current write index of buffer
  * @job_chain_flag:	Flag used to implement jobchain disambiguation

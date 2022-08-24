@@ -114,7 +114,7 @@ static mali_plat_info_t mali_plat_data = {
     .bst_pp = 160, /* threshold for boosting PP. */
 
     .clk = mali_dvfs_clk, /* clock source table. */
-    .clk_sample = mali_dvfs_clk_sample, /* freqency table for show. */
+    .clk_sample = mali_dvfs_clk_sample, /* frequency table for show. */
     .clk_len = sizeof(mali_dvfs_clk) / sizeof(mali_dvfs_clk[0]),
     .have_switch = 1,
 
@@ -238,7 +238,7 @@ struct mali_gpu_clock {
 };
 #endif
 
-/* Function that platfrom report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
+/* Function that platform report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
 void meson_platform_get_clock_info(struct mali_gpu_clock **data) {
     *data = &meson_gpu_clk_info;
 }
@@ -249,7 +249,7 @@ int meson_platform_get_freq(void) {
     return  cur_gpu_clk_index;
 }
 
-/* Fuction that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
+/* Function that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
 int meson_platform_set_freq(int setting_clock_step) {
 
     if (cur_gpu_clk_index == setting_clock_step) {

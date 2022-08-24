@@ -34,7 +34,7 @@
  *
  * The caller should ensure that GPU remains powered-on during this function.
  *
- * Return: Zero for succeess or a Linux error code
+ * Return: Zero for success or a Linux error code
  */
 int kbase_backend_gpuprops_get(struct kbase_device *kbdev,
 					struct kbase_gpuprops_regdump *regdump);
@@ -51,7 +51,7 @@ int kbase_backend_gpuprops_get(struct kbase_device *kbdev,
  * the caller must ensure this function returns success before using the values
  * returned in the curr_config_regdump in any part of the kernel.
  *
- * Return: Zero for succeess or a Linux error code
+ * Return: Zero for success or a Linux error code
  */
 int kbase_backend_gpuprops_get_curr_config(struct kbase_device *kbdev,
 		struct kbase_current_config_regdump *curr_config_regdump);
@@ -65,7 +65,7 @@ int kbase_backend_gpuprops_get_curr_config(struct kbase_device *kbdev,
  * This function reads GPU properties that are dependent on the hardware
  * features bitmask. It will power-on the GPU if required.
  *
- * Return: Zero for succeess or a Linux error code
+ * Return: Zero for success or a Linux error code
  */
 int kbase_backend_gpuprops_get_features(struct kbase_device *kbdev,
 					struct kbase_gpuprops_regdump *regdump);

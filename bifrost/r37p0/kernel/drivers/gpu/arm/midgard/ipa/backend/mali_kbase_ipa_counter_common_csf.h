@@ -43,7 +43,7 @@ struct kbase_ipa_counter_model_data;
  * @num_shader_cores_cntrs: Number of elements in @shader_cores_cntrs_def array.
  * @counter_coeffs:      Buffer to store coefficient value used for HW counters
  * @counter_values:      Buffer to store the accumulated value of HW counters
- *                       retreived from kbase_ipa_control.
+ *                       retrieved from kbase_ipa_control.
  * @num_counters:        Number of counters queried from kbase_ipa_control.
  * @reference_voltage:   voltage, in mV, of the operating point used when
  *                       deriving the power model coefficients. Range approx

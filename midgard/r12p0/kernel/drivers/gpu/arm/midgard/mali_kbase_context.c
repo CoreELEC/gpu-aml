@@ -43,7 +43,7 @@ kbase_create_context(struct kbase_device *kbdev, bool is_compat)
 
 	KBASE_DEBUG_ASSERT(kbdev != NULL);
 
-	/* zero-inited as lot of code assume it's zero'ed out on create */
+	/* zero-inited as lot of code assume it's zeroed out on create */
 	kctx = vzalloc(sizeof(*kctx));
 
 	if (!kctx)

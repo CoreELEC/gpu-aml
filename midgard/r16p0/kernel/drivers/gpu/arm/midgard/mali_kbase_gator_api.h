@@ -49,7 +49,7 @@
  * user of the instrumentation exists concurrently).
  *
  * 5] Call kbase_gator_hwcnt_dump_complete() to test whether the  previously
- * requested dump has been succesful. If this returns non-zero the counter dump
+ * requested dump has been successful. If this returns non-zero the counter dump
  * has resolved, but the value of *success must also be tested as the dump
  * may have not been successful. If it returns zero the counter dump was
  * abandoned due to the device being busy (typically because of another
@@ -146,7 +146,7 @@ struct kbase_gator_hwcnt_info {
 	/* the memory layout of the performance counters */
 	enum hwc_type *hwc_layout;
 
-	/* the total number of hardware couter blocks */
+	/* the total number of hardware counter blocks */
 	uint32_t nr_hwc_blocks;
 };
 
@@ -164,7 +164,7 @@ struct kbase_gator_hwcnt_handles;
  *                      Each entry in the array corresponds to a single counter class based on the "hwc_type"
  *                      enumeration, and each bit corresponds to an enable for 4 sequential counters (LSB enables
  *                      the first 4 counters in the block, and so on). See the GPU counter array as returned by
- *                      kbase_gator_hwcnt_get_names() for the index values of each counter for the curernt GPU.
+ *                      kbase_gator_hwcnt_get_names() for the index values of each counter for the current GPU.
  *
  * @return              Pointer to an opaque handle block on success, NULL on error.
  */
@@ -186,7 +186,7 @@ extern void kbase_gator_hwcnt_term(struct kbase_gator_hwcnt_info *in_out_info, s
  * @param[out] success      Non-zero on success, zero on failure.
  *
  * @return                  Zero if the dump is still pending, non-zero if the dump has completed. Note that a
- *                          completed dump may not have dumped succesfully, so the caller must test for both
+ *                          completed dump may not have dumped successfully, so the caller must test for both
  *                          a completed and successful dump before processing counters.
  */
 extern uint32_t kbase_gator_instr_hwcnt_dump_complete(struct kbase_gator_hwcnt_handles *opaque_handles, uint32_t * const success);

@@ -386,7 +386,7 @@ static enum hrtimer_restart  _mali_profiling_sampling_counters(struct hrtimer *t
 
 		/* Add all enabled counter values into stream */
 		for (counter_index = 0; counter_index < num_global_mali_profiling_counters; counter_index++) {
-			/* No need to sample these couners here. */
+			/* No need to sample these counter here. */
 			if (global_mali_profiling_counters[counter_index].enabled) {
 				if ((global_mali_profiling_counters[counter_index].counter_id >= FIRST_MEM_COUNTER &&
 				     global_mali_profiling_counters[counter_index].counter_id <= LAST_MEM_COUNTER)

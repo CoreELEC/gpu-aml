@@ -253,7 +253,7 @@ static void block_allocator_release(void *ctx, ump_dd_mem *handle)
 
 
 /*
- * Helper function for calculating the physical base adderss of a memory block
+ * Helper function for calculating the physical base address of a memory block
  */
 static inline u32 get_phys(block_allocator *allocator, block_info *block)
 {

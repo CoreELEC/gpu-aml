@@ -52,7 +52,7 @@ void mali_utilization_pp_start(void);
 void mali_utilization_pp_end(void);
 
 /**
- * Should be called to calcution the GPU utilization
+ * Should be called to calculation the GPU utilization
  */
 struct mali_gpu_utilization_data *mali_utilization_calculate(u64 *start_time, u64 *time_period, mali_bool *need_add_timer);
 

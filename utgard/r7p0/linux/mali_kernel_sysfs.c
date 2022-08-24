@@ -670,7 +670,7 @@ static void *profiling_events_start(struct seq_file *s, loff_t *pos)
 {
 	loff_t *spos;
 
-	/* check if we have data avaiable */
+	/* check if we have data available */
 	if (_mali_internal_profiling_have_recording() != MALI_TRUE) {
 		return NULL;
 	}
@@ -688,12 +688,12 @@ static void *profiling_events_next(struct seq_file *s, void *v, loff_t *pos)
 {
 	loff_t *spos = v;
 
-	/* check if we have data avaiable */
+	/* check if we have data available */
 	if (_mali_internal_profiling_have_recording() != MALI_TRUE) {
 		return NULL;
 	}
 
-	/* check if the next entry actually is avaiable */
+	/* check if the next entry actually is available */
 	if (_mali_internal_profiling_get_count() <= (u32)(*spos + 1)) {
 		return NULL;
 	}

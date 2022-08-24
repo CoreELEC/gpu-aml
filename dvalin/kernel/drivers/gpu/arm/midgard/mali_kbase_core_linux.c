@@ -3346,7 +3346,7 @@ static ssize_t gpuinfo_show(struct device *dev,
 			GPU_FEATURES_RAY_TRACING_GET(gpu_props->props.raw_props.gpu_features);
 		const u8 nr_cores = gpu_props->num_cores;
 
-		/* Mali-TTUX_B(ig) if 10 < number of cores with ray tracing supproted.
+		/* Mali-TTUX_B(ig) if 10 < number of cores with ray tracing supported.
 		 * Mali-TTUX if 10 < number of cores without ray tracing supported.
 		 * Mali-TTUX if 7 <= number of cores <= 10 regardless ray tracing.
 		 * Mali-LTUX if number of cores < 7.

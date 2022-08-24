@@ -207,7 +207,7 @@ static int model_dynamic_coeff(struct kbase_ipa_model *model, u32 *coeffp)
 	 * coefficient value provided in the device tree for simple model.
 	 * As per the discussion with HW team the coefficient value needs to
 	 * be scaled down for top-level to limit its contribution in the
-	 * total dyanmic power.
+	 * total dynamic power.
 	 */
 	coeffp[KBASE_IPA_BLOCK_TYPE_TOP_LEVEL] =
 		model_data->dynamic_coefficient / TOP_LEVEL_DYN_COEFF_SCALER;

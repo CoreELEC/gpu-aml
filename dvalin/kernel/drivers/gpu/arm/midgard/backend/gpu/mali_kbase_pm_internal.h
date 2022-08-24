@@ -320,7 +320,7 @@ void kbase_pm_state_machine_term(struct kbase_device *kbdev);
  *
  * This function will update the desired_xx_state members of
  * struct kbase_pm_device_data by calling into the current Power Policy. It will
- * then begin power transitions to make the hardware acheive the desired shader
+ * then begin power transitions to make the hardware achieve the desired shader
  * core state.
  */
 void kbase_pm_update_cores_state(struct kbase_device *kbdev);

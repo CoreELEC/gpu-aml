@@ -16,7 +16,7 @@
 #define MALI_SCHEDULER_JOB_ID_SPAN 65535
 
 /**
- * Bitmask used for defered scheduling of subsystems.
+ * Bitmask used for deferred scheduling of subsystems.
  */
 typedef u32 mali_scheduler_mask;
 

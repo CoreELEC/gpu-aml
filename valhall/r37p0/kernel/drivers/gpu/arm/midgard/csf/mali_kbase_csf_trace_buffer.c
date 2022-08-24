@@ -41,7 +41,7 @@
  *                FIRMWARE_CONFIG_UPDATE
  * @type:         The type of the trace buffer.
  * @trace_enable_entry_count: Number of Trace Enable bits.
- * @gpu_va:                 Structure containing all the Firmware addresses
+ * @gpu_va:                 Structure containing all the firmware addresses
  *                          that are accessed by the MCU.
  * @gpu_va.size_address:    The address where the MCU shall read the size of
  *                          the data buffer.

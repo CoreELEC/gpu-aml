@@ -70,7 +70,7 @@ struct kbase_hwcnt_backend_csf_if_fw_ring_buf {
 };
 
 /**
- * struct kbase_hwcnt_backend_csf_if_fw_ctx - Firmware context for the CSF
+ * struct kbase_hwcnt_backend_csf_if_fw_ctx - firmware context for the CSF
  *                                            interface, used to communicate
  *                                            with firmware.
  * @kbdev:              KBase device.
@@ -748,7 +748,7 @@ static void kbasep_hwcnt_backend_csf_if_fw_ctx_destroy(
 }
 
 /**
- * kbasep_hwcnt_backend_csf_if_fw_ctx_create() - Create a CSF Firmware context.
+ * kbasep_hwcnt_backend_csf_if_fw_ctx_create() - Create a CSF firmware context.
  *
  * @kbdev:   Non_NULL pointer to kbase device.
  * @out_ctx: Non-NULL pointer to where info is stored on success.

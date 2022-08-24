@@ -28,7 +28,7 @@
 #include "sync.h"
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-/* For backwards compatiblility with kernels before 3.17. After 3.17
+/* For backwards compatibility with kernels before 3.17. After 3.17
  * sync_pt_parent is included in the kernel. */
 static inline struct sync_timeline *sync_pt_parent(struct sync_pt *pt)
 {

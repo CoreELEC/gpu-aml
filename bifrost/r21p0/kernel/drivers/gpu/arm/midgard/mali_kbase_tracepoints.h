@@ -2083,7 +2083,7 @@ struct kbase_tlstream;
 
 /**
  * KBASE_TLSTREAM_TL_EVENT_KCPUQUEUE_EXECUTE_DEBUGCOPY_START -
- *   KCPU Queue starts an array of Debug Copys
+ *   KCPU Queue starts an array of Debug Copies
  *
  * @kbdev:	Kbase device
  * @kcpu_queue:	KCPU queue
@@ -2102,7 +2102,7 @@ struct kbase_tlstream;
 
 /**
  * KBASE_TLSTREAM_TL_EVENT_KCPUQUEUE_EXECUTE_DEBUGCOPY_END -
- *   KCPU Queue ends an array of Debug Copys
+ *   KCPU Queue ends an array of Debug Copies
  *
  * @kbdev:	Kbase device
  * @kcpu_queue:	KCPU queue

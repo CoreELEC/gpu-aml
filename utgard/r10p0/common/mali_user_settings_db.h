@@ -19,7 +19,7 @@ extern "C" {
 
 /** @brief Set Mali user setting in DB
  *
- * Update the DB with a new value for \a setting. If the value is different from theprevious set value running sessions will be notified of the change.
+ * Update the DB with a new value for \a setting. If the value is different from the previous set value running sessions will be notified of the change.
  *
  * @param setting the setting to be changed
  * @param value the new value to set

@@ -37,7 +37,7 @@ extern "C" {
 	};
 #endif
 
-	/* Anstraction of spinlock_t */
+	/* Abstraction of spinlock_t */
 	struct _mali_osk_spinlock_s {
 #ifdef DEBUG
 		struct _mali_osk_lock_debug_s checker;
@@ -45,7 +45,7 @@ extern "C" {
 		spinlock_t spinlock;
 	};
 
-	/* Abstration of spinlock_t and lock flag which is used to store register's state before locking */
+	/* Abstraction of spinlock_t and lock flag which is used to store register's state before locking */
 	struct _mali_osk_spinlock_irq_s {
 #ifdef DEBUG
 		struct _mali_osk_lock_debug_s checker;
@@ -221,7 +221,7 @@ extern "C" {
 #endif
 	}
 
-	/** @brief Up lock->rw_sema with up_read/write() accordinf argument mode's value. */
+	/** @brief Up lock->rw_sema with up_read/write() according argument mode's value. */
 	static inline void  _mali_osk_mutex_rw_signal(_mali_osk_mutex_rw_t *lock, _mali_osk_lock_mode_t mode)
 	{
 		BUG_ON(lock == NULL);
@@ -294,7 +294,7 @@ extern "C" {
 		mutex_unlock(&lock->mutex);
 	}
 
-	/** @brief Lock the lock->mutex just with mutex_lock() function which could not be interruptted. */
+	/** @brief Lock the lock->mutex just with mutex_lock() function which could not be interrupted. */
 	static inline void _mali_osk_mutex_wait(_mali_osk_mutex_t *lock)
 	{
 		BUG_ON(lock == NULL);

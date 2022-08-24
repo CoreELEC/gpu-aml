@@ -225,7 +225,7 @@ enum {
  * If this is non-zero then kbase will avoid powering down shader cores, the
  * tiler, and the L2 cache, instead just powering down the entire GPU through
  * platform specific code. This may be required for certain platform
- * integrations.
+ * integration.
  *
  * Note that as this prevents kbase from powering down shader cores, this limits
  * the available power policies to coarse_demand and always_on.

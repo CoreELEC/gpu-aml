@@ -10,7 +10,7 @@
 
 /**
  * @file mali_osk_locks.c
- * Implemenation of the OS abstraction layer for the kernel device driver
+ * Implementation of the OS abstraction layer for the kernel device driver
  */
 
 #include "mali_osk_locks.h"

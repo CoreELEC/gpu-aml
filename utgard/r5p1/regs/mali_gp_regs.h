@@ -8,8 +8,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef _MALIGP2_CONROL_REGS_H_
-#define _MALIGP2_CONROL_REGS_H_
+#ifndef _MALIGP2_CONTROL_REGS_H_
+#define _MALIGP2_CONTROL_REGS_H_
 
 /**
  * These are the different geometry processor control registers.

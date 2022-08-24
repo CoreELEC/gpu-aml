@@ -46,7 +46,7 @@ _mali_osk_errcode_t ump_kernel_constructor(void)
 	/* Perform OS Specific initialization */
 	err = _ump_osk_init();
 	if (_MALI_OSK_ERR_OK != err) {
-		MSG_ERR(("Failed to initiaze the UMP Device Driver"));
+		MSG_ERR(("Failed to initialize the UMP Device Driver"));
 		return err;
 	}
 

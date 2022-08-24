@@ -249,7 +249,7 @@ int mali_devfreq_init(struct mali_device *mdev)
 	}
 
 #ifdef CONFIG_DEVFREQ_THERMAL
-	/* Initilization last_status it will be used when first power allocate called */
+	/* Initialization last_status it will be used when first power allocate called */
 	mdev->devfreq->last_status.current_frequency = mdev->current_freq;
 
 	if (_mali_osk_device_data_get(&data) == _MALI_OSK_ERR_OK) {

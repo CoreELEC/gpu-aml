@@ -721,7 +721,7 @@ struct kbase_csf_event {
  *                    queue in the mmap handler.
  * @user_pages_info:  Array containing pointers to queue
  *                    structures, used in conjunction with cookies bitmask for
- *                    providing a mechansim to create a CPU mapping of
+ *                    providing a mechanism to create a CPU mapping of
  *                    input/output pages & hardware doorbell page.
  * @lock:             Serializes accesses to all members, except for ones that
  *                    have their own locks.
@@ -1228,7 +1228,7 @@ struct kbase_csf_mcu_fw {
  * @shared_reg_rbtree:      RB tree of the memory regions allocated from the
  *                          shared interface segment in MCU firmware address
  *                          space.
- * @db_filp:                Pointer to a dummy file, that alongwith
+ * @db_filp:                Pointer to a dummy file, that along with
  *                          @db_file_offsets, facilitates the use of unqiue
  *                          file offset for the userspace mapping created
  *                          for Hw Doorbell pages. The userspace mapping

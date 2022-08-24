@@ -206,7 +206,7 @@ typedef uint32_t ump_cpu_msync_op;
  * Memory import types supported.
  * If new import types are added they will appear here.
  * They must be added before UMPP_EXTERNAL_MEM_COUNT and
- * must be assigned an explicit sequantial number.
+ * must be assigned an explicit sequential number.
  *
  * @li UMP_EXTERNAL_MEM_TYPE_ION - Import an ION allocation
  *                                 Takes a int* (pointer to a file descriptor)

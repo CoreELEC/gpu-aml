@@ -161,7 +161,7 @@ void _mali_osk_wq_delete_work_nonflush(_mali_osk_wq_work_t *work);
  * deadlock just by using this mechanism.
  *
  * _mali_osk_wq_schedule_work() places deferred call requests on a queue, to
- * allow for more than one thread to make a deferred call. Therfore, if it is
+ * allow for more than one thread to make a deferred call. Therefore, if it is
  * called 'K' times, then the IRQ bottom-half will be scheduled 'K' times too.
  * 'K' is a number that is implementation-specific.
  *
@@ -644,7 +644,7 @@ void _mali_osk_mem_freeioregion(u32 phys, u32 size, mali_io_address mapping);
 
 /** @brief Request a region of physically contiguous memory
  *
- * This is used to ensure exclusive access to a region of physically contigous
+ * This is used to ensure exclusive access to a region of physically contiguous
  * memory.
  *
  * It is acceptable to implement this as a stub. However, it is then the job
@@ -664,7 +664,7 @@ _mali_osk_errcode_t _mali_osk_mem_reqregion(uintptr_t phys, u32 size, const char
 
 /** @brief Un-request a region of physically contiguous memory
  *
- * This is used to release a regious of physically contiguous memory previously
+ * This is used to release a region of physically contiguous memory previously
  * requested through _mali_osk_mem_reqregion, so that other device drivers may
  * use it. This will be called at time of Mali device driver termination.
  *
@@ -780,7 +780,7 @@ u32 _mali_osk_mem_write_safe(void *dest, const void *src, u32 size);
  * The notification queue is a FIFO. There are no restrictions on the numbers
  * of readers or writers in the queue.
  *
- * A message contains what user space needs to identifiy how to handle an
+ * A message contains what user space needs to identify how to handle an
  * event. This includes a type field and a possible type specific payload.
  *
  * A notification to user space is represented by a
@@ -809,7 +809,7 @@ u32 _mali_osk_mem_write_safe(void *dest, const void *src, u32 size);
  *
  * @note You \b must \b not call _mali_osk_free() on a \ref _mali_osk_notification_t,
  * object, or on a _mali_osk_notification_t::result_buffer. You must only use
- * _mali_osk_notification_delete() to free the resources assocaited with a
+ * _mali_osk_notification_delete() to free the resources associated with a
  * \ref _mali_osk_notification_t object.
  *
  * @param type The notification type
@@ -872,7 +872,7 @@ _mali_osk_notification_queue_t *_mali_osk_notification_queue_init(void);
  * Therefore, all \ref _mali_osk_notification_t objects must be flushed and
  * deleted by the code that makes use of the notification queues, since only
  * they know the structure of the _mali_osk_notification_t::result_buffer
- * (even if it may only be a flat sturcture).
+ * (even if it may only be a flat structure).
  *
  * @note Since the queue is a FIFO, the code using notification queues may
  * create its own 'flush' type of notification, to assist in flushing the
@@ -1008,7 +1008,7 @@ void _mali_osk_timer_mod(_mali_osk_timer_t *tim, unsigned long ticks_to_expire);
  * Stop the timer. When the function returns, it is guaranteed that the timer's
  * callback will not be running on any CPU core.
  *
- * Since stoping the timer blocks on compeletion of the callback, the callback
+ * Since stoping the timer blocks on completion of the callback, the callback
  * may not obtain any mutexes that the caller holds. Otherwise, a deadlock will
  * occur.
  *
@@ -1093,7 +1093,7 @@ void _mali_osk_timer_term(_mali_osk_timer_t *tim);
  * absolute times.
  *
  * Conversion between tick time and milliseconds (ms) may not be loss-less,
- * and are \em implementation \em depenedant.
+ * and are \em implementation \em dependant.
  *
  * Code use OS time must take this into account, since:
  * - a small OS time may (or may not) be rounded
@@ -1342,7 +1342,7 @@ void _mali_osk_pm_dev_barrier(void);
  */
 u32 _mali_osk_bitmap_alloc(struct _mali_osk_bitmap *bitmap);
 
-/** @brief Free a interger to the bitmap object.
+/** @brief Free a integer to the bitmap object.
  *
  * @param bitmap Initialized bitmap object.
  * @param obj An number allocated from bitmap object.
@@ -1371,7 +1371,7 @@ u32 _mali_osk_bitmap_avail(struct _mali_osk_bitmap *bitmap);
 
 /** @brief Initialize an bitmap object..
  *
- * @param bitmap An poiter of uninitialized bitmap object.
+ * @param bitmap An pointer of uninitialized bitmap object.
  * @param num Size of thei bitmap object and decide the memory size allocated.
  * @param reserve start number used to allocate.
  */

@@ -1495,7 +1495,7 @@ void mali_scheduler_gp_pp_job_queue_print(void)
 	MALI_DEBUG_ASSERT_LOCK_HELD(mali_scheduler_lock_obj);
 	MALI_DEBUG_ASSERT_LOCK_HELD(mali_executor_lock_obj);
 
-	/* dump job queup status */
+	/* dump job queue status */
 	if ((0 == job_queue_gp.depth) && (0 == job_queue_pp.depth)) {
 		MALI_PRINT(("No GP&PP job in the job queue.\n"));
 		return;

@@ -51,7 +51,7 @@ struct mali_session_data {
 	char *comm;
 	size_t mali_mem_array[MALI_MEM_TYPE_MAX]; /**< The array to record all mali mem types' usage for this session. */
 	size_t max_mali_mem_allocated; /**< The past max mali memory usage for this session. */
-	/* Added for new memroy system */
+	/* Added for new memory system */
 	struct mali_allocation_manager allocation_mgr;
 };
 

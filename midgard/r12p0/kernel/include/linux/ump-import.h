@@ -84,7 +84,7 @@ struct ump_import_handler
  * Import module registration.
  * Registers a ump_import_handler structure for a memory type.
  * @param     type    Type of the memory to register a handler for
- * @param[in] handler Handler strcture to install
+ * @param[in] handler Handler structure to install
  * @return 0 on success, a Linux error code on failure
  */
 int ump_import_module_register(enum ump_external_memory_type type, struct ump_import_handler * handler);

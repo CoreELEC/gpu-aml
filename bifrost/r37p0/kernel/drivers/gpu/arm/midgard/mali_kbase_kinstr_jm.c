@@ -125,7 +125,7 @@ struct kbase_kinstr_jm {
  * If we need to change the _meaning_ of one of the fields, i.e. the state
  * machine has had a incompatible change, we can keep the same members in the
  * structure and update the version as above. User code will no longer
- * recognise that it has the supported field and can gracefully explain to the
+ * recognize that it has the supported field and can gracefully explain to the
  * user that the kernel API is no longer supported.
  *
  * When making changes to this structure, make sure they are either:
@@ -160,7 +160,7 @@ static_assert(
  *             close() on the fd. When accessing this, lock the producer spin
  *             lock to prevent races on the allocated memory. The consume lock
  *             does not need to be held because newly-inserted data will always
- *             be outside the currenly-read range.
+ *             be outside the currently-read range.
  * @producer:  The producing spinlock which allows us to push changes into the
  *             buffer at the same time as a user read occurring. This needs to
  *             be locked when saving/restoring the IRQ because we can receive an

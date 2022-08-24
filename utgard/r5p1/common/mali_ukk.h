@@ -56,9 +56,9 @@ extern "C" {
  * (group, number) pairing.
  * - In a system where there is no distinction between user and kernel-side,
  * the U/K interface may be implemented as:@code
- * MALI_STATIC_INLINE _mali_osk_errcode_t _mali_uku_examplefunction( _mali_uk_examplefunction_s *args )
+ * MALI_STATIC_INLINE _mali_osk_errcode_t _mali_uku_example_function( _mali_uk_example_function_s *args )
  * {
- *     return mali_ukk_examplefunction( args );
+ *     return mali_ukk_example_function( args );
  * }
  * @endcode
  * - Therefore, all U/K calls behave \em as \em though they were direct
@@ -119,7 +119,7 @@ extern "C" {
  * a NULL argument member to non-NULL, and then the Device Driver code (outside
  * of the U/K layer) re-checks this member for NULL, and corrects it when
  * necessary. Whilst such code works even on direct function call U/K
- * intefaces, it reduces the testing coverage of the Device Driver code. This
+ * interfaces, it reduces the testing coverage of the Device Driver code. This
  * is because we have no way of testing the NULL == value path on an OS
  * implementation.
  *
@@ -307,7 +307,7 @@ _mali_osk_errcode_t _mali_ukk_request_high_priority(_mali_uk_request_high_priori
  * and CPU-physical addresses, and can cope with mapping a contiguous virtual
  * address range to a sequence of non-contiguous physical pages. In this case,
  * the CPU-physical addresses are not communicated back to the user-side, as
- * they are unnecsessary; the \em Mali-virtual address range must be used for
+ * they are unnecessary; the \em Mali-virtual address range must be used for
  * programming Mali structures.
  *
  * In the second (MMU) case, _mali_ukk_mem_mmap() handles management of

@@ -1767,7 +1767,7 @@ static void mali_executor_schedule(void)
 		}
 	}
 
-	/* 4. Deactivate idle pp group , must put deactive here before active vitual group
+	/* 4. Deactivate idle pp group , must put deactive here before active virtual group
 	 *    for cover case first only has physical job in normal queue but group inactive,
 	 *    so delay the job start go to active group, when group activated,
 	 *    call scheduler again, but now if we get high queue virtual job,

@@ -38,7 +38,7 @@ extern "C" {
 /**
  * @file UMP_ioctl.h
  * This file describes the interface needed to use the Linux device driver.
- * The interface is used by the userpace UMP driver.
+ * The interface is used by the userspace UMP driver.
  */
 
 #define UMP_IOCTL_NR 0x90

@@ -97,7 +97,7 @@ typedef struct _ump_uk_api_version_s
 } _ump_uk_api_version_s;
 
 /**
- * ALLOCATE ([out] u32 secure_id, [in,out] u32 size,  [in] contraints)
+ * ALLOCATE ([out] u32 secure_id, [in,out] u32 size,  [in] constraints)
  */
 typedef struct _ump_uk_allocate_s
 {

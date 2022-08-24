@@ -481,9 +481,9 @@
 		/* Function that will receive periodic GPU utilization numbers */
 		void (*utilization_callback)(struct mali_gpu_utilization_data *data);
 
-		/* Fuction that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
+		/* Function that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
 		int (*set_freq)(int setting_clock_step);
-		/* Function that platfrom report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
+		/* Function that platform report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
 		void (*get_clock_info)(struct mali_gpu_clock **data);
 		/* Function that get the current clock info, needed when CONFIG_MALI_DVFS enabled */
 		int (*get_freq)(void);

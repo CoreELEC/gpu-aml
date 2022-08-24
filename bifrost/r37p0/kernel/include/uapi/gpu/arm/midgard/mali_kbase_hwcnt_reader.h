@@ -222,7 +222,7 @@ struct prfcnt_enum_sample_info {
 /**
  * struct prfcnt_enum_item - Performance counter enumeration item.
  * @hdr:             Header describing the type of item in the list.
- * @u:               Structure containing discriptor for enumeration item type.
+ * @u:               Structure containing descriptor for enumeration item type.
  * @u.block_counter: Performance counter block descriptor.
  * @u.request:       Request descriptor.
  * @u.sample_info:   Performance counter sample information descriptor.
@@ -487,7 +487,7 @@ struct prfcnt_sample_access {
 /* Ioctl ID for issuing a session operational command */
 #define KBASE_IOCTL_KINSTR_PRFCNT_CMD                                          \
 	_IOW(KBASE_KINSTR_PRFCNT_READER, 0x00, struct prfcnt_control_cmd)
-/* Ioctl ID for fetching a dumpped sample */
+/* Ioctl ID for fetching a dumped sample */
 #define KBASE_IOCTL_KINSTR_PRFCNT_GET_SAMPLE                                   \
 	_IOR(KBASE_KINSTR_PRFCNT_READER, 0x01, struct prfcnt_sample_access)
 /* Ioctl ID for release internal buffer of the previously fetched sample */

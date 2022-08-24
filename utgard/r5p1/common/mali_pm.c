@@ -769,7 +769,7 @@ static void mali_pm_update_sync_internal(void)
 
 	/*
 	 * Never power down the dummy/global domain here. This is to be done
-	 * from a suspend request (since this domain is only physicall powered
+	 * from a suspend request (since this domain is only physically powered
 	 * down at that point)
 	 */
 	power_down_mask &= ~MALI_PM_DOMAIN_DUMMY_MASK;
@@ -1238,10 +1238,10 @@ void mali_pm_power_cost_setup(void)
 		}
 	}
 
-	/* Caculate number of pp cores of a given domain config. */
+	/* Calculate number of pp cores of a given domain config. */
 	for (i = MALI_DOMAIN_INDEX_PP0; i <= MALI_DOMAIN_INDEX_PP7; i++) {
 		if (0 < domain_config[i]) {
-			/* Get the max domain mask value used to caculate power cost
+			/* Get the max domain mask value used to calculate power cost
 			 * and we don't count in always on pp cores. */
 			if (MALI_PM_DOMAIN_DUMMY_MASK != domain_config[i]
 			    && max_domain_mask < domain_config[i]) {

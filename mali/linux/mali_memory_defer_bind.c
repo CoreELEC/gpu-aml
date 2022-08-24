@@ -107,7 +107,7 @@ _mali_osk_errcode_t mali_mem_prepare_mem_for_job(struct mali_gp_job *next_gp_job
 }
 
 
-/* do preparetion for allocation before defer bind */
+/* do preparation for allocation before defer bind */
 _mali_osk_errcode_t mali_mem_defer_bind_allocation_prepare(mali_mem_allocation *alloc, struct list_head *list, u32 *required_varying_memsize)
 {
 	mali_mem_backend *mem_bkend = NULL;
@@ -151,7 +151,7 @@ _mali_osk_errcode_t mali_mem_defer_bind_allocation_prepare(mali_mem_allocation *
 
 
 
-/* bind phyiscal memory to allocation
+/* bind physical memory to allocation
 This function will be called in IRQ handler*/
 static _mali_osk_errcode_t mali_mem_defer_bind_allocation(struct mali_backend_bind_list *bk_node,
 		struct list_head *pages)

@@ -142,7 +142,7 @@ enum kbase_pm_suspend_handler {
  * indicates a failure, the caller must abort whatever operation it was
  * attempting, and potentially queue it up for after the OS has resumed.
  *
- * Return: 0 on success, non-zero othrewise.
+ * Return: 0 on success, non-zero otherwise.
  */
 int kbase_pm_context_active_handle_suspend(struct kbase_device *kbdev, enum kbase_pm_suspend_handler suspend_handler);
 

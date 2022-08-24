@@ -416,7 +416,7 @@ struct kbase_ext_res {
  * @dma_fence.seqno:       The dma-buf fence sequence number for this atom. This
  *                         is increased every time this katom uses dma-buf fence
  * @dma_fence.callbacks:   List of all callbacks set up to wait on other fences
- * @dma_fence.dep_count:   Atomic counter of number of outstandind dma-buf fence
+ * @dma_fence.dep_count:   Atomic counter of number of outstanding dma-buf fence
  *                         dependencies for this atom.
  * @event_code:            Event code for the job chain represented by the atom,
  *                         both HW and low-level SW events are represented by
@@ -439,7 +439,7 @@ struct kbase_ext_res {
  * @slot_nr:               Job slot chosen for the atom.
  * @atom_flags:            bitmask of KBASE_KATOM_FLAG* flags capturing the
  *                         excat low level state of the atom.
- * @gpu_rb_state:          bitmnask of KBASE_ATOM_GPU_RB_* flags, precisely
+ * @gpu_rb_state:          bitmask of KBASE_ATOM_GPU_RB_* flags, precisely
  *                         tracking atom's state after it has entered
  *                         Job scheduler on becoming runnable. Atom
  *                         could be blocked due to cross slot dependency
@@ -571,7 +571,7 @@ struct kbase_jd_atom {
 		 * then all callbacks are taken off the list and freed.
 		 */
 		struct list_head callbacks;
-		/* Atomic counter of number of outstandind dma-buf fence
+		/* Atomic counter of number of outstanding dma-buf fence
 		 * dependencies for this atom. When dep_count reaches 0 the
 		 * atom may be queued.
 		 *

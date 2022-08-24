@@ -1298,7 +1298,7 @@ _mali_osk_errcode_t _mali_ukk_gp_suspend_response(_mali_uk_gp_suspend_response_s
 				mali_executor_unlock();
 				return _MALI_OSK_ERR_OK;
 			} else {
-				MALI_DEBUG_PRINT(2, ("Executor: Unable to resume  gp job becasue gp time out or any other unexpected reason!\n"));
+				MALI_DEBUG_PRINT(2, ("Executor: Unable to resume  gp job because gp time out or any other unexpected reason!\n"));
 
 				_mali_osk_notification_delete(new_notification);
 
@@ -1767,7 +1767,7 @@ static void mali_executor_schedule(void)
 		}
 	}
 
-	/* 4. Deactivate idle pp group , must put deactive here before active vitual group
+	/* 4. Deactivate idle pp group , must put deactive here before active virtual group
 	 *    for cover case first only has physical job in normal queue but group inactive,
 	 *    so delay the job start go to active group, when group activated,
 	 *    call scheduler again, but now if we get high queue virtual job,

@@ -35,7 +35,7 @@ ANDROID_REPOSITORY_URL="https://android.googlesource.com/"
 
 REFERENCE_ARGUMENT=""
 
-# Proccess arguments. Valid arguments are:
+# Process arguments. Valid arguments are:
 #        -u ARG      Override the Android repository url
 #        -r ARG      Provide a path to a reference git repository
 while getopts "u:r:" opt; do

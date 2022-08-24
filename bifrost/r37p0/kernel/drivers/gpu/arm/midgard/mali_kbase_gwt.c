@@ -73,7 +73,7 @@ int kbase_gpu_gwt_start(struct kbase_context *kctx)
 #if !MALI_USE_CSF
 	/* If GWT is enabled using new vector dumping format
 	 * from user space, back up status of the job serialization flag and
-	 * use full serialisation of jobs for dumping.
+	 * use full serialization of jobs for dumping.
 	 * Status will be restored on end of dumping in gwt_stop.
 	 */
 	kctx->kbdev->backup_serialize_jobs = kctx->kbdev->serialize_jobs;

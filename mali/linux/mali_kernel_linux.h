@@ -24,7 +24,7 @@ extern "C" {
 
 extern struct platform_device *mali_platform_device;
 
-/* After 3.19.0 kenrel droped CONFIG_PM_RUNTIME define,define by ourself */
+/* After 3.19.0 kernel droped CONFIG_PM_RUNTIME define,define by ourself */
 #if defined(CONFIG_PM) && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
 #define CONFIG_PM_RUNTIME 1
 #endif

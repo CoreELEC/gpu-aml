@@ -42,7 +42,7 @@ typedef enum mali_power_mode_tag
  */
 _mali_osk_errcode_t mali_platform_init(void);
 
-/** @brief Platform specific deinitialisation of MALI
+/** @brief Platform specific deinitialization of MALI
  *
  * This is called on the exit of the driver to terminate the platform
  *

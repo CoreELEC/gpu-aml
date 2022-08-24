@@ -249,7 +249,7 @@ void mali_utilization_gp_start(void)
 					 * for mali_dev_pause is called in set clock,
 					 * so each time we change clock, we will set clock to
 					 * highest step even if under down clock case,
-					 * it is not nessesary, so we only set the clock under
+					 * it is not necessary, so we only set the clock under
 					 * last time utilization equal 0, we stop the timer then
 					 * start the GPU again case
 					 */
@@ -307,7 +307,7 @@ void mali_utilization_pp_start(void)
 					 * for mali_dev_pause is called in set clock,
 					 * so each time we change clock, we will set clock to
 					 * highest step even if under down clock case,
-					 * it is not nessesary, so we only set the clock under
+					 * it is not necessary, so we only set the clock under
 					 * last time utilization equal 0, we stop the timer then
 					 * start the GPU again case
 					 */

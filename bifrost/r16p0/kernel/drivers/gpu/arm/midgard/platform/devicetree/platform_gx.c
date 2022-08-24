@@ -164,7 +164,7 @@ quit:
 }
 #ifdef CONFIG_DEVFREQ_THERMAL
 /* note:
- * why return the config_pp which come from dts [num_of_pp] dirrectly
+ * why return the config_pp which come from dts [num_of_pp] directly
  * 1. the return value only used for thermal,
  * and we have not dynamic adjust the core num.
  * 2. avoid influent the IC before T5.

@@ -1561,7 +1561,7 @@ static int kbase_cpu_mmap(struct kbase_va_region *reg, struct vm_area_struct *vm
 	}
 
 	/*
-	 * VM_DONTCOPY - don't make this mapping available in fork'ed processes
+	 * VM_DONTCOPY - don't make this mapping available in forked processes
 	 * VM_DONTEXPAND - disable mremap on this region
 	 * VM_IO - disables paging
 	 * VM_DONTDUMP - Don't include in core dumps (3.7 only)
@@ -1586,7 +1586,7 @@ static int kbase_cpu_mmap(struct kbase_va_region *reg, struct vm_area_struct *vm
 
 	if (!(reg->flags & KBASE_REG_CPU_CACHED) &&
 	    (reg->flags & (KBASE_REG_CPU_WR|KBASE_REG_CPU_RD))) {
-		/* We can't map vmalloc'd memory uncached.
+		/* We can't map vmalloc memory uncached.
 		 * Other memory will have been returned from
 		 * kbase_mem_pool which would be
 		 * suitable for mapping uncached.

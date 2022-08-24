@@ -443,7 +443,7 @@ EXPORT_SYMBOL(ump_dd_handle_create_from_phys_blocks);
 module_init(ump_initialize_module);
 module_exit(ump_cleanup_module);
 
-/* And some module informatio */
+/* And some module information */
 MODULE_LICENSE(UMP_KERNEL_LINUX_LICENSE);
 MODULE_AUTHOR("ARM Ltd.");
 MODULE_VERSION(SVN_REV_STRING);

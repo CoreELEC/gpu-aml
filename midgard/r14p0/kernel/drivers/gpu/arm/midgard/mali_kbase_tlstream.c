@@ -422,7 +422,7 @@ static const struct tp_desc tp_desc_obj[] = {
 	{
 		KBASE_TL_RDEP_ATOM_ATOM,
 		__stringify(KBASE_TL_RDEP_ATOM_ATOM),
-		"resolved dependecy of atom2 depending on atom1",
+		"resolved dependency of atom2 depending on atom1",
 		"@pp",
 		"atom1,atom2"
 	},

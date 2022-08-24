@@ -461,7 +461,7 @@ _mali_osk_errcode_t _mali_ukk_mem_allocate(_mali_uk_alloc_mem_s *args)
 		MALI_PRINT_ERROR(("_mali_ukk_mem_allocate: not supported non page aligned size-->pszie %d, vsize %d\n",  args->psize, args->vsize));
 		return _MALI_OSK_ERR_INVALID_ARGS;
 	} else if ((args->vsize != args->psize) && ((args->flags & _MALI_MEMORY_ALLOCATE_SWAPPABLE) || (args->flags & _MALI_MEMORY_ALLOCATE_SECURE))) {
-		MALI_PRINT_ERROR(("_mali_ukk_mem_allocate: not supported mem resizeable for mem flag %d\n",  args->flags));
+		MALI_PRINT_ERROR(("_mali_ukk_mem_allocate: not supported mem resizable for mem flag %d\n",  args->flags));
 		return _MALI_OSK_ERR_INVALID_ARGS;
 	}
 
@@ -896,7 +896,7 @@ _mali_osk_errcode_t _mali_ukk_mem_cow(_mali_uk_cow_mem_s *args)
 		return ret;
 	}
 
-	/* create new alloction for COW*/
+	/* create new allocation for COW*/
 	mali_allocation = mali_mem_allocation_struct_create(session);
 	if (mali_allocation == NULL) {
 		MALI_DEBUG_PRINT(1, ("_mali_ukk_mem_cow: Failed to create allocation struct!\n"));

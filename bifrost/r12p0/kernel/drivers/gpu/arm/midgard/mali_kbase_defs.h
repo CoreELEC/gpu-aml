@@ -25,7 +25,7 @@
 /**
  * @file mali_kbase_defs.h
  *
- * Defintions (types, defines, etcs) common to Kbase. They are placed here to
+ * Definitions (types, defines, etcs) common to Kbase. They are placed here to
  * allow the hierarchy of header files to work.
  */
 
@@ -111,7 +111,7 @@
  *
  * @note Soft stop will still be used for non-scheduling purposes e.g. when terminating a context.
  *
- * @note if not in use, define this value to 0 instead of \#undef'ing it
+ * @note if not in use, define this value to 0 instead of \#undef it
  */
 #define KBASE_DISABLE_SCHEDULING_SOFT_STOPS 0
 
@@ -122,7 +122,7 @@
  *
  * @note Hard stop will still be used for non-scheduling purposes e.g. when terminating a context.
  *
- * @note if not in use, define this value to 0 instead of \#undef'ing it
+ * @note if not in use, define this value to 0 instead of \#undef it
  */
 #define KBASE_DISABLE_SCHEDULING_HARD_STOPS 0
 
@@ -534,7 +534,7 @@ struct kbase_ext_res {
  *                         low level state of the atom.
  * @retry_count:           Number of times this atom has been retried. Used by replay
  *                         soft job.
- * @gpu_rb_state:          bitmnask of KBASE_ATOM_GPU_RB_* flags, precisely tracking
+ * @gpu_rb_state:          bitmask of KBASE_ATOM_GPU_RB_* flags, precisely tracking
  *                         atom's state after it has entered Job scheduler on becoming
  *                         runnable. Atom could be blocked due to cross slot dependency
  *                         or waiting for the shader cores to become available or
@@ -651,7 +651,7 @@ struct kbase_jd_atom {
 		 * then all callbacks are taken off the list and freed.
 		 */
 		struct list_head callbacks;
-		/* Atomic counter of number of outstandind dma-buf fence
+		/* Atomic counter of number of outstanding dma-buf fence
 		 * dependencies for this atom. When dep_count reaches 0 the
 		 * atom may be queued.
 		 *
@@ -950,7 +950,7 @@ struct kbase_trace {
  * Any of these events might be missed, so they should not be relied upon to
  * find the precise state of the GPU at a particular time in the
  * trace. Overall, we should get a high percentage of these events for
- * statisical purposes, and so a few missing should not be a problem */
+ * statistical purposes, and so a few missing should not be a problem */
 enum kbase_timeline_pm_event {
 	/* helper for tests */
 	KBASEP_TIMELINE_PM_EVENT_FIRST,
@@ -1229,7 +1229,7 @@ struct kbase_mmu_mode const *kbase_mmu_mode_get_aarch64(void);
  * @as:                    Array of objects representing address spaces of GPU.
  * @as_free:               Bitpattern of free/available address space lots
  * @as_to_kctx:            Array of pointers to struct kbase_context, having
- *                         GPU adrress spaces assigned to them.
+ *                         GPU address spaces assigned to them.
  * @mmu_mask_change:       Lock to serialize the access to MMU interrupt mask
  *                         register used in the handling of Bus & Page faults.
  * @gpu_props:             Object containing complete information about the
@@ -1794,7 +1794,7 @@ struct kbase_sub_alloc {
  *                        programming as the address translation will start from
  *                        the top level page table.
  * @event_list:           list of posted events about completed atoms, to be sent to
- *                        event handling thread of Userpsace.
+ *                        event handling thread of Userspace.
  * @event_coalesce_list:  list containing events corresponding to successive atoms
  *                        which have requested deferred delivery of the completion
  *                        events to Userspace.
@@ -1852,7 +1852,7 @@ struct kbase_sub_alloc {
  *                        in the mmap handler.
  * @pending_regions:      Array containing pointers to memory region structures,
  *                        used in conjunction with @cookies bitmask mainly for
- *                        providing a mechansim to have the same value for CPU &
+ *                        providing a mechanism to have the same value for CPU &
  *                        GPU virtual address.
  * @event_queue:          Wait queue used for blocking the thread, which consumes
  *                        the base_jd_event corresponding to an atom, when there
@@ -1898,7 +1898,7 @@ struct kbase_sub_alloc {
  *                        then the context must be retained to ensure that it doesn't
  *                        disappear whilst it is being used. Alternatively, hwaccess_lock
  *                        can be held to ensure the context doesn't disappear (but this
- *                        has restrictions on what other locks can be taken simutaneously).
+ *                        has restrictions on what other locks can be taken simultaneously).
  * @refcount:             Keeps track of the number of users of this context. A user
  *                        can be a job that is available for execution, instrumentation
  *                        needing to 'pin' a context for counter collection, etc.
@@ -1969,7 +1969,7 @@ struct kbase_sub_alloc {
  *	                  2 -> client used KBASE_IOCTL_MEM_JIT_INIT
  * @jit_active_head:      List containing the JIT allocations which are in use.
  * @jit_pool_head:        List containing the JIT allocations which have been
- *                        freed up by userpsace and so not being used by them.
+ *                        freed up by userspace and so not being used by them.
  *                        Driver caches them to quickly fulfill requests for new
  *                        JIT allocations. They are released in case of memory
  *                        pressure as they are put on the @evict_list when they

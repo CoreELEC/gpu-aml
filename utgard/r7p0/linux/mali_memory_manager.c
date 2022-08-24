@@ -829,7 +829,7 @@ _mali_osk_errcode_t _mali_ukk_mem_cow(_mali_uk_cow_mem_s *args)
 		return ret;
 	}
 
-	/* create new alloction for COW*/
+	/* create new allocation for COW*/
 	mali_allocation = mali_mem_allocation_struct_create(session);
 	if (mali_allocation == NULL) {
 		MALI_DEBUG_PRINT(1, ("_mali_ukk_mem_cow: Failed to create allocation struct!\n"));

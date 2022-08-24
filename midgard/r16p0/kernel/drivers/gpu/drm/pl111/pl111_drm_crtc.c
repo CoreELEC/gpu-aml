@@ -75,7 +75,7 @@ void pl111_common_irq(struct pl111_drm_crtc *pl111_crtc)
 		list_del(&flip_res->link);
 		do_flip_to_res(flip_res);
 		/*
-		 * current_update_res will be set, so guarentees that
+		 * current_update_res will be set, so guarantees that
 		 * another flip_res coming in gets queued instead of
 		 * handled immediately
 		 */

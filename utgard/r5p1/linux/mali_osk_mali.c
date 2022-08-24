@@ -107,7 +107,7 @@ _mali_osk_errcode_t _mali_osk_resource_initialize(void)
 		}
 	}
 
-	/* We have to divide by 2, because we caculate twice for only one pp(pp_core and pp_mmu_core). */
+	/* We have to divide by 2, because we calculate twice for only one pp(pp_core and pp_mmu_core). */
 	if (0 != pp_core_num % 2) {
 		MALI_DEBUG_PRINT(2, ("The value of pp core number isn't normal."));
 		return _MALI_OSK_ERR_FAULT;
@@ -116,7 +116,7 @@ _mali_osk_errcode_t _mali_osk_resource_initialize(void)
 	pp_core_num /= 2;
 
 	/**
-	 * we can caculate the number of l2 cache core according the number of pp core number
+	 * we can calculate the number of l2 cache core according the number of pp core number
 	 * and device type(mali400/mali450).
 	 */
 	if (mali_is_450 && 4 < pp_core_num) {

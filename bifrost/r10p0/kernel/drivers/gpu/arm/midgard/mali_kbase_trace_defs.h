@@ -27,7 +27,7 @@
  * *****            THE LACK OF HEADER GUARDS IS INTENTIONAL ***** */
 
 /*
- * The purpose of this header file is just to contain a list of trace code idenitifers
+ * The purpose of this header file is just to contain a list of trace code identifiers
  *
  * Each identifier is wrapped in a macro, so that its string form and enum form can be created
  *

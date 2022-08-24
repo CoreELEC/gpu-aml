@@ -627,7 +627,7 @@ struct kbase_csf_scheduler_context {
  *                    queue in the mmap handler.
  * @user_pages_info:  Array containing pointers to queue
  *                    structures, used in conjunction with cookies bitmask for
- *                    providing a mechansim to create a CPU mapping of
+ *                    providing a mechanism to create a CPU mapping of
  *                    input/output pages & hardware doorbell page.
  * @lock:             Serializes accesses to all members, except for ones that
  *                    have their own locks.
@@ -802,7 +802,7 @@ struct kbase_csf_csg_slot {
  * @active_protm_grp:       Indicates if firmware has been permitted to let GPU
  *                          enter protected mode with the given group. On exit
  *                          from protected mode the pointer is reset to NULL.
- * @gpu_idle_fw_timer_enabled: Whether the CSF scheduler has activiated the
+ * @gpu_idle_fw_timer_enabled: Whether the CSF scheduler has activated the
  *                            firmware idle hysteresis timer for preparing a
  *                            GPU suspend on idle.
  * @gpu_idle_work:          Work item for facilitating the scheduler to bring
@@ -1098,7 +1098,7 @@ struct kbase_csf_hwcnt {
  * @shared_reg_rbtree:      RB tree of the memory regions allocated from the
  *                          shared interface segment in MCU firmware address
  *                          space.
- * @db_filp:                Pointer to a dummy file, that alongwith
+ * @db_filp:                Pointer to a dummy file, that along with
  *                          @db_file_offsets, facilitates the use of unqiue
  *                          file offset for the userspace mapping created
  *                          for Hw Doorbell pages. The userspace mapping

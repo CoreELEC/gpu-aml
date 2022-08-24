@@ -229,7 +229,7 @@ typedef enum {
  * The @c _mali_uk_gp_job_finished_s contains the job status (see \ref _mali_uk_job_status),
  * the number of milliseconds the job took to render, and values of core registers
  * when the job finished (irq status, performance counters, renderer list
- * address). A job has finished succesfully when its status is
+ * address). A job has finished successfully when its status is
  * @c _MALI_UK_JOB_STATUS_FINISHED. If the hardware detected a timeout while rendering
  * the job, or software detected the job is taking more than watchdog_msecs to
  * complete, the status will indicate @c _MALI_UK_JOB_STATUS_HANG.
@@ -333,7 +333,7 @@ typedef struct {
  * identifier used to start the job with, the job @c status (see \ref _mali_uk_job_status),
  * the number of milliseconds the job took to render, and values of core registers
  * when the job finished (irq status, performance counters, renderer list
- * address). A job has finished succesfully when its status is
+ * address). A job has finished successfully when its status is
  * @c _MALI_UK_JOB_STATUS_FINISHED. If the hardware detected a timeout while rendering
  * the job, or software detected the job is taking more than @c watchdog_msecs to
  * complete, the status will indicate @c _MALI_UK_JOB_STATUS_HANG.
@@ -361,7 +361,7 @@ typedef struct {
 	u32 perf_counter_src1;              /**< [in] source id for performance counter 1 (see ARM DDI0415A, Table 3-60) */
 	u32 frame_builder_id;               /**< [in] id of the originating frame builder */
 	u32 flush_id;                       /**< [in] flush id within the originating frame builder */
-	u32 flags;                          /**< [in] See _MALI_PP_JOB_FLAG_* for a list of avaiable flags */
+	u32 flags;                          /**< [in] See _MALI_PP_JOB_FLAG_* for a list of available flags */
 	u32 tilesx;                         /**< [in] number of tiles in the x direction (needed for heatmap generation */
 	u32 tilesy;                         /**< [in] number of tiles in y direction (needed for reading the heatmap memory) */
 	u32 heatmap_mem;                    /**< [in] memory address to store counter values per tile (aka heatmap) */
@@ -382,8 +382,8 @@ typedef struct {
 typedef struct {
 	u64 user_job_ptr;                          /**< [out] identifier for the job in user space */
 	_mali_uk_job_status status;                /**< [out] status of finished job */
-	u32 perf_counter0[_MALI_PP_MAX_SUB_JOBS];  /**< [out] value of perfomance counter 0 (see ARM DDI0415A), one for each sub job */
-	u32 perf_counter1[_MALI_PP_MAX_SUB_JOBS];  /**< [out] value of perfomance counter 1 (see ARM DDI0415A), one for each sub job */
+	u32 perf_counter0[_MALI_PP_MAX_SUB_JOBS];  /**< [out] value of performance counter 0 (see ARM DDI0415A), one for each sub job */
+	u32 perf_counter1[_MALI_PP_MAX_SUB_JOBS];  /**< [out] value of performance counter 1 (see ARM DDI0415A), one for each sub job */
 	u32 perf_counter_src0;
 	u32 perf_counter_src1;
 } _mali_uk_pp_job_finished_s;
@@ -547,7 +547,7 @@ typedef struct {
  * identifier used to start the job with, the job status, the number of milliseconds the job took to render,
  * and values of core registers when the job finished (irq status, performance counters, renderer list
  * address).
- *    - A job has finished succesfully when its status member is _MALI_UK_JOB_STATUS_FINISHED.
+ *    - A job has finished successfully when its status member is _MALI_UK_JOB_STATUS_FINISHED.
  *    - If the hardware detected a timeout while rendering the job, or software detected the job is
  * taking more than watchdog_msecs (see _mali_ukk_pp_start_job()) to complete, the status member will
  * indicate _MALI_UK_JOB_STATUS_HANG.
@@ -710,7 +710,7 @@ typedef struct {
 typedef struct {
 	u64 ctx;                                          /**< [in,out] user-kernel context (trashed on output) */
 	u32 gpu_vaddr;                            /**< [in] GPU virtual address */
-	u32 vsize;                                        /**< [in] vitrual size of the allocation */
+	u32 vsize;                                        /**< [in] virtual size of the allocation */
 	u32 psize;                                        /**< [in] physical size of the allocation */
 	u32 flags;
 	u64 backend_handle;          /**< [out] backend handle */
@@ -785,7 +785,7 @@ typedef struct {
 	u32 target_handle;                                              /**< [in] handle of allocation need to do COW */
 	u32 range_start;                                                /**< [in] re allocate range start offset, offset from the start of allocation */
 	u32 size;                                                               /**< [in] re allocate size*/
-	u32 vaddr;                                                              /**< [in] mali address for the new allocaiton */
+	u32 vaddr;                                                              /**< [in] mali address for the new allocation */
 	u32 backend_handle;                                             /**< [out] backend handle */
 } _mali_uk_cow_mem_s;
 

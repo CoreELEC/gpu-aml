@@ -164,7 +164,7 @@ _mali_osk_errcode_t _ump_uku_get_api_version(_ump_uk_api_version_s *args)
 
 	session_data = (ump_session_data *)args->ctx;
 
-	/* check compatability */
+	/* check compatibility */
 	if (args->version == UMP_IOCTL_API_VERSION) {
 		DBG_MSG(3, ("API version set to newest %d (compatible)\n",
 			    GET_VERSION(args->version)));
@@ -192,7 +192,7 @@ _mali_osk_errcode_t _ump_ukk_release(_ump_uk_release_s *release_info)
 	DEBUG_ASSERT_POINTER(release_info);
 	DEBUG_ASSERT_POINTER(release_info->ctx);
 
-	/* Retreive the session data */
+	/* retrieve the session data */
 	session_data = (ump_session_data *)release_info->ctx;
 
 	/* If there are many items in the memory session list we
@@ -326,7 +326,7 @@ void _ump_ukk_cache_operations_control(_ump_uk_cache_operations_control_s *args)
 		session_data->cache_operations_ongoing++;
 		DBG_MSG(4, ("Cache ops start\n"));
 		if (session_data->cache_operations_ongoing != 1) {
-			DBG_MSG(2, ("UMP: Number of simultanious cache control ops: %d\n", session_data->cache_operations_ongoing));
+			DBG_MSG(2, ("UMP: Number of simultaneous cache control ops: %d\n", session_data->cache_operations_ongoing));
 		}
 	} else if (op == _UMP_UK_CACHE_OP_FINISH) {
 		DBG_MSG(4, ("Cache ops finish\n"));

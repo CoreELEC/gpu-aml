@@ -199,7 +199,7 @@ void _mali_osk_irq_term(_mali_osk_irq_t *irq)
  * That means that we only check one mali core in one function call, and the
  * core we check for each turn is given by the \a dev_id variable.
  * If we detect an pending interrupt on the given core, we mask the interrupt
- * out by settging the core's IRQ_MASK register to zero.
+ * out by setting the core's IRQ_MASK register to zero.
  * Then we schedule the mali_core_irq_handler_bottom_half to run as high priority
  * work queue job.
  */

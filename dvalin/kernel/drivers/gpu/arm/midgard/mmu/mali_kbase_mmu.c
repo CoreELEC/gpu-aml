@@ -146,7 +146,7 @@ static bool mmu_flush_cache_on_gpu_ctrl(struct kbase_device *kbdev)
  * @op_param: Non-NULL pointer to struct containing information about the MMU
  *            operation to perform.
  *
- * Perform an MMU invalidate operation on a particual address space
+ * Perform an MMU invalidate operation on a particular address space
  * by issuing a UNLOCK command.
  */
 static void mmu_invalidate(struct kbase_device *kbdev, struct kbase_context *kctx, int as_nr,

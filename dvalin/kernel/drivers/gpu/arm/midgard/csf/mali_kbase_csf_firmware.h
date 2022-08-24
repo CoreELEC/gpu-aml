@@ -364,7 +364,7 @@ void kbase_csf_update_firmware_memory(struct kbase_device *kbdev,
 	u32 gpu_addr, u32 value);
 
 /**
- * kbase_csf_firmware_early_init() - Early initializatin for the firmware.
+ * kbase_csf_firmware_early_init() - Early initialization for the firmware.
  * @kbdev: Kbase device
  *
  * Initialize resources related to the firmware. Must be called at kbase probe.
@@ -789,7 +789,7 @@ static inline u32 kbase_csf_interface_version(u32 major, u32 minor, u32 patch)
  *
  * Any changes done to firmware configuration entry or tracebuffer entry
  * requires a GPU silent reset to reflect the configuration changes
- * requested, but if Firmware.header.entry.bit(30) is set then we can request a
+ * requested, but if firmware.header.entry.bit(30) is set then we can request a
  * FIRMWARE_CONFIG_UPDATE rather than doing a silent reset.
  *
  * Return: 0 if success, or negative error code on failure.

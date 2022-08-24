@@ -240,7 +240,7 @@
 #define GLB_HALT_STATUS 0x0010 /* () Global halt status */
 #define GLB_PRFCNT_STATUS 0x0014 /* () Performance counter status */
 #define GLB_PRFCNT_INSERT 0x0018 /* () Performance counter buffer insert index */
-#define GLB_DEBUG_FWUTF_RESULT 0x0FE0 /* () Firmware debug test result */
+#define GLB_DEBUG_FWUTF_RESULT 0x0FE0 /* () firmware debug test result */
 #define GLB_DEBUG_ACK 0x0FFC /* () Global debug acknowledge */
 
 /* USER register offsets */

@@ -42,7 +42,7 @@ typedef enum {
 
 
 /**
- * Secifies the channel/source of the event
+ * Specifies the channel/source of the event
  */
 typedef enum {
 	MALI_PROFILING_EVENT_CHANNEL_SOFTWARE =  0 << 16,

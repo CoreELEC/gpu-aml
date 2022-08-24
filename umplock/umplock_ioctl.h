@@ -36,7 +36,7 @@ extern "C" {
 /**
  * @file umplock_ioctl.h
  * This file describes the interface needed to use the Linux device driver.
- * The interface is used by the userpace Mali DDK.
+ * The interface is used by the userspace Mali DDK.
  */
 
 typedef enum {

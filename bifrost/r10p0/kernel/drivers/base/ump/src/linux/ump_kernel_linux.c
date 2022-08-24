@@ -493,7 +493,7 @@ void umpp_import_handlers_term(umpp_session * session)
 		/* only call if session_begin succeeded */
 		if (session->import_handler_data[i] != NULL)
 		{
-			/* if session_beging succeeded the handler
+			/* if session_begin succeeded the handler
 			 * should not have unregistered with us */
 			BUG_ON(!import_handlers[i]);
 			import_handlers[i]->session_end(session->import_handler_data[i]);
@@ -828,7 +828,7 @@ EXPORT_SYMBOL(ump_dd_handle_create_from_phys_blocks);
 module_init(umpp_linux_initialize_module);
 module_exit(umpp_linux_cleanup_module);
 
-/* And some module informatio */
+/* And some module information */
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("ARM Ltd.");
 MODULE_VERSION(UMP_REV_STRING);

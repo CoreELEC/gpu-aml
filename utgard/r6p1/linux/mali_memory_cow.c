@@ -395,7 +395,7 @@ _mali_osk_errcode_t mali_memory_cow_modify_range(mali_mem_backend *backend,
 			alloc->cpu_mapping.vma->vm_flags |= VM_MIXEDMAP;
 
 			zap_vma_ptes(alloc->cpu_mapping.vma, alloc->cpu_mapping.vma->vm_start + range_start, range_size);
-			/* delete this flag to let swappble is ummapped regard to stauct page not page frame. */
+			/* delete this flag to let swappable is ummapped regard to stauct page not page frame. */
 			alloc->cpu_mapping.vma->vm_flags &= ~VM_PFNMAP;
 			alloc->cpu_mapping.vma->vm_flags &= ~VM_MIXEDMAP;
 		}
@@ -662,7 +662,7 @@ void _mali_mem_cow_copy_page(mali_page_node *src_node, mali_page_node *dst_node)
 			src_page = src_node->swap_it->page;
 		}
 
-		/* Clear and invaliate cache */
+		/* Clear and invalidate cache */
 		/* In ARM architecture, speculative read may pull stale data into L1 cache
 		 * for kernel linear mapping page table. DMA_BIDIRECTIONAL could
 		 * invalidate the L1 cache so that following read get the latest data

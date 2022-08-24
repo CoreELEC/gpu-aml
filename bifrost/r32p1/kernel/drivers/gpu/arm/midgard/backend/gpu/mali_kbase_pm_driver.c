@@ -2185,8 +2185,8 @@ void kbase_pm_clock_on(struct kbase_device *kbdev, bool is_resume)
 		}
 	}
 	/*
-	 * This point means that the GPU trasitioned to ON. So there is a chance
-	 * that a repartitioning occurred. In this case the current config
+	 * This point means that the GPU transitioned to ON. So there is a chance
+	 * that a repartition occurred. In this case the current config
 	 * should be read again.
 	 */
 	kbase_gpuprops_get_curr_config_props(kbdev,

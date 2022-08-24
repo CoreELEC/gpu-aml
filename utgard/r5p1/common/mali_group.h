@@ -215,7 +215,7 @@ MALI_STATIC_INLINE void mali_group_set_disable_request(
 	group->disable_requested = disable;
 
 	/**
-	 * When one of child group's disable_requeset is set TRUE, then
+	 * When one of child group's disable_request is set TRUE, then
 	 * the disable_request of parent group should also be set to TRUE.
 	 * While, the disable_request of parent group should only be set to FALSE
 	 * only when all of its child group's disable_request are set to FALSE.

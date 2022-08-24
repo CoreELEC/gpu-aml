@@ -1388,7 +1388,7 @@ static int kbase_kcpu_fence_signal_prepare(
 
 #if (KERNEL_VERSION(4, 9, 67) >= LINUX_VERSION_CODE)
 	/* Take an extra reference to the fence on behalf of the sync file.
-	 * This is only needded on older kernels where sync_file_create()
+	 * This is only needed on older kernels where sync_file_create()
 	 * does not take its own reference. This was changed in v4.9.68
 	 * where sync_file_create() now takes its own reference.
 	 */

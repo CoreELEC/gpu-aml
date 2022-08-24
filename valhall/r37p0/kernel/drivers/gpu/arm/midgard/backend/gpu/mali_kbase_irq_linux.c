@@ -174,7 +174,7 @@ static irq_handler_t kbase_handler_table[] = {
  *
  * Handle the GPU device interrupt source requests reflected in the
  * given source bit-pattern. The test code caller is responsible for
- * undertaking the required device power maintenace.
+ * undertaking the required device power maintenance.
  *
  * Return: IRQ_HANDLED if the requests are from the GPU device,
  *         IRQ_NONE otherwise
@@ -242,7 +242,7 @@ int kbase_set_custom_irq_handler(struct kbase_device *kbdev,
 
 KBASE_EXPORT_TEST_API(kbase_set_custom_irq_handler);
 
-/* test correct interrupt assigment and reception by cpu */
+/* test correct interrupt assignment and reception by cpu */
 struct kbasep_irq_test {
 	struct hrtimer timer;
 	wait_queue_head_t wait;

@@ -286,7 +286,7 @@ struct kbase_va_region {
 
 	unsigned long flags;
 
-	size_t extent; /* nr of pages alloc'd on PF */
+	size_t extent; /* nr of pages allocated on PF */
 
 	struct kbase_mem_phy_alloc *cpu_alloc; /* the one alloc object we mmap to the CPU when mapping this region */
 	struct kbase_mem_phy_alloc *gpu_alloc; /* the one alloc object we mmap to the GPU when mapping this region */
@@ -456,7 +456,7 @@ static inline int kbase_atomic_sub_pages(int num_pages, atomic_t *used_pages)
  * certain corner cases grow above @max_size.
  *
  * If @next_pool is not NULL, we will allocate from @next_pool before going to
- * the kernel allocator. Similarily pages can spill over to @next_pool when
+ * the kernel allocator. similarly pages can spill over to @next_pool when
  * @pool is full. Pages are zeroed before they spill over to another pool, to
  * prevent leaking information between applications.
  *

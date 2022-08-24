@@ -74,7 +74,7 @@ struct mali_pp_job {
 	 * They are "protected" by atomic operations.
 	 */
 	_mali_osk_atomic_t sub_jobs_completed;                            /**< Number of completed sub-jobs in this superjob */
-	_mali_osk_atomic_t sub_job_errors;                                /**< Bitfield with errors (errors for each single sub-job is or'ed together) */
+	_mali_osk_atomic_t sub_job_errors;                                /**< Bitfield with errors (errors for each single sub-job is or together) */
 
 	/*
 	 * These members are used by scheduler, but only when no one else

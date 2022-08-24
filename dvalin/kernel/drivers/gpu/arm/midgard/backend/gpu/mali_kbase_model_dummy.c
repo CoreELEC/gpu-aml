@@ -22,7 +22,7 @@
 /* NOTES:
  * - A default GPU can be compiled in during the build, by defining
  *   CONFIG_MALI_NO_MALI_DEFAULT_GPU. SCons sets this, which means that
- *   insmod'ing mali_kbase.ko with no arguments after a build with "scons
+ *   insmod mali_kbase.ko with no arguments after a build with "scons
  *   gpu=tXYZ" will yield the expected GPU ID for tXYZ. This can always be
  *   overridden by passing the 'no_mali_gpu' argument to insmod.
  *

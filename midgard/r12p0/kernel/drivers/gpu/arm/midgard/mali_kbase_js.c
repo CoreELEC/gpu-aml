@@ -2522,7 +2522,7 @@ bool kbase_js_dep_resolved_submit(struct kbase_context *kctx,
  *
  * Remove all post dependencies of an atom from the context ringbuffers.
  *
- * The original atom's event_code will be propogated to all dependent atoms.
+ * The original atom's event_code will be propagated to all dependent atoms.
  *
  * Context: Caller must hold the HW access lock
  */
@@ -2543,7 +2543,7 @@ static void kbase_js_evict_deps(struct kbase_context *kctx,
 
 	}
 
-	/* Has cross slot depenency. */
+	/* Has cross slot dependency. */
 	if (x_dep && (x_dep->atom_flags & (KBASE_KATOM_FLAG_JSCTX_IN_LL |
 					KBASE_KATOM_FLAG_JSCTX_RB_SUBMITTED))) {
 		/* Remove dependency.*/

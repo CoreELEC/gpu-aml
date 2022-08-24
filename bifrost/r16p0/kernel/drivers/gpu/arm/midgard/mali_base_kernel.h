@@ -348,7 +348,7 @@ struct base_mem_import_user_buffer {
 
 
 /**
- * @addtogroup base_user_api_memory_defered User-side Base Defered Memory Coherency APIs
+ * @addtogroup base_user_api_memory_deferred User-side Base Deferred Memory Coherency APIs
  * @{
  */
 
@@ -362,7 +362,7 @@ typedef struct base_syncset {
 	struct basep_syncset basep_sset;
 } base_syncset;
 
-/** @} end group base_user_api_memory_defered */
+/** @} end group base_user_api_memory_deferred */
 
 /**
  * Handle to represent imported memory object.
@@ -874,7 +874,7 @@ typedef struct base_jd_atom_v2 {
 	u16 nr_extres;			    /**< nr of external resources or JIT allocations */
 	u16 compat_core_req;	            /**< core requirements which correspond to the legacy support for UK 10.2 */
 	struct base_dependency pre_dep[2];  /**< pre-dependencies, one need to use SETTER function to assign this field,
-	this is done in order to reduce possibility of improper assigment of a dependency field */
+	this is done in order to reduce possibility of improper assignment of a dependency field */
 	base_atom_id atom_number;	    /**< unique number to identify the atom */
 	base_jd_prio prio;                  /**< Atom priority. Refer to @ref base_jd_prio for more details */
 	u8 device_nr;			    /**< coregroup when BASE_JD_REQ_SPECIFIC_COHERENT_GROUP specified */

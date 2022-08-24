@@ -72,7 +72,7 @@ static struct kbase_process *find_process_node(struct rb_node *node, pid_t tgid)
  * We maintain a rb_tree of each unique process that gets created.
  * and Each process maintains a list of kbase context.
  * This setup is currently used by kernel trace functionality
- * to trace and visualise gpu memory consumption.
+ * to trace and visualize gpu memory consumption.
  *
  * Return: 0 on success and error number on failure.
  */

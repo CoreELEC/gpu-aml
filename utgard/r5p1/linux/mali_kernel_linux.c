@@ -415,7 +415,7 @@ int mali_module_init(void)
 #if defined(CONFIG_MALI400_INTERNAL_PROFILING)
 	err = _mali_internal_profiling_init(mali_boot_profiling ? MALI_TRUE : MALI_FALSE);
 	if (0 != err) {
-		/* No biggie if we wheren't able to initialize the profiling */
+		/* No biggie if we weren't able to initialize the profiling */
 		MALI_PRINT_ERROR(("Failed to initialize profiling, feature will be unavailable\n"));
 	}
 #endif

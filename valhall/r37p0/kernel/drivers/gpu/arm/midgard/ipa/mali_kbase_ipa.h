@@ -222,7 +222,7 @@ const char *kbase_ipa_model_name_from_id(u32 gpu_id);
 const char *kbase_ipa_counter_model_name_from_id(u32 gpu_id);
 
 /**
- * kbase_ipa_init_model - Initilaize the particular IPA model
+ * kbase_ipa_init_model - Initialise the particular IPA model
  * @kbdev:      pointer to kbase device
  * @ops:        pointer to object containing model specific methods.
  *

@@ -62,7 +62,7 @@ typedef struct umpp_device
 
 /**
  * Structure tracking all memory allocations of a UMP allocation.
- * Tracks info about an mapping so we can verify cache maintenace
+ * Tracks info about an mapping so we can verify cache maintenance
  * operations and help in the unmap cleanup.
  */
 typedef struct umpp_cpu_mapping
@@ -86,7 +86,7 @@ typedef struct umpp_allocation
 	atomic_t refcount; /**< Usage count */
 
 	ump_alloc_flags flags; /**< Flags for all supported devices */
-	uint32_t management_flags; /**< Managment flags tracking */
+	uint32_t management_flags; /**< management flags tracking */
 
 	pid_t owner; /**< The process ID owning the memory if not sharable */
 
@@ -95,7 +95,7 @@ typedef struct umpp_allocation
 	void* callback_data; /**< Additional data given to release hook */
 
 	uint64_t size; /**< Size (in bytes) of the allocation */
-	uint64_t blocksCount; /**< Number of physsical blocks the allocation is built up of */
+	uint64_t blocksCount; /**< Number of physical blocks the allocation is built up of */
 	ump_dd_physical_block_64 * block_array; /**< Array, one entry per block, describing block start and length */
 
 	struct mutex     map_list_lock; /**< Lock protecting the map_list */
@@ -107,7 +107,7 @@ typedef struct umpp_allocation
 /**
  * Structure tracking use of UMP memory by a session.
  * Tracks the use of an allocation by a session so session termination can clean up any outstanding references.
- * Also protects agains non-matched release calls from user space.
+ * Also protects against non-matched release calls from user space.
  */
 typedef struct umpp_session_memory_usage
 {

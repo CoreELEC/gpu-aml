@@ -977,7 +977,7 @@ _mali_osk_errcode_t _mali_ukk_get_api_version(_mali_uk_get_api_version_s *args)
 	MALI_DEBUG_ASSERT_POINTER(args);
 	MALI_DEBUG_ASSERT(NULL != (void *)(uintptr_t)args->ctx);
 
-	/* check compatability */
+	/* check compatibility */
 	if (args->version == _MALI_UK_API_VERSION) {
 		args->compatible = 1;
 	} else {
@@ -995,7 +995,7 @@ _mali_osk_errcode_t _mali_ukk_get_api_version_v2(_mali_uk_get_api_version_v2_s *
 	MALI_DEBUG_ASSERT_POINTER(args);
 	MALI_DEBUG_ASSERT(NULL != (void *)(uintptr_t)args->ctx);
 
-	/* check compatability */
+	/* check compatibility */
 	if (args->version == _MALI_UK_API_VERSION) {
 		args->compatible = 1;
 	} else {

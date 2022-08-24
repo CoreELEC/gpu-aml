@@ -49,7 +49,7 @@ int ump_get_api_version_wrapper(u32 __user *argument, struct ump_session_data *s
 
 	version_info.ctx = NULL;
 
-	/* Copy ouput data back to user space */
+	/* Copy output data back to user space */
 	if (0 != copy_to_user(argument, &version_info, sizeof(version_info))) {
 		MSG_ERR(("copy_to_user() failed in ump_ioctl_get_api_version()\n"));
 		return -EFAULT;

@@ -295,7 +295,7 @@ typedef enum base_backing_threshold_status {
 } base_backing_threshold_status;
 
 /**
- * @addtogroup base_user_api_memory_defered User-side Base Defered Memory Coherency APIs
+ * @addtogroup base_user_api_memory_deferred User-side Base Deferred Memory Coherency APIs
  * @{
  */
 
@@ -309,7 +309,7 @@ typedef struct base_syncset {
 	struct basep_syncset basep_sset;
 } base_syncset;
 
-/** @} end group base_user_api_memory_defered */
+/** @} end group base_user_api_memory_deferred */
 
 /**
  * Handle to represent imported memory object.
@@ -358,7 +358,7 @@ typedef struct base_fence {
 /**
  * @brief Per-job data
  *
- * This structure is used to store per-job data, and is completly unused
+ * This structure is used to store per-job data, and is completely unused
  * by the Base driver. It can be used to store things such as callback
  * function pointer, data to handle job completion. It is guaranteed to be
  * untouched by the Base driver.
@@ -771,7 +771,7 @@ typedef struct base_jd_atom_v2 {
 	u16 nr_extres;			    /**< nr of external resources */
 	base_jd_core_req core_req;	    /**< core requirements */
 	struct base_dependency pre_dep[2];  /**< pre-dependencies, one need to use SETTER function to assign this field,
-	this is done in order to reduce possibility of improper assigment of a dependency field */
+	this is done in order to reduce possibility of improper assignment of a dependency field */
 	base_atom_id atom_number;	    /**< unique number to identify the atom */
 	base_jd_prio prio;                  /**< Atom priority. Refer to @ref base_jd_prio for more details */
 	u8 device_nr;			    /**< coregroup when BASE_JD_REQ_SPECIFIC_COHERENT_GROUP specified */
@@ -1176,7 +1176,7 @@ typedef struct base_dump_cpu_gpu_counters {
  * has been configured correctly with the right set of Platform Config
  * Compile-time Properties.
  *
- * As a consistant guide across the entire DDK, the choice for dynamic or
+ * As a consistent guide across the entire DDK, the choice for dynamic or
  * compile-time should consider the following, in order:
  * -# Can the code be written so that it doesn't need to know the
  * implementation limits at all?
@@ -1341,7 +1341,7 @@ typedef struct base_dump_cpu_gpu_counters {
  * population count, since faulty cores may be disabled during production,
  * producing a non-contiguous mask.
  *
- * The memory requirements for this algoirthm can be determined either by a u64
+ * The memory requirements for this algorithm can be determined either by a u64
  * population count on the L2_PRESENT mask (a LUT helper already is
  * requried for the above), or simple assumption that there can be no more than
  * 16 coherent groups, since core groups are typically 4 cores.

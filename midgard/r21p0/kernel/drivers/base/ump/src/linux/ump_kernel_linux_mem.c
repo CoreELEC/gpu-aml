@@ -25,7 +25,7 @@
 #include <linux/fs.h>                /* file system operations */
 #include <linux/cdev.h>              /* character device definitions */
 #include <linux/ioport.h>            /* request_mem_region */
-#include <linux/mm.h> /* memory mananger definitions */
+#include <linux/mm.h> /* memory manager definitions */
 #include <linux/pfn.h>
 #include <linux/highmem.h> /*kmap*/
 
@@ -220,7 +220,7 @@ int umpp_linux_mmap(struct file * filp, struct vm_area_struct * vma)
 
 		for (i = 0; i < (length >> PAGE_SHIFT); i++)
 		{
-			/* check if we've overrrun the current block, if so move to the next block */
+			/* check if we've overrun the current block, if so move to the next block */
 			if (paddr >= (alloc->block_array[block_idx].addr + alloc->block_array[block_idx].size))
 			{
 				block_idx++;

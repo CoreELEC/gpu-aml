@@ -47,7 +47,7 @@ extern struct mali_pmu_core *mali_global_pmu_core;
 
 /** @brief Initialisation of MALI PMU
  *
- * This is called from entry point of the driver in order to create and intialize the PMU resource
+ * This is called from entry point of the driver in order to create and initialize the PMU resource
  *
  * @param resource it will be a pointer to a PMU resource
  * @param number_of_pp_cores Number of found PP resources in configuration

@@ -72,7 +72,7 @@ struct kbase_gpuprops_regdump {
  * @l2_present_lo: L2 cache present bitmap. Low word.
  * @l2_present_hi: L2 cache present bitmap. High word.
  *
- * Register dump structure used to store the resgisters data realated to the
+ * Register dump structure used to store the resgisters data related to the
  * current resources allocated to the GPU.
  */
 struct kbase_current_config_regdump {
@@ -100,13 +100,13 @@ struct kbase_gpu_mmu_props {
 /**
  * struct max_config_props - Properties based on the maximum resources
  *                           available.
- * @l2_slices: Maximum number of L2 slices that can be assinged to the GPU
+ * @l2_slices: Maximum number of L2 slices that can be assigned to the GPU
  *             during runtime.
  * @padding:   Padding to a multiple of 64 bits.
  * @core_mask: Largest core mask bitmap that can be assigned to the GPU during
  *             runtime.
  *
- * Properties based on the maximum resources available (not necessarly
+ * Properties based on the maximum resources available (not necessarily
  * allocated at that moment). Used to provide the maximum configuration to the
  * userspace allowing the applications to allocate enough resources in case the
  * real allocated resources change.

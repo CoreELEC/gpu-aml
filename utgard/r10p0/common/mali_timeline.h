@@ -255,7 +255,7 @@ extern _mali_osk_atomic_t virt_pp_tracker_count;
  *
  * Returns true if a is after b, false if a is before or equal to b.
  *
- * This funcion ignores MALI_TIMELINE_MAX_POINT_SPAN. Wrapping is supported and
+ * This function ignores MALI_TIMELINE_MAX_POINT_SPAN. Wrapping is supported and
  * the result will be correct if the points is less then UINT_MAX/2 apart.
  *
  * @param a Point on timeline

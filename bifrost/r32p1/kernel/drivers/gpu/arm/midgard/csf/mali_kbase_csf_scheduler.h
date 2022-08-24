@@ -396,7 +396,7 @@ void kbase_csf_scheduler_pm_idle(struct kbase_device *kbdev);
  * @kbdev: Instance of a GPU platform device that implements a CSF interface.
  *
  * This function will make the scheduler resume the scheduling of queue groups
- * and take the power managemenet reference, if there are any runnable groups.
+ * and take the power management reference, if there are any runnable groups.
  */
 void kbase_csf_scheduler_pm_resume(struct kbase_device *kbdev);
 
@@ -406,7 +406,7 @@ void kbase_csf_scheduler_pm_resume(struct kbase_device *kbdev);
  * @kbdev: Instance of a GPU platform device that implements a CSF interface.
  *
  * This function will make the scheduler suspend all the running queue groups
- * and drop its power managemenet reference.
+ * and drop its power management reference.
  */
 void kbase_csf_scheduler_pm_suspend(struct kbase_device *kbdev);
 

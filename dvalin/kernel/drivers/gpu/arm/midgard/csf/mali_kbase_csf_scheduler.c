@@ -1551,7 +1551,7 @@ int kbase_csf_scheduler_queue_start(struct kbase_queue *queue)
 					 * the queue may actually in transition
 					 * hence the said kick would enter the
 					 * kernel as the hw_active flag is yet
-					 * to be set. The sheduler needs to
+					 * to be set. The scheduler needs to
 					 * give a kick to the corresponding
 					 * user door-bell on such a case.
 					 */
@@ -1965,7 +1965,7 @@ void remove_group_from_runnable(struct kbase_csf_scheduler *const scheduler,
 
 	spin_lock_irqsave(&scheduler->interrupt_lock, flags);
 	/* The below condition will be true when the group running in protected
-	 * mode is being terminated but the protected mode exit interrupt was't
+	 * mode is being terminated but the protected mode exit interrupt wasn't
 	 * received. This can happen if the FW got stuck during protected mode
 	 * for some reason (like GPU page fault or some internal error).
 	 * In normal cases FW is expected to send the protected mode exit
@@ -3653,7 +3653,7 @@ static void scheduler_group_check_protm_enter(struct kbase_device *const kbdev,
 		       kbdev->protected_mode;
 	KBASE_KTRACE_ADD_CSF_GRP(kbdev, SCHEDULER_PROTM_ENTER_CHECK, input_grp, protm_in_use);
 
-	/* Firmware samples the PROTM_PEND ACK bit for CSs when
+	/* firmware samples the PROTM_PEND ACK bit for CSs when
 	 * Host sends PROTM_ENTER global request. So if PROTM_PEND ACK bit
 	 * is set for a CS after Host has sent the PROTM_ENTER
 	 * Global request, then there is no guarantee that firmware will
@@ -5264,7 +5264,7 @@ void kbase_csf_scheduler_reset(struct kbase_device *kbdev)
 	 * directly looped over the active queue groups.
 	 */
 	list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
-		/* Firmware reload would reinitialize the CSG & CS interface IO
+		/* firmware reload would reinitialize the CSG & CS interface IO
 		 * pages, so just need to internally mark the currently active
 		 * queue groups as terminated (similar to the unexpected OoM
 		 * event case).

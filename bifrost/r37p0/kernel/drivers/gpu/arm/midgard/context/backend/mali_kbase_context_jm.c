@@ -192,7 +192,7 @@ struct kbase_context *kbase_create_context(struct kbase_device *kbdev,
 	if (WARN_ON(flags != (flags & BASEP_CONTEXT_CREATE_KERNEL_FLAGS)))
 		return NULL;
 
-	/* zero-inited as lot of code assume it's zero'ed out on create */
+	/* zero-inited as lot of code assume it's zeroed out on create */
 	kctx = vzalloc(sizeof(*kctx));
 	if (WARN_ON(!kctx))
 		return NULL;

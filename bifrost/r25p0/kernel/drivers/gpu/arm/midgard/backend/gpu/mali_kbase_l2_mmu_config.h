@@ -48,7 +48,7 @@
  * Use this function to initialise the hw_quirks_mmu field, for instance to set
  * the MAX_READS and MAX_WRITES to sane defaults for each GPU.
  *
- * Return: Zero for succeess or a Linux error code
+ * Return: Zero for success or a Linux error code
  */
 int kbase_set_mmu_quirks(struct kbase_device *kbdev);
 

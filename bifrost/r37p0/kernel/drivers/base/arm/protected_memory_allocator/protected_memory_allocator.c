@@ -166,7 +166,7 @@ static void large_granularity_alloc(struct simple_pma_device *const epma_dev,
 		return;
 
 	/*
-	 * Are there anough bitfield array elements (groups of 64 pages)
+	 * Are there enough bitfield array elements (groups of 64 pages)
 	 * between the start element and the end of the bitfield array
 	 * to fulfill the request?
 	 */
@@ -225,7 +225,7 @@ static struct protected_memory_allocation *simple_pma_alloc_page(
 	 * bitfield. For this, the large-granularity allocator is utilised.
 	 *
 	 * Allocations of lower-order can only be allocated entirely within the
-	 * same group of 64 pages, with the small-ganularity allocator  (ie
+	 * same group of 64 pages, with the small-granularity allocator  (ie
 	 * always from the same 64-bit page-allocation bitfield) - again, to
 	 * keep things as simple as possible, but flexible to meet
 	 * current needs.
@@ -303,7 +303,7 @@ static struct protected_memory_allocation *simple_pma_alloc_page(
 		count = 0;
 
 		for (i = 0; i < alloc_pages_bitmap_size; i++) {
-			/* Are all the pages free for the i'th u64 bitfield element? */
+			/* Are all the pages free for the ith u64 bitfield element? */
 			if (bitfields[i] == 0) {
 				count += PAGES_PER_BITFIELD_ELEM;
 

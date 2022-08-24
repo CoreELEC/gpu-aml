@@ -33,7 +33,7 @@
  * @context:    KUTF context
  * @str_size:   Pointer to an integer to receive the size of the string
  *
- * If no line is available then this function will wait (interruptibly) until
+ * If no line is available then this function will wait (interruption) until
  * a line is available.
  *
  * Return: The line dequeued, ERR_PTR(-EINTR) if interrupted or NULL on end

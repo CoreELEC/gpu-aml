@@ -106,7 +106,7 @@ int kbasep_js_kctx_init(struct kbase_context *const kctx);
  * failed initialization of its jctx.sched_info member, to give efficient
  * error-path code.
  *
- * For this to work, the struct kbase_context must be zero intitialized before
+ * For this to work, the struct kbase_context must be zero initialized before
  * passing to the kbase_js_init() function.
  *
  * It is a Programming Error to call this whilst there are still jobs
@@ -317,7 +317,7 @@ void kbasep_js_runpool_requeue_or_kill_ctx(struct kbase_device *kbdev,
  * run out of jobs).
  *
  * If the context does get scheduled out, then The following actions will be
- * taken as part of deschduling a context:
+ * taken as part of descheduling a context:
  * For the context being descheduled:
  * * If the context is in the processing of dying (all the jobs are being
  * removed from it), then descheduling also kills off any jobs remaining in the

@@ -87,7 +87,7 @@ void umpp_core_session_end(umpp_session *session)
 	}
 
 	/* we should now not hold any imported memory objects,
-	 * detatch all import handlers */
+	 * detach all import handlers */
 	umpp_import_handlers_term(session);
 
 	mutex_destroy(&session->session_lock);
@@ -571,7 +571,7 @@ void umpp_dd_cpu_msync_now(ump_dd_handle mem, ump_cpu_msync_op op, void * addres
 		size_t offset = ((uintptr_t)vaddr) & ((1u << PAGE_SHIFT)-1);
 		size_t sz = min((size_t)PAGE_SIZE - offset, size);
 
-		/* check if we've overrrun the current block, if so move to the next block */
+		/* check if we've overrun the current block, if so move to the next block */
 		if (paddr >= (alloc->block_array[block_idx].addr + alloc->block_array[block_idx].size))
 		{
 			block_idx++;

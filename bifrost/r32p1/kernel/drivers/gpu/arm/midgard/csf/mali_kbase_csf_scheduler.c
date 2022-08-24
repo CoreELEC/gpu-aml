@@ -1091,7 +1091,7 @@ int kbase_csf_scheduler_queue_start(struct kbase_queue *queue)
 					 * the queue may actually in transition
 					 * hence the said kick would enter the
 					 * kernel as the hw_active flag is yet
-					 * to be set. The sheduler needs to
+					 * to be set. The scheduler needs to
 					 * give a kick to the corresponding
 					 * user door-bell on such a case.
 					 */
@@ -3079,7 +3079,7 @@ static void scheduler_group_check_protm_enter(struct kbase_device *const kbdev,
 	KBASE_KTRACE_ADD_CSF_GRP(kbdev, SCHEDULER_CHECK_PROTM_ENTER, input_grp,
 				 protm_in_use);
 
-	/* Firmware samples the PROTM_PEND ACK bit for CSs when
+	/* firmware samples the PROTM_PEND ACK bit for CSs when
 	 * Host sends PROTM_ENTER global request. So if PROTM_PEND ACK bit
 	 * is set for a CS after Host has sent the PROTM_ENTER
 	 * Global request, then there is no guarantee that firmware will
@@ -3160,7 +3160,7 @@ static void scheduler_apply(struct kbase_device *kbdev)
 		}
 	}
 
-	/* Initialize the remaining avialable csg slots for the tick/tock */
+	/* Initialize the remaining available csg slots for the tick/tock */
 	scheduler->remaining_tick_slots = available_csg_slots;
 
 	/* If there are spare slots, apply heads in the list */
@@ -3765,7 +3765,7 @@ static void scheduler_handle_idle_timer_onoff(struct kbase_device *kbdev)
 	 * Any changes that follow (after the scheduler has dropped the
 	 * scheduler->lock), reflects async operations to the scheduler,
 	 * such as a group gets killed (evicted) or a new group inserted,
-	 * cqs wait-sync triggered state transtion etc.
+	 * cqs wait-sync triggered state transition etc.
 	 *
 	 * The condition for enable the idle timer is that there is no
 	 * non-idle groups off-slots. If there is non-idle group off-slot,
@@ -4240,7 +4240,7 @@ void kbase_csf_scheduler_reset(struct kbase_device *kbdev)
 	 * directly looped over the active queue groups.
 	 */
 	list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
-		/* Firmware reload would reinitialize the CSG & CS interface IO
+		/* firmware reload would reinitialize the CSG & CS interface IO
 		 * pages, so just need to internally mark the currently active
 		 * queue groups as terminated (similar to the unexpected OoM
 		 * event case).

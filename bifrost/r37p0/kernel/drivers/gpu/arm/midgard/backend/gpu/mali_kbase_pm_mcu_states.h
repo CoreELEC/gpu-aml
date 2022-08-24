@@ -52,7 +52,7 @@
  *                                      enabled cores.
  * @HCTL_SHADERS_READY_OFF:             MCU has halted and cores need to be powered down
  * @HCTL_SHADERS_PEND_OFF:              Cores are transitioning to power down.
- * @HCTL_CORES_DOWN_SCALE_NOTIFY_PEND:  Firmware has been informed to stop using
+ * @HCTL_CORES_DOWN_SCALE_NOTIFY_PEND:  firmware has been informed to stop using
  *                                      specific cores, due to core_mask change request.
  *                                      After the ACK from FW, the wait will be done for
  *                                      undesired cores to become inactive.

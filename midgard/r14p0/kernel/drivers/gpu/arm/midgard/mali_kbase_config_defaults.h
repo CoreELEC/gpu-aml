@@ -58,10 +58,10 @@
  * Default Job Scheduler minimum runtime value of a context for CFS, in
  * time_slices relative to that of the least-run context.
  *
- * This is a measure of how much preferrential treatment is given to a
+ * This is a measure of how much preferential treatment is given to a
  * context that is not run very often.
  *
- * Specficially, this value defines how many timeslices such a context is
+ * Specifically, this value defines how many timeslices such a context is
  * (initially) allowed to use at once. Such contexts (e.g. 'interactive'
  * processes) will appear near the front of the CFS queue, and can initially
  * use more time than contexts that run continuously (e.g. 'batch'

@@ -154,7 +154,7 @@ void kbase_ipa_term(struct kbase_device *kbdev);
 int kbase_ipa_model_recalculate(struct kbase_ipa_model *model);
 
 /**
- * kbase_ipa_init_model - Initilaize the particular IPA model
+ * kbase_ipa_init_model - Initialise the particular IPA model
  * @kbdev:      pointer to the IPA model object, already initialized
  * @ops:        pointer to object containing model specific methods.
  *

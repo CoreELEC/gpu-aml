@@ -193,7 +193,7 @@ MALI_STATIC_INLINE void _mali_osk_list_move_list(_mali_osk_list_t *old_list, _ma
  *
  * Each list must be of structures of one type, and must link the same members
  * together, otherwise it will not be possible to correctly recover the
- * sturctures that the lists link.
+ * structures that the lists link.
  *
  * @note no type or memory checking occurs to ensure that a structure does in
  * fact exist for the list entry, and that it is being recovered with respect

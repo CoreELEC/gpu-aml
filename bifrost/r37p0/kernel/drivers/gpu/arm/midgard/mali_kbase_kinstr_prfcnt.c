@@ -2103,7 +2103,7 @@ int kbase_kinstr_prfcnt_setup(struct kbase_kinstr_prfcnt_context *kinstr_ctx,
 
 	item_count = setup->in.request_item_count;
 
-	/* Limiting the request items to 2x of the expected: acommodating
+	/* Limiting the request items to 2x of the expected: accommodating
 	 * moderate duplications but rejecting excessive abuses.
 	 */
 	if (!setup->in.requests_ptr || (item_count < 2) || (setup->in.request_item_size == 0) ||

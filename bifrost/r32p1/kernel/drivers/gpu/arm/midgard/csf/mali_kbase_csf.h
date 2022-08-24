@@ -531,7 +531,7 @@ extern const u8 kbasep_csf_relative_to_queue_group_priority[KBASE_QUEUE_GROUP_PR
  *
  * @priority: kbase relative priority
  *
- * This will convert the monotonically increasing realtive priority to the
+ * This will convert the monotonically increasing relative priority to the
  * fixed base priority list.
  *
  * Return: base_queue_group_priority priority.
@@ -548,7 +548,7 @@ static inline u8 kbase_csf_priority_relative_to_queue_group_priority(u8 priority
  *
  * @priority: base_queue_group_priority priority
  *
- * This will convert the fixed base priority list to monotonically increasing realtive priority.
+ * This will convert the fixed base priority list to monotonically increasing relative priority.
  *
  * Return: kbase relative priority.
  */

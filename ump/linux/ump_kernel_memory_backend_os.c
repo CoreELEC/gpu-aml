@@ -161,7 +161,7 @@ static int os_allocate(void *ctx, ump_dd_mem *descriptor)
 		pages_allocated++;
 	}
 
-	DBG_MSG(5, ("Alloce for ID:%2d got %d pages, cached: %d\n", descriptor->secure_id,  pages_allocated));
+	DBG_MSG(5, ("Allocate for ID:%2d got %d pages, cached: %d\n", descriptor->secure_id,  pages_allocated));
 
 	if (left) {
 		DBG_MSG(1, ("Failed to allocate needed pages\n"));

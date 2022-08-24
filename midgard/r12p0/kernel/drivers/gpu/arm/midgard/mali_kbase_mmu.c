@@ -130,7 +130,7 @@ void page_fault_worker(struct work_struct *data)
 
 	case AS_FAULTSTATUS_EXCEPTION_CODE_TRANSTAB_BUS_FAULT:
 		kbase_mmu_report_fault_and_kill(kctx, faulting_as,
-				"Tranlation table bus fault");
+				"Translation table bus fault");
 		goto fault_done;
 
 	case AS_FAULTSTATUS_EXCEPTION_CODE_ACCESS_FLAG:
@@ -187,7 +187,7 @@ void page_fault_worker(struct work_struct *data)
 
 	/* find the size we need to grow it by */
 	/* we know the result fit in a size_t due to kbase_region_tracker_find_region_enclosing_address
-	 * validating the fault_adress to be within a size_t from the start_pfn */
+	 * validating the fault_address to be within a size_t from the start_pfn */
 	fault_rel_pfn = fault_pfn - region->start_pfn;
 
 	if (fault_rel_pfn < kbase_reg_current_backed_size(region)) {
@@ -730,7 +730,7 @@ KBASE_EXPORT_TEST_API(kbase_mmu_insert_pages);
 
 /**
  * This function is responsible for validating the MMU PTs
- * triggering reguired flushes.
+ * triggering required flushes.
  *
  * * IMPORTANT: This uses kbasep_js_runpool_release_ctx() when the context is
  * currently scheduled into the runpool, and so potentially uses a lot of locks.
@@ -1702,7 +1702,7 @@ void kbase_as_poking_timer_release_atom(struct kbase_device *kbdev, struct kbase
 			as->poke_state = 0u;
 
 			/* The poke associated with the atom has now finished. If this is
-			 * also the last atom on the context, then we can guarentee no more
+			 * also the last atom on the context, then we can guarantee no more
 			 * pokes (and thus no more poking register accesses) will occur on
 			 * the context until new atoms are run */
 		}
@@ -1719,7 +1719,7 @@ void kbase_mmu_interrupt_process(struct kbase_device *kbdev, struct kbase_contex
 	lockdep_assert_held(&kbdev->js_data.runpool_irq.lock);
 
 	if (!kctx) {
-		dev_warn(kbdev->dev, "%s in AS%d at 0x%016llx with no context present! Suprious IRQ or SW Design Error?\n",
+		dev_warn(kbdev->dev, "%s in AS%d at 0x%016llx with no context present! Spurious IRQ or SW Design Error?\n",
 				 kbase_as_has_bus_fault(as) ? "Bus error" : "Page fault",
 				 as->number, as->fault_addr);
 

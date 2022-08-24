@@ -71,7 +71,7 @@ typedef void kbasep_js_ctx_job_cb(struct kbase_device *kbdev,
  * The boolean value of the context attributes often affect scheduling
  * decisions, such as affinities to use and job slots to use.
  *
- * To accomodate changes of state in the context, each attribute is refcounted
+ * To accommodate changes of state in the context, each attribute is refcounted
  * in the context, and in the runpool for all running contexts. Specifically:
  * - The runpool holds a refcount of how many contexts in the runpool have this
  * attribute.
@@ -225,7 +225,7 @@ enum {
  *	(excluding ones that are not submitting jobs)
  * @nr_all_contexts_running: Number of currently scheduled contexts (including
  *	ones that are not submitting jobs)
- * @js_reqs: Core Requirements to match up with base_js_atom's core_req memeber
+ * @js_reqs: Core Requirements to match up with base_js_atom's core_req member
  *	@note This is a write-once member, and so no locking is required to
  *	read
  * @scheduling_period_ns:	Value for JS_SCHEDULING_PERIOD_NS
@@ -246,7 +246,7 @@ enum {
  * 	read
  * @nr_contexts_pullable:Number of contexts that can currently be pulled from
  * @nr_contexts_runnable:Number of contexts that can either be pulled from or
- * 	arecurrently running
+ * 	are currently running
  * @soft_job_timeout_ms:Value for JS_SOFT_JOB_TIMEOUT
  * @queue_mutex: Queue Lock, used to access the Policy's queue of contexts
  * 	independently of the Run Pool.
@@ -329,11 +329,11 @@ struct kbasep_js_device_data {
  *	jobs. See kbase_jd_context::job_nr for such jobs
  * @ctx.ctx_attr_ref_count: Context Attributes ref count. Each is large enough
  *	to hold a refcount of the number of atoms on the context.
- * @ctx.is_scheduled_wait: Wait queue to wait for KCTX_SHEDULED flag state
+ * @ctx.is_scheduled_wait: Wait queue to wait for KCTX_SCHEDULED flag state
  *	changes.
  * @ctx.ctx_list_entry: Link implementing JS queues. Context can be present on
  *	one list per job slot.
- * @init_status: The initalized-flag is placed at the end, to avoid
+ * @init_status: The initialized-flag is placed at the end, to avoid
  *	cache-pollution (we should only be using this during init/term paths)
  *
  * This is a substructure in the struct kbase_context that encapsulates all the

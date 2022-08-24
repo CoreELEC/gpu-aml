@@ -515,7 +515,7 @@ _mali_osk_errcode_t _mali_ukk_mem_cow(_mali_uk_cow_mem_s *args)
 {
 	_mali_osk_errcode_t ret = _MALI_OSK_ERR_FAULT;
 
-	/* create new alloction if needed */
+	/* create new allocation if needed */
 
 	/* Get the target allocation and it's backend*/
 
@@ -538,6 +538,6 @@ _mali_osk_errcode_t _mali_ukk_mem_cow(_mali_uk_cow_mem_s *args)
 
 
 /**
-*  deattach a backend from an exist mali allocation
+*  detach a backend from an exist mali allocation
 */
 

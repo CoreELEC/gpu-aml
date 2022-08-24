@@ -1466,7 +1466,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 	}
 
 	/* Make a set of checks to see if the context should be scheduled out.
-	 * Note that there'll always be at least 1 reference to the context
+	 * Note that there will always be at least 1 reference to the context
 	 * which was previously acquired by kbasep_js_schedule_ctx(). */
 	if (new_ref_count == 1 &&
 		(!kbasep_js_is_submit_allowed(js_devdata, kctx) ||
@@ -1495,7 +1495,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 		/* Ctx Attribute handling
 		 *
 		 * Releasing atoms attributes must either happen before this, or
-		 * after the KCTX_SHEDULED flag is changed, otherwise we
+		 * after the KCTX_SCHEDULED flag is changed, otherwise we
 		 * double-decount the attributes
 		 */
 		runpool_ctx_attr_change |=
@@ -2127,7 +2127,7 @@ static void kbase_js_move_to_tree(struct kbase_jd_atom *katom)
  *
  * Remove all post dependencies of an atom from the context ringbuffers.
  *
- * The original atom's event_code will be propogated to all dependent atoms.
+ * The original atom's event_code will be propagated to all dependent atoms.
  *
  * Context: Caller must hold the HW access lock
  */
@@ -2146,7 +2146,7 @@ static void kbase_js_evict_deps(struct kbase_context *kctx,
 
 	}
 
-	/* Has cross slot depenency. */
+	/* Has cross slot dependency. */
 	if (x_dep && (x_dep->atom_flags & (KBASE_KATOM_FLAG_JSCTX_IN_TREE |
 				KBASE_KATOM_FLAG_JSCTX_IN_X_DEP_LIST))) {
 		/* Remove dependency.*/

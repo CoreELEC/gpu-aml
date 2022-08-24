@@ -783,7 +783,7 @@ static u32 convert_dur_to_idle_count(struct kbase_device *kbdev, const u32 dur_m
 		if (kbdev->pm.clk_rtm.clks[0])
 			freq = kbdev->pm.clk_rtm.clks[0]->clock_val;
 		else
-			dev_warn(kbdev->dev, "No GPU clock, unexpected intregration issue!");
+			dev_warn(kbdev->dev, "No GPU clock, unexpected integration issue!");
 		spin_unlock(&kbdev->pm.clk_rtm.lock);
 
 		dev_info(kbdev->dev, "Can't get the timestamp frequency, "

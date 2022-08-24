@@ -166,7 +166,7 @@ void kds_resource_set_release(struct kds_resource_set **pprset);
  * resource.
  *
  * It is a bug to call this from atomic contexts and from within
- * a kds callback that now owns the kds_rseource.
+ * a kds callback that now owns the kds_resource.
  */
 
 void kds_resource_set_release_sync(struct kds_resource_set **pprset);

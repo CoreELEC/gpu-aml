@@ -8,7 +8,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <linux/fs.h>       /* file system operations */
-#include <linux/slab.h>     /* memort allocation functions */
+#include <linux/slab.h>     /* memory allocation functions */
 #include <asm/uaccess.h>    /* user space access */
 
 #include "mali_ukk.h"

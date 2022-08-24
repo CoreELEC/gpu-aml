@@ -65,7 +65,7 @@ TRACE_EVENT(mali_timeline_event,
 	   );
 
 /**
- * Define a tracepoint used to regsiter the value of a hardware counter.
+ * Define a tracepoint used to register the value of a hardware counter.
  * Hardware counters belonging to the vertex or fragment processor are
  * reported via this tracepoint each frame, whilst L2 cache hardware
  * counters are reported continuously.

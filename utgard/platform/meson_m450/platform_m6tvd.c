@@ -72,7 +72,7 @@ static mali_plat_info_t mali_plat_data = {
 	.cfg_min_clock = CFG_MIN_CLOCK,
 
 	.clk = mali_dvfs_clk, /* clock source table. */
-	.clk_sample = mali_dvfs_clk_sample, /* freqency table for show. */
+	.clk_sample = mali_dvfs_clk_sample, /* frequency table for show. */
 	.clk_len = sizeof(mali_dvfs_clk) / sizeof(mali_dvfs_clk[0]),
 	.have_switch = 0,
 };

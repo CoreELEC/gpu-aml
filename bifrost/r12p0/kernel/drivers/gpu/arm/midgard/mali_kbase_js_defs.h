@@ -84,7 +84,7 @@ typedef void (*kbasep_js_ctx_job_cb)(struct kbase_device *kbdev, struct kbase_jd
  * The boolean value of the context attributes often affect scheduling
  * decisions, such as affinities to use and job slots to use.
  *
- * To accomodate changes of state in the context, each attribute is refcounted
+ * To accommodate changes of state in the context, each attribute is refcounted
  * in the context, and in the runpool for all running contexts. Specifically:
  * - The runpool holds a refcount of how many contexts in the runpool have this
  * attribute.
@@ -283,7 +283,7 @@ struct kbasep_js_device_data {
 	/** Number of currently scheduled contexts (including ones that are not submitting jobs) */
 	s8 nr_all_contexts_running;
 
-	/** Core Requirements to match up with base_js_atom's core_req memeber
+	/** Core Requirements to match up with base_js_atom's core_req member
 	 * @note This is a write-once member, and so no locking is required to read */
 	base_jd_core_req js_reqs[BASE_JM_MAX_NR_SLOTS];
 
@@ -309,7 +309,7 @@ struct kbasep_js_device_data {
 	bool softstop_always;
 #endif				/* CONFIG_MALI_DEBUG */
 
-	/** The initalized-flag is placed at the end, to avoid cache-pollution (we should
+	/** The initialized-flag is placed at the end, to avoid cache-pollution (we should
 	 * only be using this during init/term paths).
 	 * @note This is a write-once member, and so no locking is required to read */
 	int init_status;
@@ -356,7 +356,7 @@ struct kbasep_js_kctx_info {
 		u32 ctx_attr_ref_count[KBASEP_JS_CTX_ATTR_COUNT];
 
 		/**
-		 * Wait queue to wait for KCTX_SHEDULED flag state changes.
+		 * Wait queue to wait for KCTX_SCHEDULED flag state changes.
 		 * */
 		wait_queue_head_t is_scheduled_wait;
 
@@ -366,7 +366,7 @@ struct kbasep_js_kctx_info {
 		struct list_head ctx_list_entry[BASE_JM_MAX_NR_SLOTS];
 	} ctx;
 
-	/* The initalized-flag is placed at the end, to avoid cache-pollution (we should
+	/* The initialized-flag is placed at the end, to avoid cache-pollution (we should
 	 * only be using this during init/term paths) */
 	int init_status;
 };

@@ -289,7 +289,7 @@ static void update_active_group_status(struct seq_file *file,
 	if (kbdev->csf.scheduler.state == SCHED_SLEEPING)
 		return;
 
-	/* Ring the User doobell shared between the queues bound to this
+	/* Ring the User doorbell shared between the queues bound to this
 	 * group, to have FW update the CS_EXTRACT for all the queues
 	 * bound to the group. Ring early so that FW gets adequate time
 	 * for the handling.
@@ -365,7 +365,7 @@ static void kbasep_csf_scheduler_dump_active_group(struct seq_file *file,
 			exclusive,
 			idle);
 
-		/* Wait for the User doobell ring to take effect */
+		/* Wait for the User doorbell ring to take effect */
 		if (kbdev->csf.scheduler.state != SCHED_SLEEPING)
 			msleep(100);
 	} else {

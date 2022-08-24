@@ -359,7 +359,7 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	clk_sample = mpdata->clk_sample;
 	for (i = 0; i< mpdata->dvfs_table_size; i++) {
 		_dev_info(&pdev->dev, "====================%d====================\n"
-		            "clk_freq=%10d, clk_parent=%9s, voltage=%d, keep_count=%d, threshod=<%d %d>, clk_sample=%d\n",
+		            "clk_freq=%10d, clk_parent=%9s, voltage=%d, keep_count=%d, threshold=<%d %d>, clk_sample=%d\n",
 					i,
 					dvfs_tbl->clk_freq, dvfs_tbl->clk_parent,
 					dvfs_tbl->voltage,  dvfs_tbl->keep_count,
@@ -402,10 +402,10 @@ int mali_clock_init_clk_tree(struct platform_device* pdev)
 		clk_prepare_enable(clk_mali);
 	clk_set_rate(clk_mali, dvfs_tbl->clk_freq);
 #else
-	/* pay attetion of the sequence,
+	/* pay attention of the sequence,
 	 * if the set clock first,then enable clock
 	 * the clock may not be ready really.
-	 * which is relaated with our double gpu clk.
+	 * which is related with our double gpu clk.
 	 */
 	pr_info("kernel version >= 5.4\n");
 	if (__clk_is_enabled(clk_mali))
@@ -731,7 +731,7 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	clk_sample = mpdata->clk_sample;
 	for (i = 0; i< mpdata->dvfs_table_size; i++) {
 		_dev_info(&pdev->dev, "====================%d====================\n"
-		            "clk_freq=%10d, clk_parent=%9s, voltage=%d, keep_count=%d, threshod=<%d %d>, clk_sample=%d\n",
+		            "clk_freq=%10d, clk_parent=%9s, voltage=%d, keep_count=%d, threshold=<%d %d>, clk_sample=%d\n",
 					i,
 					dvfs_tbl->clk_freq, dvfs_tbl->clk_parent,
 					dvfs_tbl->voltage,  dvfs_tbl->keep_count,

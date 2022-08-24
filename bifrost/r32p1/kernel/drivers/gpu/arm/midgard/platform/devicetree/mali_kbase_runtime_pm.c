@@ -180,7 +180,7 @@ static void mali_reset(void)
 }
 
 /*
- * 1.mali-reset;2.init pwr_override1;3.pwr_on one core manully
+ * 1.mali-reset;2.init pwr_override1;3.pwr_on one core manually
  */
 static void mali_hw_init(struct kbase_device *kbdev)
 {

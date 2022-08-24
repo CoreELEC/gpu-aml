@@ -675,7 +675,7 @@ int mali_mem_swap_in_pages(struct mali_pp_job *job)
 		mutex_unlock(&mali_idr_mutex);
 		MALI_DEBUG_ASSERT(NULL != mem_bkend);
 
-		/* We neednot hold backend's lock here, race safe.*/
+		/* We needn't hold backend's lock here, race safe.*/
 		if ((MALI_MEM_COW == mem_bkend->type) &&
 		    (!(mem_bkend->flags & MALI_MEM_BACKEND_FLAG_SWAP_COWED))) {
 			continue;
@@ -685,7 +685,7 @@ int mali_mem_swap_in_pages(struct mali_pp_job *job)
 
 		/* When swap_in_success is MALI_FALSE, it means this job has memory backend that could not be swapped in,
 		 * and it will be aborted in mali scheduler, so here, we just mark those memory cookies which
-		 * should not be swapped out when delete job to invalide */
+		 * should not be swapped out when delete job to invalidate */
 		if (MALI_FALSE == swap_in_success) {
 			job->memory_cookies[i] = MALI_SWAP_INVALIDATE_MALI_ADDRESS;
 			mutex_unlock(&mem_bkend->mutex);
@@ -785,7 +785,7 @@ int mali_mem_swap_out_pages(struct mali_pp_job *job)
 		mutex_unlock(&mali_idr_mutex);
 		MALI_DEBUG_ASSERT(NULL != mem_bkend);
 
-		/* We neednot hold backend's lock here, race safe.*/
+		/* We needn't hold backend's lock here, race safe.*/
 		if ((MALI_MEM_COW == mem_bkend->type) &&
 		    (!(mem_bkend->flags & MALI_MEM_BACKEND_FLAG_SWAP_COWED))) {
 			continue;

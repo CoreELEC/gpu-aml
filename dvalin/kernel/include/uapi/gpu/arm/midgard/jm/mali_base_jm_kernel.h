@@ -745,7 +745,7 @@ enum {
  *                                         Such codes are never returned to
  *                                         user-space.
  * @BASE_JD_EVENT_RANGE_KERNEL_ONLY_END: End of kernel-only status codes.
- * @BASE_JD_EVENT_DONE: atom has completed successfull
+ * @BASE_JD_EVENT_DONE: atom has completed successfully
  * @BASE_JD_EVENT_JOB_CONFIG_FAULT: Atom dependencies configuration error which
  *                                  shall result in a failed atom
  * @BASE_JD_EVENT_JOB_POWER_FAULT:  The job could not be executed because the

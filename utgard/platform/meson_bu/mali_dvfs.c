@@ -177,7 +177,7 @@ void mali_dev_restore(void)
 	}
 }
 
-/* Function that platfrom report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
+/* Function that platform report it's clock info which driver can set, needed when CONFIG_MALI_DVFS enabled */
 static void meson_platform_get_clock_info(struct mali_gpu_clock **data) {
     if (pmali_plat) {
         meson_gpu_clk_info.item = pmali_plat->clk_items;
@@ -196,7 +196,7 @@ static int meson_platform_get_freq(void) {
     return  cur_gpu_clk_index;
 }
 
-/* Fuction that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
+/* Function that platform callback for freq setting, needed when CONFIG_MALI_DVFS enabled */
 static int meson_platform_set_freq(int setting_clock_step) {
 
     if (exec_gpu_clk_index == setting_clock_step) {

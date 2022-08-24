@@ -108,7 +108,7 @@ static int pl111_gem_object_create(struct drm_device *dev, u64 size,
 			bo->type |= PL111_BOT_DMA;
 			/*
 			 * Non-contiguous allocation request changed to
-			 * contigous
+			 * contiguous
 			 */
 			DRM_INFO("non-contig alloc to contig %lu > %lu pages.",
 					n_pages, SG_MAX_SINGLE_ALLOC);

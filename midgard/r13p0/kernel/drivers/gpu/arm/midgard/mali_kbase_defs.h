@@ -20,7 +20,7 @@
 /**
  * @file mali_kbase_defs.h
  *
- * Defintions (types, defines, etcs) common to Kbase. They are placed here to
+ * Definitions (types, defines, etcs) common to Kbase. They are placed here to
  * allow the hierarchy of header files to work.
  */
 
@@ -107,7 +107,7 @@
  *
  * @note Soft stop will still be used for non-scheduling purposes e.g. when terminating a context.
  *
- * @note if not in use, define this value to 0 instead of \#undef'ing it
+ * @note if not in use, define this value to 0 instead of \#undef it
  */
 #define KBASE_DISABLE_SCHEDULING_SOFT_STOPS 0
 
@@ -118,7 +118,7 @@
  *
  * @note Hard stop will still be used for non-scheduling purposes e.g. when terminating a context.
  *
- * @note if not in use, define this value to 0 instead of \#undef'ing it
+ * @note if not in use, define this value to 0 instead of \#undef it
  */
 #define KBASE_DISABLE_SCHEDULING_HARD_STOPS 0
 
@@ -302,7 +302,7 @@ enum kbase_atom_gpu_rb_state {
 	KBASE_ATOM_GPU_RB_NOT_IN_SLOT_RB,
 	/* Atom is in slot ringbuffer but is blocked on a previous atom */
 	KBASE_ATOM_GPU_RB_WAITING_BLOCKED,
-	/* Atom is in slot ringbuffer but is waiting for proected mode exit */
+	/* Atom is in slot ringbuffer but is waiting for protected mode exit */
 	KBASE_ATOM_GPU_RB_WAITING_PROTECTED_MODE_EXIT,
 	/* Atom is in slot ringbuffer but is waiting for cores to become
 	 * available */
@@ -413,7 +413,7 @@ struct kbase_jd_atom {
 		 * then all callbacks are taken off the list and freed.
 		 */
 		struct list_head callbacks;
-		/* Atomic counter of number of outstandind dma-buf fence
+		/* Atomic counter of number of outstanding dma-buf fence
 		 * dependencies for this atom. When dep_count reaches 0 the
 		 * atom may be queued.
 		 *
@@ -547,7 +547,7 @@ struct kbase_jd_context {
 	 *
 	 * Since the waitq is only set under kbase_jd_context::lock,
 	 * the waiter should also briefly obtain and drop kbase_jd_context::lock to
-	 * guarentee that the setter has completed its work on the kbase_context
+	 * guarantee that the setter has completed its work on the kbase_context
 	 *
 	 * This must be updated atomically with:
 	 * - kbase_jd_context::job_nr */
@@ -672,7 +672,7 @@ struct kbase_trace {
  * Any of these events might be missed, so they should not be relied upon to
  * find the precise state of the GPU at a particular time in the
  * trace. Overall, we should get a high percentage of these events for
- * statisical purposes, and so a few missing should not be a problem */
+ * statistical purposes, and so a few missing should not be a problem */
 enum kbase_timeline_pm_event {
 	/* helper for tests */
 	KBASEP_TIMELINE_PM_EVENT_FIRST,

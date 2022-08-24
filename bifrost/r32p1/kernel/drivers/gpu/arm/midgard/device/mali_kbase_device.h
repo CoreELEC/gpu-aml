@@ -170,7 +170,7 @@ int kbase_gpu_wait_cache_clean_timeout(struct kbase_device *kbdev,
 void kbase_gpu_cache_clean_wait_complete(struct kbase_device *kbdev);
 
 /**
- * kbase_clean_caches_done - Issue preiously queued cache clean request or
+ * kbase_clean_caches_done - Issue previously queued cache clean request or
  *                           wake up the requester that issued cache clean.
  * @kbdev: Kbase device
  *

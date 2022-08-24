@@ -43,7 +43,7 @@ static int kbase_as_fault_read(struct seq_file *sfile, void *data)
 
 		if (kbdev->debugfs_as_read_bitmap & (1ULL << as_no)) {
 
-			/* don't show this one again until another fault occors */
+			/* don't show this one again until another fault occurs */
 			kbdev->debugfs_as_read_bitmap &= ~(1ULL << as_no);
 
 			/* output the last page fault addr */

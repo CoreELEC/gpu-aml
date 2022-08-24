@@ -175,7 +175,7 @@ _mali_osk_errcode_t _mali_internal_profiling_stop(u32 *count)
 		return _MALI_OSK_ERR_INVALID_ARGS; /* invalid to call this function in this state */
 	}
 
-	/* go into return state (user to retreive events), no more events will be added after this */
+	/* go into return state (user to retrieve events), no more events will be added after this */
 	prof_state = MALI_PROFILING_STATE_RETURN;
 
 	unregister_trace_mali_timeline_event(probe_mali_timeline_event, NULL);

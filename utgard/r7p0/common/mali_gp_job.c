@@ -146,7 +146,7 @@ struct mali_gp_job *mali_gp_job_create(struct mali_session_data *session, _mali_
 				goto fail;
 			}
 
-			/* do preparetion for each allocation */
+			/* do preparation for each allocation */
 			list_for_each_entry_safe(alloc_node, tmp_node, &job->varying_alloc, node) {
 				if (unlikely(mali_mem_defer_bind_allocation_prepare(alloc_node->alloc, &job->vary_todo, &job->required_varying_memsize) != _MALI_OSK_ERR_OK)) {
 					MALI_PRINT_ERROR(("Mali GP job: mali_mem_defer_bind_allocation_prepare failed!\n"));

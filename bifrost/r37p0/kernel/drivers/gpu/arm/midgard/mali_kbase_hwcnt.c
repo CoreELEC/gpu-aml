@@ -644,7 +644,7 @@ void kbase_hwcnt_accumulator_release(struct kbase_hwcnt_accumulator *accum)
 	/* Double release is a programming error */
 	WARN_ON(!hctx->accum_inited);
 
-	/* Disable the context to ensure the accumulator is inaccesible while
+	/* Disable the context to ensure the accumulator is inaccessible while
 	 * we're destroying it. This performs the corresponding disable count
 	 * increment to the decrement done during acquisition.
 	 */

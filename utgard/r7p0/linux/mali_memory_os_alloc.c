@@ -664,7 +664,7 @@ static void mali_mem_os_trim_page_table_page_pool(void)
 
 	/* Keep 2 page table pages for each 1024 pages in the page cache. */
 	nr_to_keep = mali_mem_os_allocator.pool_count / 512;
-	/* And a minimum of eight pages, to accomodate new sessions. */
+	/* And a minimum of eight pages, to accommodate new sessions. */
 	nr_to_keep += 8;
 
 	if (spin_trylock(&mali_mem_page_table_page_pool.lock) == 0) return;
@@ -716,7 +716,7 @@ static unsigned long mali_mem_os_shrink(struct shrinker *shrinker, struct shrink
 	}
 
 	if (mali_mem_os_allocator.pool_count == 0) {
-		/* No pages availble */
+		/* No pages available */
 		spin_unlock_irqrestore(&mali_mem_os_allocator.pool_lock, flags);
 		return 0;
 	}

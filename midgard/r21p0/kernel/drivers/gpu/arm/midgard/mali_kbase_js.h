@@ -99,7 +99,7 @@ void kbasep_js_devdata_term(struct kbase_device *kbdev);
  * It does not register any jobs owned by the struct kbase_context with the scheduler.
  * Those must be separately registered by kbasep_js_add_job().
  *
- * The struct kbase_context must be zero intitialized before passing to the
+ * The struct kbase_context must be zero initialized before passing to the
  * kbase_js_init() function. This is to give efficient error path code.
  */
 int kbasep_js_kctx_init(struct kbase_context * const kctx);
@@ -113,7 +113,7 @@ int kbasep_js_kctx_init(struct kbase_context * const kctx);
  * initialization of its jctx.sched_info member, to give efficient error-path
  * code.
  *
- * For this to work, the struct kbase_context must be zero intitialized before passing
+ * For this to work, the struct kbase_context must be zero initialized before passing
  * to the kbase_js_init() function.
  *
  * It is a Programming Error to call this whilst there are still jobs
@@ -142,8 +142,8 @@ void kbasep_js_kctx_term(struct kbase_context *kctx);
  * this context to be scheduled in.
  *
  * If the context is already scheduled on the RunPool, then adding a job to it
- * is guarenteed not to update the Policy Queue. And so, the caller is
- * guarenteed to not need to try scheduling a context from the Run Pool - it
+ * is guaranteed not to update the Policy Queue. And so, the caller is
+ * guaranteed to not need to try scheduling a context from the Run Pool - it
  * can safely assert that the result is false.
  *
  * It is a programming error to have more than U32_MAX jobs in flight at a time.
@@ -300,11 +300,11 @@ void kbasep_js_runpool_requeue_or_kill_ctx(struct kbase_device *kbdev, struct kb
  * scheduled out.
  *
  * When the refcount reaches zero and the context \em might be scheduled out
- * (depending on whether the Scheudling Policy has deemed it so, or if it has run
+ * (depending on whether the Scheduling Policy has deemed it so, or if it has run
  * out of jobs).
  *
  * If the context does get scheduled out, then The following actions will be
- * taken as part of deschduling a context:
+ * taken as part of descheduling a context:
  * - For the context being descheduled:
  *  - If the context is in the processing of dying (all the jobs are being
  * removed from it), then descheduling also kills off any jobs remaining in the
@@ -432,7 +432,7 @@ void kbase_js_try_run_jobs(struct kbase_device *kbdev);
  * This will eventually cause all Power Management active references held by
  * contexts on the runpool to be released, without running any more atoms.
  *
- * The caller must then wait for all Power Mangement active refcount to become
+ * The caller must then wait for all Power Management active refcount to become
  * zero before completing the suspend.
  *
  * The emptying mechanism may take some time to complete, since it can wait for
@@ -886,7 +886,7 @@ kbasep_js_relative_priority_to_atom[KBASE_JS_ATOM_SCHED_PRIO_COUNT];
  * This function will convert base_jd_prio values for successively lower
  * priorities into a monotonically increasing sequence. That is, the lower the
  * base_jd_prio priority, the higher the value produced by this function. This
- * is in accordance with how the rest of the kernel treates priority.
+ * is in accordance with how the rest of the kernel treats priority.
  *
  * The mapping is 1:1 and the size of the valid input range is the same as the
  * size of the valid output range, i.e.

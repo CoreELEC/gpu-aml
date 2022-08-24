@@ -96,7 +96,7 @@ static inline struct tagged_addr as_tagged(phys_addr_t phys)
 
 /**
  * as_tagged_tag - Form the tagged address by storing the tag or metadata in the
- *                 lower order 12 bits of physial address
+ *                 lower order 12 bits of physical address
  * @phys: physical address to be converted to tagged address
  * @tag:  tag to be stored along with the physical address.
  *

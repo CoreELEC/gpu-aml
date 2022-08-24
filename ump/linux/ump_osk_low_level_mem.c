@@ -236,7 +236,7 @@ void _ump_osk_msync(ump_dd_mem *mem, void *virt, u32 offset, u32 size, ump_uk_ms
 			} else {
 				if (session_data->cache_operations_ongoing) {
 					session_data->has_pending_level1_cache_flush++;
-					DBG_MSG(4, ("UMP[%02u] Defering the L1 flush. Nr pending:%d\n", mem->secure_id, session_data->has_pending_level1_cache_flush));
+					DBG_MSG(4, ("UMP[%02u] Deferring the L1 flush. Nr pending:%d\n", mem->secure_id, session_data->has_pending_level1_cache_flush));
 				} else {
 					/* Flushing the L1 cache for each switch_user() if ump_cache_operations_control(START) is not called */
 					level1_cache_flush_all();

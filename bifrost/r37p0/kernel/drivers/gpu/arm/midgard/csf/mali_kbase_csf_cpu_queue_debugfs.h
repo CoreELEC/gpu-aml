@@ -51,7 +51,7 @@ void kbase_csf_cpu_queue_debugfs_init(struct kbase_context *kctx);
 /**
  * kbase_csf_cpu_queue_read_dump_req - Read cpu queue dump request event
  *
- * @kctx: The kbase_context which cpu queue dumpped belongs to
+ * @kctx: The kbase_context which cpu queue dumped belongs to
  * @req:  Notification with cpu queue dump request.
  *
  * Return: true if needs CPU queue dump, or false otherwise.
@@ -62,7 +62,7 @@ bool kbase_csf_cpu_queue_read_dump_req(struct kbase_context *kctx,
 /**
  * kbase_csf_cpu_queue_dump_needed - Check the requirement for cpu queue dump
  *
- * @kctx: The kbase_context which cpu queue dumpped belongs to
+ * @kctx: The kbase_context which cpu queue dumped belongs to
  *
  * Return: true if it needs cpu queue dump, or false otherwise.
  */
@@ -79,7 +79,7 @@ static inline bool kbase_csf_cpu_queue_dump_needed(struct kbase_context *kctx)
 /**
  * kbase_csf_cpu_queue_dump - dump buffer containing cpu queue information to debugfs
  *
- * @kctx: The kbase_context which cpu queue dumpped belongs to
+ * @kctx: The kbase_context which cpu queue dumped belongs to
  * @buffer: Buffer containing the cpu queue information.
  * @buf_size: Buffer size.
  *

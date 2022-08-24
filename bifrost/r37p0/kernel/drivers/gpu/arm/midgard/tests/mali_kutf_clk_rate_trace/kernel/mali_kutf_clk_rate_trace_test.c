@@ -77,7 +77,7 @@ struct clk_trace_snapshot {
  * @listener:         Clock rate change listener structure.
  * @invoke_notify:    When true, invoke notify command is being executed.
  * @snapshot:         Clock trace update snapshot data array. A snapshot
- *                    for each clock contains info accumulated beteen two
+ *                    for each clock contains info accumulated between two
  *                    GET_TRACE_SNAPSHOT requests.
  * @nclks:            Number of clocks visible to the trace portal.
  * @pm_ctx_cnt:       Net count of PM (Power Management) context INC/DEC
@@ -87,7 +87,7 @@ struct clk_trace_snapshot {
  * @total_update_cnt: Total number of received trace write callbacks.
  * @server_state:     Portal server operational state.
  * @result_msg:       Message for the test result.
- * @test_status:      Portal test reslt status.
+ * @test_status:      Portal test result status.
  */
 struct kutf_clk_rate_trace_fixture_data {
 	struct kbase_device *kbdev;
@@ -412,9 +412,9 @@ static const char *kutf_clk_trace_do_close_portal(struct kutf_context *context,
 			"{SEQ:%d, PM_CTX_CNT:%u}", seq, data->pm_ctx_cnt);
 
 	if (kutf_helper_send_named_str(context, "ACK", portal_msg_buf)) {
-		pr_warn("Error in sending ack for " CLOSE_PORTAL "reuquest\n");
+		pr_warn("Error in sending ack for " CLOSE_PORTAL "request\n");
 		errmsg = kutf_dsprintf(&context->fixture_pool,
-			"Error in sending ack for " CLOSE_PORTAL "reuquest");
+			"Error in sending ack for " CLOSE_PORTAL "request");
 	}
 
 	return errmsg;
@@ -469,7 +469,7 @@ static const char *kutf_clk_trace_do_get_platform(
 	WARN_ON(cmd->portal_cmd != PORTAL_CMD_GET_PLATFORM);
 
 	if (kutf_helper_send_named_str(context, "ACK", portal_msg_buf)) {
-		pr_warn("Error in sending ack for " CLOSE_PORTAL "reuquest\n");
+		pr_warn("Error in sending ack for " CLOSE_PORTAL "request\n");
 		errmsg = kutf_dsprintf(&context->fixture_pool,
 			"Error in sending ack for " GET_PLATFORM "request");
 	}
@@ -615,7 +615,7 @@ static int kutf_clk_trace_do_nack_response(struct kutf_context *context,
  * This function carries out some basic test on the tracing operation:
  *     1). GPU idle on test start, trace rate should be 0 (low power state)
  *     2). Make sure GPU is powered up, the trace rate should match
- *         that from the clcok manager's internal recorded rate
+ *         that from the clock manager's internal recorded rate
  *     3). If the GPU active transition occurs following 2), there
  *         must be rate change event from tracing.
  */
@@ -717,7 +717,7 @@ static void kutf_clk_trace_no_clks_dummy(struct kutf_context *context)
 	}
 
 	kutf_clk_trace_flag_result(context, KUTF_RESULT_FATAL,
-				"No clocks visble to the portal");
+				"No clocks visable to the portal");
 }
 
 /**
@@ -901,7 +901,7 @@ static void mali_kutf_clk_rate_trace_remove_fixture(
 }
 
 /**
- * mali_kutf_clk_rate_trace_test_module_init() - Entry point for test mdoule.
+ * mali_kutf_clk_rate_trace_test_module_init() - Entry point for test module.
  *
  * Return: 0 on success, error code otherwise
  */

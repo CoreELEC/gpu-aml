@@ -1091,7 +1091,7 @@ void kbase_mem_pool_set_max_size(struct kbase_mem_pool *pool, size_t max_size);
  * Adds @nr_to_grow pages to the pool. Note that this may cause the pool to
  * become larger than the maximum size specified.
  *
- * Return: 0 on success, -ENOMEM if unable to allocate sufficent pages
+ * Return: 0 on success, -ENOMEM if unable to allocate sufficient pages
  */
 int kbase_mem_pool_grow(struct kbase_mem_pool *pool, size_t nr_to_grow);
 

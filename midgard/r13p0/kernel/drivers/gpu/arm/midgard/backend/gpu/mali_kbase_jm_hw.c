@@ -377,7 +377,7 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 				 * that the value read back from
 				 * JOB_IRQ_JS_STATE is the correct number of
 				 * remaining jobs because the failed job will
-				 * have prevented any futher jobs from starting
+				 * have prevented any further jobs from starting
 				 * execution.
 				 */
 				u32 rawstat = kbase_reg_read(kbdev,
@@ -831,7 +831,7 @@ void kbase_jm_wait_for_zero_jobs(struct kbase_context *kctx)
 							HRTIMER_MODE_REL);
 
 	/* Wait for all jobs to finish, and for the context to be not-scheduled
-	 * (due to kbase_job_zap_context(), we also guarentee it's not in the JS
+	 * (due to kbase_job_zap_context(), we also guarantee it's not in the JS
 	 * policy queue either */
 	wait_event(kctx->jctx.zero_jobs_wait, kctx->jctx.job_nr == 0);
 	wait_event(kctx->jctx.sched_info.ctx.is_scheduled_wait,
@@ -951,7 +951,7 @@ static bool kbasep_check_for_afbc_on_slot(struct kbase_device *kbdev,
 	if (target_katom)
 		return !!(target_katom->core_req & BASE_JD_REQ_FS_AFBC);
 
-	/* Otherwise, we must chweck the hardware to see if it has atoms from
+	/* Otherwise, we must check the hardware to see if it has atoms from
 	 * this context with AFBC. */
 	for (i = 0; i < kbase_backend_nr_atoms_on_slot(kbdev, js); i++) {
 		struct kbase_jd_atom *katom;
@@ -1063,7 +1063,7 @@ void kbase_job_slot_hardstop(struct kbase_context *kctx, int js,
 }
 
 /**
- * kbase_job_check_enter_disjoint - potentiall enter disjoint mode
+ * kbase_job_check_enter_disjoint - potential enter disjoint mode
  * @kbdev: kbase device
  * @action: the event which has occurred
  * @core_reqs: core requirements of the atom

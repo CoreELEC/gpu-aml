@@ -416,7 +416,7 @@ extern const u8 kbasep_csf_relative_to_queue_group_priority[KBASE_QUEUE_GROUP_PR
  *
  * @priority: kbase relative priority
  *
- * This will convert the monotonically increasing realtive priority to the
+ * This will convert the monotonically increasing relative priority to the
  * fixed base priority list.
  *
  * Return: base_queue_group_priority priority.
@@ -433,7 +433,7 @@ static inline u8 kbase_csf_priority_relative_to_queue_group_priority(u8 priority
  *
  * @priority: base_queue_group_priority priority
  *
- * This will convert the fixed base priority list to monotonically increasing realtive priority.
+ * This will convert the fixed base priority list to monotonically increasing relative priority.
  *
  * Return: kbase relative priority.
  */
@@ -446,12 +446,12 @@ static inline u8 kbase_csf_priority_queue_group_priority_to_relative(u8 priority
 }
 
 /**
- * kbase_csf_ktrace_gpu_cycle_cnt - Wrapper to retreive the GPU cycle counter
+ * kbase_csf_ktrace_gpu_cycle_cnt - Wrapper to retrieve the GPU cycle counter
  *                                  value for Ktrace purpose.
  *
  * @kbdev: Instance of a GPU platform device that implements a CSF interface.
  *
- * This function is just a wrapper to retreive the GPU cycle counter value, to
+ * This function is just a wrapper to retrieve the GPU cycle counter value, to
  * avoid any overhead on Release builds where Ktrace is disabled by default.
  *
  * Return: Snapshot of the GPU cycle count register.

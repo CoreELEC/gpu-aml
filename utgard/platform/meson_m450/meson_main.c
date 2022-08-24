@@ -75,7 +75,7 @@ int mali_pdev_pre_init(struct platform_device* ptr_plt_dev)
 {
 	MALI_DEBUG_PRINT(4, ("mali_platform_device_register() called\n"));
 	if (mali_gpu_data.shared_mem_size < 10) {
-		MALI_DEBUG_PRINT(2, ("mali os memory didn't configered, set to default(512M)\n"));
+		MALI_DEBUG_PRINT(2, ("mali os memory didn't configured, set to default(512M)\n"));
 		mali_gpu_data.shared_mem_size = 1024 * 1024 *1024;
 	}
 	return mali_meson_init_start(ptr_plt_dev);

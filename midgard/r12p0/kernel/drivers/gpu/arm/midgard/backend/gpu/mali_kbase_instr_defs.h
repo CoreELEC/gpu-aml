@@ -39,7 +39,7 @@ enum kbase_instr_state {
 	/* Cache clean completed, and either a) a dump is complete, or
 	 * b) instrumentation can now be setup. */
 	KBASE_INSTR_STATE_CLEANED,
-	/* kbasep_reset_timeout_worker() has started (but not compelted) a
+	/* kbasep_reset_timeout_worker() has started (but not completed) a
 	 * reset. This generally indicates the current action should be aborted,
 	 * and kbasep_reset_timeout_worker() will handle the cleanup */
 	KBASE_INSTR_STATE_RESETTING,

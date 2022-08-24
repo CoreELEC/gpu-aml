@@ -393,11 +393,11 @@ enum tl_msg_id_aux {
 		"@p", \
 		"kcpu_queue") \
 	TP_DESC(KBASE_TL_EVENT_KCPUQUEUE_EXECUTE_DEBUGCOPY_START, \
-		"KCPU Queue starts an array of Debug Copys", \
+		"KCPU Queue starts an array of Debug Copies", \
 		"@p", \
 		"kcpu_queue") \
 	TP_DESC(KBASE_TL_EVENT_KCPUQUEUE_EXECUTE_DEBUGCOPY_END, \
-		"KCPU Queue ends an array of Debug Copys", \
+		"KCPU Queue ends an array of Debug Copies", \
 		"@p", \
 		"kcpu_queue") \
 	TP_DESC(KBASE_TL_EVENT_KCPUQUEUE_EXECUTE_MAP_IMPORT_START, \

@@ -263,7 +263,7 @@ void kbase_jd_zap_context(struct kbase_context *kctx);
  *
  * @katom: Pointer to the atom that completed the execution
  * @post_immediately: Flag indicating that completion event can be posted
- *                    immediately for @katom and the other atoms depdendent
+ *                    immediately for @katom and the other atoms dependent
  *                    on @katom which also completed execution. The flag is
  *                    false only for the case where the function is called by
  *                    kbase_jd_done_worker() on the completion of atom running
@@ -354,7 +354,7 @@ void kbase_job_slot_hardstop(struct kbase_context *kctx, int js,
 		struct kbase_jd_atom *target_katom);
 
 /**
- * kbase_job_check_enter_disjoint - potentiall enter disjoint mode
+ * kbase_job_check_enter_disjoint - potential enter disjoint mode
  * @kbdev: kbase device
  * @action: the event which has occurred
  * @core_reqs: core requirements of the atom

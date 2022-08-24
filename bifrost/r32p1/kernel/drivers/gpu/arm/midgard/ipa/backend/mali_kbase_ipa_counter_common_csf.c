@@ -76,7 +76,7 @@ static s64 kbase_ipa_group_energy(s32 coeff, u64 counter_value)
  * @model_data: Pointer to counter model data
  *
  * Register IPA counter model as a client of kbase_ipa_control, which
- * provides an interface to retreive the accumulated value of hardware
+ * provides an interface to retrieve the accumulated value of hardware
  * counters to calculate energy consumption.
  *
  * Return: 0 on success, or an error code.

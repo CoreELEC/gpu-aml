@@ -281,7 +281,7 @@
 
 /*
  * In Debug build,
- * GPU_IRQ_REG_COMMON | POWER_CHANGED_SINGLE is used to clear and enable interupts sources of GPU_IRQ
+ * GPU_IRQ_REG_COMMON | POWER_CHANGED_SINGLE is used to clear and enable interrupts sources of GPU_IRQ
  * by writing it onto GPU_IRQ_CLEAR/MASK registers.
  *
  * In Release build,

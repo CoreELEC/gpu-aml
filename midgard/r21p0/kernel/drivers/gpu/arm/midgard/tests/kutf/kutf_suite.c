@@ -912,7 +912,7 @@ struct kutf_application *kutf_create_application(const char *name)
 
 	app->dir = debugfs_create_dir(name, base_dir);
 	if (!app->dir) {
-		pr_err("Failed to create debugfs direcotry when creating application %s\n", name);
+		pr_err("Failed to create debugfs directory when creating application %s\n", name);
 		goto fail_debugfs;
 	}
 

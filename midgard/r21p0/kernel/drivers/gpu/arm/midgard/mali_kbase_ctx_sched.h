@@ -41,7 +41,7 @@
  *
  * Return: 0 for success, otherwise failure
  *
- * This must be called during device initilisation. The number of hardware
+ * This must be called during device initialization. The number of hardware
  * address spaces must already be established before calling this function.
  */
 int kbase_ctx_sched_init(struct kbase_device *kbdev);

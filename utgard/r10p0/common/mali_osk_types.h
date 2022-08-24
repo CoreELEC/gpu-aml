@@ -75,7 +75,7 @@ typedef unsigned long mali_bool;
  * Each OS may use its own set of error codes, and may require that the
  * User/Kernel interface take certain error code. This means that the common
  * error codes need to be sufficiently rich to pass the correct error code
- * thorugh from the OSK to U/K layer, across all OSs.
+ * through from the OSK to U/K layer, across all OSs.
  *
  * The result is that some error codes will appear redundant on some OSs.
  * Under all OSs, the OSK layer must translate native OS error codes to
@@ -89,7 +89,7 @@ typedef enum {
 	_MALI_OSK_ERR_INVALID_ARGS = -3, /**< Invalid arguments passed through User/Kernel interface */
 	_MALI_OSK_ERR_NOMEM = -4, /**< Insufficient memory */
 	_MALI_OSK_ERR_TIMEOUT = -5, /**< Timeout occurred */
-	_MALI_OSK_ERR_RESTARTSYSCALL = -6, /**< Special: On certain OSs, must report when an interruptable mutex is interrupted. Ignore otherwise. */
+	_MALI_OSK_ERR_RESTARTSYSCALL = -6, /**< Special: On certain OSs, must report when an interruptible mutex is interrupted. Ignore otherwise. */
 	_MALI_OSK_ERR_ITEM_NOT_FOUND = -7, /**< Table Lookup failed */
 	_MALI_OSK_ERR_BUSY = -8, /**< Device/operation is busy. Try again later */
 	_MALI_OSK_ERR_UNSUPPORTED = -9, /**< Optional part of the interface used, and is unsupported */
@@ -151,7 +151,7 @@ typedef _mali_osk_errcode_t (*_mali_osk_irq_ack_t)(void *arg);
  * context
  *
  * If an IRQ upper-half handler requires more work to be done than can be
- * acheived in an IRQ context, then it may defer the work with
+ * achieved in an IRQ context, then it may defer the work with
  * _mali_osk_wq_schedule_work(). Refer to \ref _mali_osk_wq_create_work() for
  * more information.
  *
@@ -354,8 +354,8 @@ typedef struct _mali_io_address *mali_io_address;
  * control over mappings. Compare with the mali_memory_allocation_flag type,
  * which acts over an entire range
  *
- * These may be OR'd together with bitwise OR (|), but must be cast back into
- * the type after OR'ing.
+ * These may be OR together with bitwise OR (|), but must be cast back into
+ * the type after OR.
  */
 typedef enum {
 	_MALI_OSK_MEM_MAPREGION_FLAG_OS_ALLOCATED_PHYSADDR = 0x1, /**< Physical address is OS Allocated */
@@ -387,12 +387,12 @@ typedef struct _mali_osk_notification_t_struct {
  * a timer callback will be executed in IRQ context. Therefore, restrictions
  * may apply on what can be done inside the timer callback.
  *
- * If a timer requires more work to be done than can be acheived in an IRQ
+ * If a timer requires more work to be done than can be achieved in an IRQ
  * context, then it may defer the work with a work-queue. For example, it may
  * use \ref _mali_osk_wq_schedule_work() to make use of a bottom-half handler
  * to carry out the remaining work.
  *
- * Stopping the timer with \ref _mali_osk_timer_del() blocks on compeletion of
+ * Stopping the timer with \ref _mali_osk_timer_del() blocks on completion of
  * the callback. Therefore, the callback may not obtain any mutexes also held
  * by any callers of _mali_osk_timer_del(). Otherwise, a deadlock may occur.
  *

@@ -120,9 +120,9 @@ _mali_osk_errcode_t _mali_osk_profiling_clear(void);
 mali_bool _mali_osk_profiling_is_recording(void);
 
 /**
- * Checks if profiling data is available for retrival
+ * Checks if profiling data is available for retrieval
  *
- * @return MALI_TRUE if profiling data is avaiable, MALI_FALSE if not
+ * @return MALI_TRUE if profiling data is available, MALI_FALSE if not
  */
 mali_bool _mali_osk_profiling_have_recording(void);
 

@@ -55,7 +55,7 @@ extern "C" {
  * identifier to select a UKK client to the uku_open() function.
  *
  * When a new UKK client driver is created a new identifier needs to be added to the uk_client_id
- * enumeration and the uku_open() implemenation for the various OS ports need to be updated to
+ * enumeration and the uku_open() implementation for the various OS ports need to be updated to
  * provide a mapping of the identifier to the OS specific device name.
  *
  */

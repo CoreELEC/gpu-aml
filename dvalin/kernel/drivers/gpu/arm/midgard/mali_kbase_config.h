@@ -280,7 +280,7 @@ struct kbase_pm_callback_conf {
 	 * this feature.
 	 *
 	 * Return 0 if GPU can be suspended, positive value if it can not be
-	 * suspeneded by runtime PM, else OS error code
+	 * suspended by runtime PM, else OS error code
 	 */
 	int (*power_runtime_idle_callback)(struct kbase_device *kbdev);
 

@@ -50,7 +50,7 @@
  *                                 its internal PM_CTX_COUNT. If this increase
  *                                 yielded a count of 0 -> 1 change, the portal
  *                                 will initiate a PM_CTX_ACTIVE call to the
- *                                 Kbase power management. Futher increase
+ *                                 Kbase power management. Further increase
  *                                 requests will limit to only affect the
  *                                 portal internal count value.
  * @PORTAL_CMD_DEC_PM_CTX_CNT:     Request the clock trace portal to decrease
@@ -94,10 +94,10 @@ enum kbasep_clk_rate_trace_req {
  * value. Example (manual script here for illustration):
  *   exec 5<>run                   # open the portal kutf run as fd-5
  *   echo GET_CLK_RATE_MGR=1 >&5   # send the cmd and sequence number 1
- *   head -n 1 <&5                 # read back the 1-line server reseponse
+ *   head -n 1 <&5                 # read back the 1-line server response
  *     ACK="{SEQ:1, RATE:[0x1ad27480], GPU_IDLE:1}"   # response string
  *   echo GET_TRACE_SNAPSHOT=1 >&5 # send the cmd and sequence number 1
- *   head -n 1 <&5                 # read back the 1-line server reseponse
+ *   head -n 1 <&5                 # read back the 1-line server response
  *     ACK="{SEQ:1, SNAPSHOT_ARRAY:[(0x0, 0x1ad27480, 1, 0)]}"
  *   echo CLOSE_PORTAL=1 >&5       # close the portal
  *   cat <&5                       # read back all the response lines

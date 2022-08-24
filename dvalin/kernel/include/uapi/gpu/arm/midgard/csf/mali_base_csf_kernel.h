@@ -102,7 +102,7 @@
 /* Enable KBase tracepoints for CSF builds */
 #define BASE_TLSTREAM_ENABLE_CSF_TRACEPOINTS (1 << 2)
 
-/* Enable additional CSF Firmware side tracepoints */
+/* Enable additional CSF firmware side tracepoints */
 #define BASE_TLSTREAM_ENABLE_CSFFW_TRACEPOINTS (1 << 3)
 
 #define BASE_TLSTREAM_FLAGS_MASK (BASE_TLSTREAM_ENABLE_LATENCY_TRACEPOINTS | \

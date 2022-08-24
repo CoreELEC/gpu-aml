@@ -25,7 +25,7 @@
 /**
  * @file mali_kbase_defs.h
  *
- * Defintions (types, defines, etcs) common to Kbase. They are placed here to
+ * Definitions (types, defines, etcs) common to Kbase. They are placed here to
  * allow the hierarchy of header files to work.
  */
 
@@ -537,7 +537,7 @@ struct kbase_mmu_mode const *kbase_mmu_mode_get_aarch64(void);
 /**
  * enum kbase_devfreq_work_type - The type of work to perform in the devfreq
  *                                suspend/resume worker.
- * @DEVFREQ_WORK_NONE:    Initilisation state.
+ * @DEVFREQ_WORK_NONE:    Initialization state.
  * @DEVFREQ_WORK_SUSPEND: Call devfreq_suspend_device().
  * @DEVFREQ_WORK_RESUME:  Call devfreq_resume_device().
  */
@@ -641,7 +641,7 @@ struct kbase_devfreq_queue_info {
  * @as:                    Array of objects representing address spaces of GPU.
  * @as_free:               Bitpattern of free/available GPU address spaces.
  * @as_to_kctx:            Array of pointers to struct kbase_context, having
- *                         GPU adrress spaces assigned to them.
+ *                         GPU address spaces assigned to them.
  * @mmu_mask_change:       Lock to serialize the access to MMU interrupt mask
  *                         register used in the handling of Bus & Page faults.
  * @gpu_props:             Object containing complete information about the
@@ -1231,7 +1231,7 @@ struct kbase_reg_zone {
  * @api_version:          contains the version number for User/kernel interface,
  *                        used for compatibility check.
  * @event_list:           list of posted events about completed atoms, to be sent to
- *                        event handling thread of Userpsace.
+ *                        event handling thread of Userspace.
  * @event_coalesce_list:  list containing events corresponding to successive atoms
  *                        which have requested deferred delivery of the completion
  *                        events to Userspace.
@@ -1277,7 +1277,7 @@ struct kbase_reg_zone {
  *                        in the mmap handler.
  * @pending_regions:      Array containing pointers to memory region structures,
  *                        used in conjunction with @cookies bitmask mainly for
- *                        providing a mechansim to have the same value for CPU &
+ *                        providing a mechanism to have the same value for CPU &
  *                        GPU virtual address.
  * @event_queue:          Wait queue used for blocking the thread, which consumes
  *                        the base_jd_event corresponding to an atom, when there
@@ -1327,7 +1327,7 @@ struct kbase_reg_zone {
  *                        then the context must be retained to ensure that it doesn't
  *                        disappear whilst it is being used. Alternatively, hwaccess_lock
  *                        can be held to ensure the context doesn't disappear (but this
- *                        has restrictions on what other locks can be taken simutaneously).
+ *                        has restrictions on what other locks can be taken simultaneously).
  * @refcount:             Keeps track of the number of users of this context. A user
  *                        can be a job that is available for execution, instrumentation
  *                        needing to 'pin' a context for counter collection, etc.

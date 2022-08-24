@@ -681,7 +681,7 @@ page_fault_retry:
 
 	/* find the size we need to grow it by */
 	/* we know the result fit in a size_t due to kbase_region_tracker_find_region_enclosing_address
-	 * validating the fault_adress to be within a size_t from the start_pfn */
+	 * validating the fault_address to be within a size_t from the start_pfn */
 	fault_rel_pfn = fault_pfn - region->start_pfn;
 
 	if (fault_rel_pfn < kbase_reg_current_backed_size(region)) {
@@ -2607,7 +2607,7 @@ void kbase_as_poking_timer_release_atom(struct kbase_device *kbdev, struct kbase
 			as->poke_state = 0u;
 
 			/* The poke associated with the atom has now finished. If this is
-			 * also the last atom on the context, then we can guarentee no more
+			 * also the last atom on the context, then we can guarantee no more
 			 * pokes (and thus no more poking register accesses) will occur on
 			 * the context until new atoms are run */
 		}
