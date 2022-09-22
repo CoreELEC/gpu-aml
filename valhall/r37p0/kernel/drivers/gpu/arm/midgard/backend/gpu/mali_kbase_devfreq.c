@@ -26,7 +26,7 @@
 #include <linux/of.h>
 #include <linux/clk.h>
 #include <linux/devfreq.h>
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 #include <linux/devfreq_cooling.h>
 #endif
 
@@ -269,7 +269,7 @@ kbase_devfreq_status(struct device *dev, struct devfreq_dev_status *stat)
 	stat->current_frequency = kbdev->current_nominal_freq;
 	stat->private_data = NULL;
 
-#if MALI_USE_CSF && defined CONFIG_DEVFREQ_THERMAL
+#if MALI_USE_CSF && defined CONFIG_DEVFREQ_THERMAL && !defined(CONFIG_AMLOGIC_MODIFY)
 	kbase_ipa_reset_data(kbdev);
 #endif
 
@@ -688,7 +688,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 			dp->freq_table[0] / 1000;
 	}
 
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	err = kbase_ipa_init(kbdev);
 	if (err) {
 		dev_err(kbdev->dev, "IPA initialization failed");
@@ -731,7 +731,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 		goto opp_notifier_failed;
 	}
 
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	kbdev->devfreq_cooling = of_devfreq_cooling_register_power(
 			kbdev->dev->of_node,
 			kbdev->devfreq,
@@ -747,7 +747,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 
 	return 0;
 
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 cooling_reg_failed:
 	devfreq_unregister_opp_notifier(kbdev->dev, kbdev->devfreq);
 #endif /* CONFIG_DEVFREQ_THERMAL */
@@ -765,7 +765,7 @@ devfreq_add_dev_failed:
 	kbase_devfreq_term_core_mask_table(kbdev);
 
 init_core_mask_table_failed:
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	kbase_ipa_term(kbdev);
 ipa_init_failed:
 #endif
@@ -781,7 +781,7 @@ void kbase_devfreq_term(struct kbase_device *kbdev)
 
 	dev_dbg(kbdev->dev, "Term Mali devfreq\n");
 
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	if (kbdev->devfreq_cooling)
 		devfreq_cooling_unregister(kbdev->devfreq_cooling);
 #endif
@@ -798,7 +798,7 @@ void kbase_devfreq_term(struct kbase_device *kbdev)
 
 	kbase_devfreq_term_core_mask_table(kbdev);
 
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	kbase_ipa_term(kbdev);
 #endif
 }

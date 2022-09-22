@@ -27,7 +27,7 @@
 #ifdef CONFIG_MALI_DEVFREQ
 #include <linux/devfreq.h>
 #include <backend/gpu/mali_kbase_devfreq.h>
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 #include <ipa/mali_kbase_ipa_debugfs.h>
 #endif /* CONFIG_DEVFREQ_THERMAL */
 #endif /* CONFIG_MALI_DEVFREQ */
@@ -5019,7 +5019,7 @@ int kbase_device_debugfs_init(struct kbase_device *kbdev)
 	kbase_ktrace_debugfs_init(kbdev);
 
 #ifdef CONFIG_MALI_DEVFREQ
-#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
+#if IS_ENABLED(CONFIG_DEVFREQ_THERMAL) && !defined(CONFIG_AMLOGIC_MODIFY)
 	if (kbdev->devfreq)
 		kbase_ipa_debugfs_init(kbdev);
 #endif /* CONFIG_DEVFREQ_THERMAL */
