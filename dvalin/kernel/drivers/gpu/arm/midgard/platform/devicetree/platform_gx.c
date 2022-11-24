@@ -239,7 +239,7 @@ void mali_post_init(void)
 #endif
         if (err < 0)
             printk("register GPU  cooling error\n");
-        printk("gpu cooling register okay with err=%d\n",err);
+        /*printk("gpu cooling register okay with err=%d\n",err);*/
     }
 
     gccdev = gpucore_cooling_alloc();
@@ -256,7 +256,7 @@ void mali_post_init(void)
 #endif
         if (err < 0)
             printk("register GPU  cooling error\n");
-        printk("gpu core cooling register okay with err=%d\n",err);
+        /*printk("gpu core cooling register okay with err=%d\n",err);*/
     }
 #endif
 }
