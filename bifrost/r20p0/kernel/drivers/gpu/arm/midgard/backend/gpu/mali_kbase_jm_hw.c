@@ -795,7 +795,7 @@ void kbase_jm_wait_for_zero_jobs(struct kbase_context *kctx)
 exit:
 	dev_dbg(kbdev->dev, "Zap: Finished Context %p", kctx);
 
-	/* Ensure that the signallers of the waitqs have finished */
+	/* Ensure that the signalers of the waitqs have finished */
 	mutex_lock(&kctx->jctx.lock);
 	mutex_lock(&kctx->jctx.sched_info.ctx.jsctx_mutex);
 	mutex_unlock(&kctx->jctx.sched_info.ctx.jsctx_mutex);

@@ -2143,7 +2143,7 @@ void kbase_mem_kref_free(struct kref *kref)
 		break;
 	}
 	default:
-		WARN(1, "Unexecpted free of type %d\n", alloc->type);
+		WARN(1, "unexpected free of type %d\n", alloc->type);
 		break;
 	}
 

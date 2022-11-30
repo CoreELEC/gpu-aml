@@ -262,8 +262,8 @@ struct base_job_fault_event {
 
 /**
  * struct kbase_jd_atom_dependency - Contains the dependency info for an atom.
- * @atom:          pointer to the dependee atom.
- * @dep_type:      type of dependency on the dependee @atom, i.e. order or data
+ * @atom:          pointer to the depended atom.
+ * @dep_type:      type of dependency on the depended @atom, i.e. order or data
  *                 dependency. BASE_JD_DEP_TYPE_INVALID indicates no dependency.
  */
 struct kbase_jd_atom_dependency {
@@ -306,10 +306,10 @@ struct kbase_io_history {
 
 /**
  * kbase_jd_katom_dep_atom - Retrieves a read-only reference to the
- *                           dependee atom.
+ *                           depended atom.
  * @dep:   pointer to the dependency info structure.
  *
- * Return: readonly reference to dependee atom.
+ * Return: readonly reference to depended atom.
  */
 static inline const struct kbase_jd_atom *
 kbase_jd_katom_dep_atom(const struct kbase_jd_atom_dependency *dep)
@@ -324,7 +324,7 @@ kbase_jd_katom_dep_atom(const struct kbase_jd_atom_dependency *dep)
  *
  * @dep:   pointer to the dependency info structure.
  *
- * Return: the type of dependency there is on the dependee atom.
+ * Return: the type of dependency there is on the depended atom.
  */
 static inline u8 kbase_jd_katom_dep_type(const struct kbase_jd_atom_dependency *dep)
 {
@@ -337,8 +337,8 @@ static inline u8 kbase_jd_katom_dep_type(const struct kbase_jd_atom_dependency *
  * kbase_jd_katom_dep_set - sets up the dependency info structure
  *                          as per the values passed.
  * @const_dep:    pointer to the dependency info structure to be setup.
- * @a:            pointer to the dependee atom.
- * @type:         type of dependency there is on the dependee atom.
+ * @a:            pointer to the depended atom.
+ * @type:         type of dependency there is on the depended atom.
  */
 static inline void kbase_jd_katom_dep_set(const struct kbase_jd_atom_dependency *const_dep,
 		struct kbase_jd_atom *a, u8 type)
@@ -484,7 +484,7 @@ struct kbase_ext_res {
  * @dep_head:              Array of 2 list heads, pointing to the two list of atoms
  *                         which are blocked due to dependency on this atom.
  * @dep_item:              Array of 2 list heads, used to store the atom in the list of
- *                         other atoms depending on the same dependee atom.
+ *                         other atoms depending on the same depended atom.
  * @dep:                   Array containing the dependency info for the 2 atoms on which
  *                         the atom depends upon.
  * @jd_item:               List head used during job dispatch job_done processing - as

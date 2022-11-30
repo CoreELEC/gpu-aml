@@ -30,7 +30,7 @@ extern struct kbase_ipa_model_ops kbase_simple_ipa_model_ops;
 #if MALI_UNIT_TEST
 /**
  * kbase_simple_power_model_set_dummy_temp() - set a dummy temperature value
- * @temp: Temperature of the thermal zone, in millidegrees celsius.
+ * @temp: Temperature of the thermal zone, in millidegree celsius.
  *
  * This is only intended for use in unit tests, to ensure that the temperature
  * values used by the simple power model are predictable. Deterministic

@@ -1114,7 +1114,7 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* Each dependee atom can only have one
+				/* Each depended atom can only have one
 				 * same-slot dependency */
 				if (dep_atom->post_dep) {
 					ret = false;
@@ -1128,20 +1128,20 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* Each dependee atom can only have one
+				/* Each depended atom can only have one
 				 * cross-slot dependency */
 				if (dep_atom->x_post_dep) {
 					ret = false;
 					break;
 				}
-				/* The dependee atom can not already be in the
+				/* The depended atom can not already be in the
 				 * HW access ringbuffer */
 				if (dep_atom->gpu_rb_state !=
 					KBASE_ATOM_GPU_RB_NOT_IN_SLOT_RB) {
 					ret = false;
 					break;
 				}
-				/* The dependee atom can not already have
+				/* The depended atom can not already have
 				 * completed */
 				if (dep_atom->status !=
 						KBASE_JD_ATOM_STATE_IN_JS) {

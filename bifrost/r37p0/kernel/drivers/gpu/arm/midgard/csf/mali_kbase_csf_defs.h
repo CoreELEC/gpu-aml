@@ -913,7 +913,7 @@ struct kbase_csf_csg_slot {
  *                          flag is true. This is mainly useful for the case
  *                          when scheduling tick needs to be advanced from
  *                          interrupt context, without actually deactivating
- *                          the @tick_timer first and then enqueing @tick_work.
+ *                          the @tick_timer first and then enqueuing @tick_work.
  * @tick_protm_pending_seq: Scan out sequence number of the group that has
  *                          protected mode execution pending for the queue(s)
  *                          bound to it and will be considered first for the

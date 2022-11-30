@@ -452,7 +452,7 @@ static inline bool kbase_csf_scheduler_all_csgs_idle(struct kbase_device *kbdev)
  *
  * @kbdev: Pointer to the device
  *
- * This function advances the scheduling tick by enqueing the tick work item for
+ * This function advances the scheduling tick by enqueuing the tick work item for
  * immediate execution, but only if the tick hrtimer is active. If the timer
  * is inactive then the tick work item is already in flight.
  * The caller must hold the interrupt lock.
@@ -478,7 +478,7 @@ kbase_csf_scheduler_advance_tick_nolock(struct kbase_device *kbdev)
  *
  * @kbdev: Pointer to the device
  *
- * This function advances the scheduling tick by enqueing the tick work item for
+ * This function advances the scheduling tick by enqueuing the tick work item for
  * immediate execution, but only if the tick hrtimer is active. If the timer
  * is inactive then the tick work item is already in flight.
  */

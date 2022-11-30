@@ -1538,7 +1538,7 @@ void remove_group_from_runnable(struct kbase_csf_scheduler *const scheduler,
 
 		/*
 		 * Trigger a scheduling tock for a CSG containing protected
-		 * content in case there has been any in order to minimise
+		 * content in case there has been any in order to minimize
 		 * latency.
 		 */
 		group = scheduler_get_protm_enter_async_group(kctx->kbdev,

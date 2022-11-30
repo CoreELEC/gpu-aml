@@ -514,7 +514,7 @@ void kbase_js_unpull(struct kbase_context *kctx, struct kbase_jd_atom *katom);
  * @brief Complete an atom from jd_done_worker(), removing it from the job
  * scheduler ringbuffer.
  *
- * If the atom failed then all dependee atoms marked for failure propagation
+ * If the atom failed then all depended atoms marked for failure propagation
  * will also fail.
  *
  * @param[in] kctx  Context pointer

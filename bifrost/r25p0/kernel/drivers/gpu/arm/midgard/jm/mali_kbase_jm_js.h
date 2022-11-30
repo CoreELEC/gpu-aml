@@ -480,7 +480,7 @@ void kbase_js_unpull(struct kbase_context *kctx, struct kbase_jd_atom *katom);
  * @kctx:  Context pointer
  * @katom: Pointer to the atom to complete
  *
- * If the atom failed then all dependee atoms marked for failure propagation
+ * If the atom failed then all depended atoms marked for failure propagation
  * will also fail.
  *
  * Return: true if the context is now idle (no jobs pulled) false otherwise.

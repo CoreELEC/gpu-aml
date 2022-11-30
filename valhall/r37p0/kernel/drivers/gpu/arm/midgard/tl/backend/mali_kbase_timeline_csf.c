@@ -174,7 +174,7 @@ void kbase_create_timeline_objects(struct kbase_device *kbdev)
 		/* Now that all per-context locks for this context have been
 		 * released, any per-context tracepoints that are fired from
 		 * any other threads will go into the body stream after
-		 * everything that was just summarised into the body stream in
+		 * everything that was just summarize into the body stream in
 		 * this iteration of the loop, so will start to correctly update
 		 * the object model state.
 		 */

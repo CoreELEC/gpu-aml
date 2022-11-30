@@ -1250,7 +1250,7 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* Each dependee atom can only have one
+				/* Each depended atom can only have one
 				 * same-slot dependency
 				 */
 				if (dep_atom->post_dep) {
@@ -1270,7 +1270,7 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* Each dependee atom can only have one
+				/* Each depended atom can only have one
 				 * cross-slot dependency
 				 */
 				if (dep_atom->x_post_dep) {
@@ -1279,7 +1279,7 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* The dependee atom can not already be in the
+				/* The depended atom can not already be in the
 				 * HW access ringbuffer
 				 */
 				if (dep_atom->gpu_rb_state !=
@@ -1290,7 +1290,7 @@ static bool kbase_js_dep_validate(struct kbase_context *kctx,
 					ret = false;
 					break;
 				}
-				/* The dependee atom can not already have
+				/* The depended atom can not already have
 				 * completed
 				 */
 				if (dep_atom->status !=
@@ -1373,7 +1373,7 @@ void kbase_js_set_ctx_priority(struct kbase_context *kctx, int new_priority)
 
 	lockdep_assert_held(&kbdev->hwaccess_lock);
 
-	/* Move kctx to the pullable/upullable list as per the new priority */
+	/* Move kctx to the pullable/unpullable list as per the new priority */
 	if (new_priority != kctx->priority) {
 		for (js = 0; js < kbdev->gpu_props.num_job_slots; js++) {
 			if (kctx->slots_pullable & (1 << js))

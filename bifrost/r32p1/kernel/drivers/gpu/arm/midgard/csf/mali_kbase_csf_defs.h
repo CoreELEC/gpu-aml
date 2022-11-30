@@ -826,7 +826,7 @@ struct kbase_csf_csg_slot {
  *                          flag is true. This is mainly useful for the case
  *                          when scheduling tick needs to be advanced from
  *                          interrupt context, without actually deactivating
- *                          the @tick_timer first and then enqueing @tick_work.
+ *                          the @tick_timer first and then enqueuing @tick_work.
  */
 struct kbase_csf_scheduler {
 	struct mutex lock;

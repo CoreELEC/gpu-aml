@@ -1063,7 +1063,7 @@ void kbase_backend_run_atom(struct kbase_device *kbdev,
 /**
  * kbase_rb_atom_might_depend - determine if one atom in the slot ringbuffer
  *                              might depend on another from the same kctx
- * @katom_a: dependee atom
+ * @katom_a: depended atom
  * @katom_b: atom to query
  *
  * This can be used on atoms that belong to different slot ringbuffers

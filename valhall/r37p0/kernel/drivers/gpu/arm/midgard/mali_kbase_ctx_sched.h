@@ -26,7 +26,7 @@
 
 /**
  * DOC: The Context Scheduler manages address space assignment and reference
- * counting to kbase_context. The interface has been designed to minimise
+ * counting to kbase_context. The interface has been designed to minimize
  * interactions between the Job Scheduler and Power Management/MMU to support
  * the existing Job Scheduler interface.
  *
