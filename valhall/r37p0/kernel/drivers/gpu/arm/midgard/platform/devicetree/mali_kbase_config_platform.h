@@ -48,16 +48,6 @@
 extern struct kbase_platform_funcs_conf dt_funcs_conf;
 #define PLATFORM_FUNCS (&dt_funcs_conf)
 
-/** Power model for IPA
- *
- * Attached value: pointer to @ref mali_pa_model_ops
- */
-#ifdef CONFIG_DEVFREQ_THERMAL
-#define POWER_MODEL_CALLBACKS (&t83x_model_ops)
-extern struct devfreq_cooling_ops t83x_model_ops;
-#else
-#define POWER_MODEL_CALLBACKS (NULL)
-#endif
 #define CLK_RATE_TRACE_OPS (&clk_rate_trace_ops)
 
 extern struct kbase_pm_callback_conf pm_callbacks;
