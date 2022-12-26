@@ -475,4 +475,10 @@ static inline struct rw_semaphore *kbase_mem_get_process_mmap_lock(void)
 #endif /* KERNEL_VERSION(5, 8, 0) > LINUX_VERSION_CODE */
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+#define MALI_NO_SHRINK 1
+#else
+#undef MALI_NO_SHRINK
+#endif
+
 #endif				/* _KBASE_MEM_LINUX_H_ */

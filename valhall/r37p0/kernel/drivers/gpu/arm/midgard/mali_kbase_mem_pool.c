@@ -337,6 +337,10 @@ static unsigned long kbase_mem_pool_reclaim_scan_objects(struct shrinker *s,
 	struct kbase_mem_pool *pool;
 	unsigned long freed;
 
+#ifdef MALI_NO_SHRINK
+	return 0;
+#endif
+
 	pool = container_of(s, struct kbase_mem_pool, reclaim);
 
 	kbase_mem_pool_lock(pool);

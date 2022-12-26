@@ -709,6 +709,10 @@ unsigned long kbase_mem_evictable_reclaim_scan_objects(struct shrinker *s,
 	struct kbase_mem_phy_alloc *tmp;
 	unsigned long freed = 0;
 
+#ifdef MALI_NO_SHRINK
+	return 0;
+#endif
+
 	kctx = container_of(s, struct kbase_context, reclaim);
 
 	mutex_lock(&kctx->jit_evict_lock);
