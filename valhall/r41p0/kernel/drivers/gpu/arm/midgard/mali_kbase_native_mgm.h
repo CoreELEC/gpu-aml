@@ -35,10 +35,4 @@
  */
 extern struct memory_group_manager_device kbase_native_mgm_dev;
 
-struct memory_group_cma {
-        struct dma_buf *dmabuf;
-        struct page *page;
-        struct list_head list;
-};
-
 #endif /* _KBASE_NATIVE_MGM_H_ */

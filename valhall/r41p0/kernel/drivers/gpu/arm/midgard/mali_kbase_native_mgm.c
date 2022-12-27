@@ -27,6 +27,7 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 #include <linux/dma-buf.h>
 #include <linux/amlogic/ion.h>
+#include <linux/amlogic/aml_fix_area.h>
 #include <linux/spinlock.h>
 unsigned int meson_ion_cma_heap_id_get(void);
 #define ION_FLAG_EXTEND_MESON_HEAP          BIT(30)
@@ -72,37 +73,22 @@ static struct page *kbase_native_mgm_alloc(
 	CSTD_UNUSED(mgm_dev);
 	CSTD_UNUSED(group_id);
 
-	/* temp work-around for t5m */
+	/* alloc from fix area for t5m */
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
-	struct dma_buf *dmabuf = NULL;
-	struct ion_buffer *buffer;
 	struct page *ret = NULL;
-	unsigned int id, size;
-	phys_addr_t paddr;
-	unsigned long flags;
+	void *vaddr = NULL;
+	unsigned int size;
 	size = PAGE_SIZE << order;
-	id = meson_ion_cma_heap_id_get();
-	if (id)
-		dmabuf = ion_alloc(size, (1 << id),
-				ION_FLAG_EXTEND_MESON_HEAP);
-	if (IS_ERR_OR_NULL(dmabuf)) {
-		printk("%s: Failed to alloc ion-cma", __func__);
+
+	vaddr = aml_dma_alloc_contiguous(size, gfp_mask, &ret, 1);
+	if (IS_ERR_OR_NULL(vaddr)) {
+		printk("%s: Failed to alloc ion-cma. size = %u", __func__, size);
 		return NULL;
 	}
-	buffer = (struct ion_buffer *)dmabuf->priv;
-	sg_dma_address(buffer->sg_table->sgl) = sg_phys(buffer->sg_table->sgl);
-	ret = sg_page(buffer->sg_table->sgl);
-	struct memory_group_cma *cma_group;
-	cma_group = kzalloc(sizeof(struct memory_group_cma), GFP_KERNEL);
-	cma_group->dmabuf = dmabuf;
-	cma_group->page = ret;
-	INIT_LIST_HEAD(&cma_group->list);
-	spin_lock_irqsave(&cma_list_lock, flags);
-	list_add_tail(&cma_group->list, &cma_list);
-	spin_unlock_irqrestore(&cma_list_lock, flags);
+
 	#if ION_FREE_DBG
-	printk("%s: ion_alloc dmabuf=0x%px, cg=0x%px, page=0x%px",
-		__func__, dmabuf, cma_group, ret);
+	printk("%s: ion_alloc vaddr=0x%px, page=0x%px",
+		__func__, vaddr, ret);
 	#endif
 	return ret;
 	#else
@@ -129,28 +115,12 @@ static void kbase_native_mgm_free(struct memory_group_manager_device *mgm_dev,
 {
 	CSTD_UNUSED(mgm_dev);
 	CSTD_UNUSED(group_id);
-	unsigned long flags;
 	/* temp work-around for t5m */
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
-	struct memory_group_cma *pos = NULL, *tmp = NULL;
 	#if ION_FREE_DBG
 	printk("%s: page=0x%px", __func__, page);
 	#endif
-	spin_lock_irqsave(&cma_list_lock, flags);
-	list_for_each_entry_safe(pos, tmp, &cma_list, list) {
-		if (pos->page == page) {
-			#if ION_FREE_DBG
-			printk("%s: dma_buf_put 0x%px, cg=0x%px",
-				__func__, pos->dmabuf, pos);
-			#endif
-			dma_buf_put(pos->dmabuf);
-			list_del(&pos->list);
-			pos->dmabuf = NULL;
-			pos->page = NULL;
-			kfree(pos);
-		}
-	}
-	spin_unlock_irqrestore(&cma_list_lock, flags);
+	aml_dma_free_contiguous(NULL, page, (PAGE_SIZE << order), 1);
 	#else
 	__free_pages(page, order);
 	#endif
