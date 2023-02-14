@@ -23,20 +23,24 @@
 #include <linux/mm.h>
 #include <linux/memory_group_manager.h>
 
+#include <mali_kbase.h>
+#include <mali_kbase_native_mgm.h>
+
+#if CONFIG_MALI_USE_ION
 #define ION_FREE_DBG 0
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 #include <linux/dma-buf.h>
 #include <linux/amlogic/ion.h>
 #include <linux/spinlock.h>
 unsigned int meson_ion_cma_heap_id_get(void);
 #define ION_FLAG_EXTEND_MESON_HEAP          BIT(30)
-#endif
-
-#include <mali_kbase.h>
-#include <mali_kbase_native_mgm.h>
-
 LIST_HEAD(cma_list);
 static DEFINE_SPINLOCK(cma_list_lock);
+#endif
+
+#if CONFIG_MALI_USE_FIX_AREA
+#include <linux/amlogic/aml_fix_area.h>
+#endif
+
 /**
  * kbase_native_mgm_alloc - Native physical memory allocation method
  *
@@ -72,13 +76,12 @@ static struct page *kbase_native_mgm_alloc(
 	CSTD_UNUSED(mgm_dev);
 	CSTD_UNUSED(group_id);
 
-	/* temp work-around for t5m */
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+	/* alloc from ion */
+	#if CONFIG_MALI_USE_ION
 	struct dma_buf *dmabuf = NULL;
 	struct ion_buffer *buffer;
 	struct page *ret = NULL;
 	unsigned int id, size;
-	phys_addr_t paddr;
 	unsigned long flags;
 	size = PAGE_SIZE << order;
 	id = meson_ion_cma_heap_id_get();
@@ -105,6 +108,19 @@ static struct page *kbase_native_mgm_alloc(
 		__func__, dmabuf, cma_group, ret);
 	#endif
 	return ret;
+	/* alloc from fix area */
+	#elif CONFIG_MALI_USE_FIX_AREA
+	struct page *ret = NULL;
+	void *vaddr = NULL;
+	unsigned int size;
+	size = PAGE_SIZE << order;
+
+	vaddr = aml_dma_alloc_contiguous(size, gfp_mask, &ret, 1);
+	if (IS_ERR_OR_NULL(vaddr)) {
+		printk("%s: Failed to alloc fix area. size = %u", __func__, size);
+		return NULL;
+	}
+	return ret;
 	#else
 	return alloc_pages(gfp_mask, order);
 	#endif
@@ -129,9 +145,9 @@ static void kbase_native_mgm_free(struct memory_group_manager_device *mgm_dev,
 {
 	CSTD_UNUSED(mgm_dev);
 	CSTD_UNUSED(group_id);
+
+	#if CONFIG_MALI_USE_ION
 	unsigned long flags;
-	/* temp work-around for t5m */
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	struct memory_group_cma *pos = NULL, *tmp = NULL;
 	#if ION_FREE_DBG
 	printk("%s: page=0x%px", __func__, page);
@@ -151,6 +167,8 @@ static void kbase_native_mgm_free(struct memory_group_manager_device *mgm_dev,
 		}
 	}
 	spin_unlock_irqrestore(&cma_list_lock, flags);
+	#elif CONFIG_MALI_USE_FIX_AREA
+	aml_dma_free_contiguous(NULL, page, (PAGE_SIZE << order), 1);
 	#else
 	__free_pages(page, order);
 	#endif
