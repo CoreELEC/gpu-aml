@@ -34,8 +34,10 @@
 //#include <linux/amlogic/aml_thermal_hw.h>
 #include <linux/amlogic/meson_cooldev.h>
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 #include <linux/arm-smccc.h>
 #include <linux/amlogic/media/registers/cpu_version.h>
+#endif
 #include <mali_kbase.h>
 #include <mali_kbase_defs.h>
 
@@ -187,12 +189,14 @@ static u32 mali_get_online_pp(void)
 #endif
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 void mali_nicgpu_config(void)
 {
     struct arm_smccc_res res;
 
     arm_smccc_smc(0x82000099, 0x30, 0x20, 0x4 << 8, 0, 0, 0, 0, &res);
 }
+#endif
 
 int mali_meson_init_start(struct platform_device* ptr_plt_dev)
 {
@@ -200,8 +204,10 @@ int mali_meson_init_start(struct platform_device* ptr_plt_dev)
 
     mali_dt_info(ptr_plt_dev, &mali_plat_data);
     mali_clock_init_clk_tree(ptr_plt_dev);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
     if (is_meson_t5m_cpu() && is_meson_rev_b())
         mali_nicgpu_config();
+#endif
 
     kbdev->platform_context = &mali_plat_data;
     return 0;
