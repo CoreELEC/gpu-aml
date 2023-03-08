@@ -30,6 +30,14 @@ KBUILD_CFLAGS_MODULE += $(GKI_EXT_MODULE_PREDEFINE)
 $(warning "CC:"$(CC) )
 $(warning "HOSTCC:"$(HOSTCC) )
 $(warning "CROSS_COMPILE:"$(CROSS_COMPILE) )
+
+ifeq ($(O),)
+out_dir := .
+else
+out_dir := $(O)
+endif
+-include $(out_dir)/include/config/auto.conf
+
 modules:
 	$(MAKE) -C $(KERNEL_SRC) M=$(M)/$(GPU_DRV_VERSION)/kernel/drivers/gpu/arm/midgard  \
 	EXTRA_CFLAGS="-DCONFIG_MALI_PLATFORM_DEVICETREE -DCONFIG_MALI_DEVFREQ -DCONFIG_MALI_BACKEND=gpu -DCONFIG_MALI_GATOR_SUPPORT " \
@@ -39,9 +47,14 @@ modules:
 	CONFIG_MALI_MIDGARD=m CONFIG_MALI_PLATFORM_DEVICETREE=y CONFIG_MALI_DEVFREQ=y CONFIG_MALI_BACKEND=gpu CONFIG_MALI_GATOR_SUPPORT=y
 
 modules_install:
-	@$(MAKE) INSTALL_MOD_STRIP=1 M=$(M)/$(GPU_DRV_VERSION)/kernel/drivers/gpu/arm/midgard -C $(KERNEL_SRC) modules_install
-	mkdir -p ${OUT_DIR}/../vendor_lib/modules
-	cd ${OUT_DIR}/$(M)/; find -name "*.ko" -exec cp {} ${OUT_DIR}/../vendor_lib/modules/mali.ko \;
+	-include $(OUT_DIR)/include/config/auto.conf
+	$(MAKE) INSTALL_MOD_STRIP=1 M=$(M)/$(GPU_DRV_VERSION)/kernel/drivers/gpu/arm/midgard -C $(KERNEL_SRC) modules_install
+	$(Q)mkdir -p ${out_dir}/../vendor_lib/modules
+	$(Q)if [ -z "$(CONFIG_AMLOGIC_KERNEL_VERSION)" ]; then \
+		cd ${out_dir}/$(M)/; find -name "*.ko" -exec cp {} ${out_dir}/../vendor_lib/modules/mali.ko \; ; \
+	else \
+		find $(INSTALL_MOD_PATH)/lib/modules/*/$(INSTALL_MOD_DIR) -name "*.ko" -exec cp {} ${out_dir}/../vendor_lib/modules/mali.ko \; ; \
+	fi;
 
 clean:
 	$(MAKE) -C $(KERNEL_SRC) M=$(M)/$(GPU_DRV_VERSION)/kernel/drivers/gpu/arm/midgard clean
