@@ -1012,6 +1012,7 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg,
 #define KBASE_MEM_POOL_MAX_SIZE_KCTX  (SZ_64M >> PAGE_SHIFT)
 #endif
 
+#define KBASE_T5M_MEM_THRESHOLD  (KBASE_MEM_POOL_MAX_SIZE_KCTX * 9)
 /*
  * The order required for a 2MB page allocation (2^order * 4KB = 2MB)
  */
