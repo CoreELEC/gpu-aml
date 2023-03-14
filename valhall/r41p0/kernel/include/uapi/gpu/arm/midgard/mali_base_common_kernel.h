@@ -76,6 +76,11 @@ struct base_mem_handle {
  */
 #define BASEP_MEM_NO_USER_FREE ((base_mem_alloc_flags)1 << 7)
 
+/* OUT */
+/* UVM mem
+ */
+#define BASE_MEM_UVM_REALLOC ((base_mem_alloc_flags)1 << 8)
+
 /* Grow backing store on GPU Page Fault
  */
 #define BASE_MEM_GROW_ON_GPF ((base_mem_alloc_flags)1 << 9)

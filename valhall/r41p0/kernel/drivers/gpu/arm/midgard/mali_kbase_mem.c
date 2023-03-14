@@ -44,6 +44,7 @@
 #include <mali_kbase_config_defaults.h>
 #include <mali_kbase_trace_gpu_mem.h>
 
+extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
 #if MALI_JIT_PRESSURE_LIMIT_BASE
 
 /*
@@ -3151,7 +3152,8 @@ void kbase_mem_kref_free(struct kref *kref)
 		/* raw pages, external cleanup */
 		break;
 	case KBASE_MEM_TYPE_IMPORTED_UMM:
-		if (!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+		if (!dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
 			WARN_ONCE(alloc->imported.umm.current_mapping_usage_count != 1,
 					"WARNING: expected exactly 1 mapping, got %d",
 					alloc->imported.umm.current_mapping_usage_count);
@@ -5264,6 +5266,11 @@ struct kbase_ctx_ext_res_meta *kbase_sticky_resource_acquire(
 		if (kbasep_get_va_gpu_addr(walker->reg) == gpu_addr) {
 			meta = walker;
 			meta->ref++;
+			if (kbase_ctx_flag(kctx, KCTX_LAZY_MAP_UVM)) {
+				if (kbase_map_external_resource(kctx,
+					meta->reg, NULL))
+					goto fail_map;
+			}
 			break;
 		}
 	}

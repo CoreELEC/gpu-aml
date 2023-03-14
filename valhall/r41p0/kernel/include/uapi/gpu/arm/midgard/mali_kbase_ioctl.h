@@ -706,6 +706,8 @@ struct kbase_ioctl_tlstream_stats {
  *         _IOWR(KBASE_IOCTL_EXTRA_TYPE, 0, struct my_ioctl_args)
  */
 
+#define KBASE_IOCTL_STICKY_RESOURCE_MAP_AML \
+        _IOW(KBASE_IOCTL_EXTRA_TYPE, 0, struct kbase_ioctl_sticky_resource_map)
 
 /**********************************
  * Definitions for GPU properties *
