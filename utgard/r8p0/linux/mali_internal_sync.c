@@ -679,7 +679,7 @@ static void mali_internal_fence_release(struct fence *fence)
 	if (WARN_ON_ONCE(!list_empty(&sync_pt->sync_pt_list)))
 		list_del(&sync_pt->sync_pt_list);
 #else
-	//sync_pt_list empty is possible, dont show warn.
+	//sync_pt_list empty is possible, don't show warn.
 	if (!list_empty(&sync_pt->sync_pt_list))
 		list_del(&sync_pt->sync_pt_list);
 #endif

@@ -1026,7 +1026,7 @@ typedef struct {
 /** @brief VSYNC events
  *
  * These events are reported when DDK starts to wait for vsync and when the
- * vsync has occured and the DDK can continue on the next frame.
+ * vsync has occurred and the DDK can continue on the next frame.
  */
 typedef enum _mali_uk_vsync_event {
 	_MALI_UK_VSYNC_EVENT_BEGIN_WAIT = 0,

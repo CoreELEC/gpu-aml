@@ -764,13 +764,13 @@ u32 _mali_osk_mem_write_safe(void *dest, const void *src, u32 size);
  * synchronous U/K API call can be made by user-space. A U/K API call might also
  * be received before any event has happened. Therefore the notifications the
  * different subsystems wants to send to user space has to be queued for later
- * reception, or a U/K API call has to be blocked until an event has occured.
+ * reception, or a U/K API call has to be blocked until an event has occurred.
  *
  * Typical uses of notifications are after running of jobs on the hardware or
  * when changes to the system is detected that needs to be relayed to user
  * space.
  *
- * After an event has occured user space has to be notified using some kind of
+ * After an event has occurred user space has to be notified using some kind of
  * message. The notification framework supports sending messages to waiting
  * threads or queueing of messages until a U/K API call is made.
  *

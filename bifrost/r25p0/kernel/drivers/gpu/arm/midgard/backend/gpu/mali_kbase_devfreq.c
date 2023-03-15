@@ -563,7 +563,7 @@ static void kbase_devfreq_suspend_resume_worker(struct work_struct *work)
 				devfreq_resume_device(kbdev->devfreq);
 			else
 				devfreq_suspend_device(kbdev->devfreq);
-			dev_dbg(kbdev->dev, "Devfreq transition occured: %s => %s\n",
+			dev_dbg(kbdev->dev, "Devfreq transition occurred: %s => %s\n",
 				kbase_devfreq_req_type_name(acted_type),
 				kbase_devfreq_req_type_name(type));
 			kbdev->devfreq_queue.acted_type = type;

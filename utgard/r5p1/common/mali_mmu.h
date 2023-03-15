@@ -43,8 +43,8 @@ typedef enum mali_mmu_register {
  * can be set at once.
  */
 typedef enum mali_mmu_interrupt {
-	MALI_MMU_INTERRUPT_PAGE_FAULT = 0x01, /**< A page fault occured */
-	MALI_MMU_INTERRUPT_READ_BUS_ERROR = 0x02 /**< A bus read error occured */
+	MALI_MMU_INTERRUPT_PAGE_FAULT = 0x01, /**< A page fault occurred */
+	MALI_MMU_INTERRUPT_READ_BUS_ERROR = 0x02 /**< A bus read error occurred */
 } mali_mmu_interrupt;
 
 typedef enum mali_mmu_status_bits {

@@ -43,7 +43,7 @@ enum kbase_instr_state {
 	 * reset. This generally indicates the current action should be aborted,
 	 * and kbasep_reset_timeout_worker() will handle the cleanup */
 	KBASE_INSTR_STATE_RESETTING,
-	/* An error has occured during DUMPING (page fault). */
+	/* An error has occurred during DUMPING (page fault). */
 	KBASE_INSTR_STATE_FAULT
 };
 

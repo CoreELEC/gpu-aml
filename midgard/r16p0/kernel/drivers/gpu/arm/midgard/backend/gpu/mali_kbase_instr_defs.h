@@ -39,7 +39,7 @@ enum kbase_instr_state {
 	/* Cache clean completed, and either a) a dump is complete, or
 	 * b) instrumentation can now be setup. */
 	KBASE_INSTR_STATE_CLEANED,
-	/* An error has occured during DUMPING (page fault). */
+	/* An error has occurred during DUMPING (page fault). */
 	KBASE_INSTR_STATE_FAULT
 };
 

@@ -890,7 +890,7 @@ struct kbase_fault {
  *                     and Page fault handling.
  * @work_pagefault:    Work item for the Page fault handling.
  * @work_busfault:     Work item for the Bus fault handling.
- * @fault_type:        Type of fault which occured for this address space,
+ * @fault_type:        Type of fault which occurred for this address space,
  *                     regular/unexpected Bus or Page fault.
  * @pf_data:           Data relating to page fault.
  * @bf_data:           Data relating to bus fault.
