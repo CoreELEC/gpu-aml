@@ -200,7 +200,7 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 	u32 ret = 0;
 #ifndef CONFIG_MALI_DVFS
 	mali_scale_info_t* pinfo;
-	u32 flush_work = 0;
+	u32 do_flush_work = 0;
 
 	pinfo = &pmali_plat->scale_info;
 	if (clk < pinfo->minclk)
@@ -211,7 +211,7 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 	if (clk != currentStep) {
 		currentStep = clk;
 		if (flush)
-			flush_work++;
+			do_flush_work++;
 		else
 			ret = 1;
 	}
@@ -223,13 +223,15 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 	if (pp != num_cores_enabled) {
 		num_cores_enabled = pp;
 		if (flush)
-			flush_work++;
+			do_flush_work++;
 		else
 			ret = 1;
 	}
 
-	if (flush_work)
+	if (do_flush_work) {
 		schedule_work(&wq_work);
+		flush_work(&wq_work);
+	}
 #endif
 	return ret;
 }
@@ -542,6 +544,7 @@ void set_mali_schel_mode(u32 mode)
 	}
 	currentStep = pmali_plat->scale_info.maxclk;
 	schedule_work(&wq_work);
+	flush_work(&wq_work);
 #endif
 }
 
