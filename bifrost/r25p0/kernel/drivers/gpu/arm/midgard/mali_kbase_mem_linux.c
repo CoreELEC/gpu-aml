@@ -86,7 +86,7 @@
 #endif
 
 #define IR_THRESHOLD_STEPS (256u)
-
+extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
 
 static int kbase_vmap_phy_pages(struct kbase_context *kctx,
 		struct kbase_va_region *reg, u64 offset_bytes, size_t size,
@@ -1113,12 +1113,24 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx,
 		for (j = 0; (j < pages) && (count < reg->nr_pages); j++, count++)
 			*pa++ = as_tagged(sg_dma_address(s) +
 				(j << PAGE_SHIFT));
-		WARN_ONCE(j < pages,
-		"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
-		alloc->imported.umm.dma_buf->size);
+		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			(j < pages))
+			dev_info(kctx->kbdev->dev,
+			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+		else
+			WARN_ONCE(j < pages,
+			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
 	}
 
-	if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
+	if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+	    !(reg->flags & KBASE_REG_IMPORT_PAD) &&
+	    (count < reg->nr_pages))
+		dev_info(kctx->kbdev->dev,
+			"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+	else if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
 			WARN_ONCE(count < reg->nr_pages,
 			"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
 			alloc->imported.umm.dma_buf->size)) {

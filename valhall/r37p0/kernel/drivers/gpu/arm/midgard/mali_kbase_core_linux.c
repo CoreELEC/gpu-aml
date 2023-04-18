@@ -1380,6 +1380,18 @@ static int kbase_api_sticky_resource_map(struct kbase_context *kctx,
 	return ret;
 }
 
+static int kbase_api_sticky_resource_map_aml(struct kbase_context *kctx,
+		struct kbase_ioctl_sticky_resource_map *map)
+{
+	int ret;
+
+	kbase_ctx_flag_set(kctx, KCTX_LAZY_MAP_UVM);
+	ret = kbase_api_sticky_resource_map(kctx, map);
+	kbase_ctx_flag_clear(kctx, KCTX_LAZY_MAP_UVM);
+
+	return ret;
+}
+
 static int kbase_api_sticky_resource_unmap(struct kbase_context *kctx,
 		struct kbase_ioctl_sticky_resource_unmap *unmap)
 {
@@ -1927,6 +1939,12 @@ static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	case KBASE_IOCTL_STICKY_RESOURCE_MAP:
 		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_STICKY_RESOURCE_MAP,
 				kbase_api_sticky_resource_map,
+				struct kbase_ioctl_sticky_resource_map,
+				kctx);
+		break;
+	case KBASE_IOCTL_STICKY_RESOURCE_MAP_AML:
+		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_STICKY_RESOURCE_MAP_AML,
+				kbase_api_sticky_resource_map_aml,
 				struct kbase_ioctl_sticky_resource_map,
 				kctx);
 		break;

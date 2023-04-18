@@ -44,6 +44,7 @@
 #include <mali_kbase_config_defaults.h>
 #include <mali_kbase_trace_gpu_mem.h>
 
+extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
 /*
  * Alignment of objects allocated by the GPU inside a just-in-time memory
  * region whose size is given by an end address
@@ -3119,9 +3120,10 @@ void kbase_mem_kref_free(struct kref *kref)
 		/* raw pages, external cleanup */
 		break;
 	case KBASE_MEM_TYPE_IMPORTED_UMM:
-		if (!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+		if (!dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
 			WARN_ONCE(alloc->imported.umm.current_mapping_usage_count != 1,
-					"WARNING: expected excatly 1 mapping, got %d",
+					"WARNING: expected exactly 1 mapping, got %d",
 					alloc->imported.umm.current_mapping_usage_count);
 			dma_buf_unmap_attachment(
 					alloc->imported.umm.dma_attachment,
@@ -5081,6 +5083,7 @@ struct kbase_ctx_ext_res_meta *kbase_sticky_resource_acquire(
 {
 	struct kbase_ctx_ext_res_meta *meta = NULL;
 	struct kbase_ctx_ext_res_meta *walker;
+	struct kbase_va_region *reg;
 
 	lockdep_assert_held(&kctx->reg_lock);
 
@@ -5092,14 +5095,26 @@ struct kbase_ctx_ext_res_meta *kbase_sticky_resource_acquire(
 		if (walker->gpu_addr == gpu_addr) {
 			meta = walker;
 			meta->ref++;
+			if (kbase_ctx_flag(kctx, KCTX_LAZY_MAP_UVM)) {
+				dev_info(kctx->kbdev->dev, "[%s, %d]gpu_addr=%zu\n",
+					__func__, __LINE__, gpu_addr);
+				/* Find the region */
+				reg = kbase_region_tracker_find_region_enclosing_address(
+					kctx, gpu_addr);
+				if (!kbase_is_region_invalid_or_free(reg)) {
+					kbase_unmap_external_resource(kctx, reg, meta->alloc);
+					kbase_map_external_resource(kctx, reg, NULL);
+				} else {
+					dev_info(kctx->kbdev->dev, "[%s, %d]reg=%p\n",
+						__func__, __LINE__, reg);
+				}
+			}
 			break;
 		}
 	}
 
 	/* No metadata exists so create one. */
 	if (!meta) {
-		struct kbase_va_region *reg;
-
 		/* Find the region */
 		reg = kbase_region_tracker_find_region_enclosing_address(
 				kctx, gpu_addr);

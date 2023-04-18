@@ -442,6 +442,7 @@ static void kbase_gpu_mmu_handle_write_fault(struct kbase_context *kctx,
 	}
 
 	pfn_offset = fault_pfn - region->start_pfn;
+	/* may have risk if the gpu_alloc is alloc by vmalloc otherwise kzalloc!!?? */
 	fault_phys_addr = &kbase_get_gpu_phy_pages(region)[pfn_offset];
 
 	/* Capture addresses of faulting write location

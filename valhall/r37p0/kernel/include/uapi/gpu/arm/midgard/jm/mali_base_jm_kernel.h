@@ -68,9 +68,10 @@
  */
 #define BASEP_MEM_NO_USER_FREE ((base_mem_alloc_flags)1 << 7)
 
-/* Used as BASE_MEM_FIXED in other backends
+/* OUT */
+/* UVM mem
  */
-#define BASE_MEM_RESERVED_BIT_8 ((base_mem_alloc_flags)1 << 8)
+#define BASE_MEM_UVM_REALLOC ((base_mem_alloc_flags)1 << 8)
 
 /* Grow backing store on GPU Page Fault
  */
@@ -192,7 +193,7 @@
 /* A mask of all currently reserved flags
  */
 #define BASE_MEM_FLAGS_RESERVED \
-	(BASE_MEM_RESERVED_BIT_8 | BASE_MEM_RESERVED_BIT_19)
+	(BASE_MEM_RESERVED_BIT_19)
 
 #define BASEP_MEM_INVALID_HANDLE (0ul)
 #define BASE_MEM_MMU_DUMP_HANDLE (1ul << LOCAL_PAGE_SHIFT)

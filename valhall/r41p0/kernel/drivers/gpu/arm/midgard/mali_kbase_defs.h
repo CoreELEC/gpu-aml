@@ -1413,7 +1413,7 @@ enum kbase_context_flags {
 	KCTX_PULLED_SINCE_ACTIVE_JS2 = 1U << 14,
 	KCTX_AS_DISABLED_ON_FAULT = 1U << 15,
 	KCTX_JPL_ENABLED = 1U << 16,
-        KCTX_LAZY_MAP_UVM = 1U << 17,
+	KCTX_LAZY_MAP_UVM = 1U << 17,
 };
 #else
 /**
@@ -1491,7 +1491,7 @@ enum kbase_context_flags {
 	KCTX_PULLED_SINCE_ACTIVE_JS1 = 1U << 13,
 	KCTX_PULLED_SINCE_ACTIVE_JS2 = 1U << 14,
 	KCTX_AS_DISABLED_ON_FAULT = 1U << 15,
-        KCTX_LAZY_MAP_UVM = 1U << 16,
+	KCTX_LAZY_MAP_UVM = 1U << 16,
 };
 #endif /* MALI_JIT_PRESSURE_LIMIT_BASE */
 
