@@ -35,7 +35,6 @@
  */
 extern struct memory_group_manager_device kbase_native_mgm_dev;
 
-#define CONFIG_MALI_USE_FIX_AREA 0
 #define CONFIG_MALI_USE_ION 0
 #if CONFIG_MALI_USE_ION
 struct memory_group_cma {

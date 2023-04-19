@@ -37,10 +37,6 @@ LIST_HEAD(cma_list);
 static DEFINE_SPINLOCK(cma_list_lock);
 #endif
 
-#if CONFIG_MALI_USE_FIX_AREA
-#include <linux/amlogic/aml_fix_area.h>
-#endif
-
 /**
  * kbase_native_mgm_alloc - Native physical memory allocation method
  *
@@ -108,19 +104,6 @@ static struct page *kbase_native_mgm_alloc(
 		__func__, dmabuf, cma_group, ret);
 	#endif
 	return ret;
-	/* alloc from fix area */
-	#elif CONFIG_MALI_USE_FIX_AREA
-	struct page *ret = NULL;
-	void *vaddr = NULL;
-	unsigned int size;
-	size = PAGE_SIZE << order;
-
-	vaddr = aml_dma_alloc_contiguous(size, gfp_mask, &ret, 1);
-	if (IS_ERR_OR_NULL(vaddr)) {
-		printk("%s: Failed to alloc fix area. size = %u", __func__, size);
-		return NULL;
-	}
-	return ret;
 	#else
 	return alloc_pages(gfp_mask, order);
 	#endif
@@ -167,8 +150,6 @@ static void kbase_native_mgm_free(struct memory_group_manager_device *mgm_dev,
 		}
 	}
 	spin_unlock_irqrestore(&cma_list_lock, flags);
-	#elif CONFIG_MALI_USE_FIX_AREA
-	aml_dma_free_contiguous(NULL, page, (PAGE_SIZE << order), 1);
 	#else
 	__free_pages(page, order);
 	#endif
