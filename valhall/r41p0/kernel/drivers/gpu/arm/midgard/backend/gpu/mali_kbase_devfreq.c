@@ -34,6 +34,8 @@
 #include <linux/pm_opp.h>
 #include "mali_kbase_devfreq.h"
 
+struct devfreq_simple_ondemand_data data;
+
 /**
  * get_voltage() - Get the voltage value corresponding to the nominal frequency
  *                 used by devfreq.
@@ -677,6 +679,8 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 	dp->get_dev_status = kbase_devfreq_status;
 	dp->get_cur_freq = kbase_devfreq_cur_freq;
 	dp->exit = kbase_devfreq_exit;
+	data.upthreshold=30;
+	data.downdifferential=5;
 
 	if (kbase_devfreq_init_freq_table(kbdev, dp))
 		return -EFAULT;
@@ -700,7 +704,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 		goto init_core_mask_table_failed;
 
 	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
-				"simple_ondemand", NULL);
+				"simple_ondemand", &data);
 	if (IS_ERR(kbdev->devfreq)) {
 		err = PTR_ERR(kbdev->devfreq);
 		kbdev->devfreq = NULL;
