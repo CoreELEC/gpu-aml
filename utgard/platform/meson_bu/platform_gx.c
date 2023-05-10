@@ -22,6 +22,7 @@
 #include <linux/module.h>            /* kernel module definitions */
 #include <linux/ioport.h>            /* request_mem_region */
 #include <linux/slab.h>
+#include <linux/version.h>
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 29))
 #include <mach/register.h>
 #include <mach/irqs.h>
@@ -41,7 +42,11 @@
 #include <linux/amlogic/gpu_cooling.h>
 #include <linux/amlogic/gpucore_cooling.h>
 #ifdef CONFIG_DEVFREQ_THERMAL
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#include <linux/amlogic/meson_cooldev.h>
+#else
 #include <linux/amlogic/aml_thermal_hw.h>
+#endif
 #include <common/mali_ukk.h>
 #endif
 #endif
@@ -380,7 +385,11 @@ void mali_post_init(void)
 #endif
         err = gpufreq_cooling_register(gcdev);
 #if defined(CONFIG_AMLOGIC_GPU_THERMAL) || defined(CONFIG_GPU_THERMAL)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+        meson_gcooldev_min_update(gcdev->cool_dev);
+#else
         aml_thermal_min_update(gcdev->cool_dev);
+#endif
 #endif
         if (err < 0)
             printk("register GPU  cooling error\n");
@@ -397,7 +406,11 @@ void mali_post_init(void)
         gccdev->set_max_pp_num=set_limit_pp_num;
         err = (int)gpucore_cooling_register(gccdev);
 #ifdef CONFIG_DEVFREQ_THERMAL
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+        meson_gcooldev_min_update(gccdev->cool_dev);
+#else
         aml_thermal_min_update(gccdev->cool_dev);
+#endif
 #endif
         if (err < 0)
             printk("register GPU  cooling error\n");

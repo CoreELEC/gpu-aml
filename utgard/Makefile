@@ -17,12 +17,13 @@
 
 GPU_TYPE:=mali450
 GPU_ARCH:=utgard
-GPU_DRV_VERSION?=r10p1
+GPU_DRV_VERSION?=r10p2
 
 EXTRA_INCLUDE := -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/include \
 		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/linux/license/gpl \
 		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/common \
 		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION)/linux \
+		 -I$(KERNEL_SRC)/$(M)/../utgard/$(GPU_DRV_VERSION) \
 		 -I$(KERNEL_SRC)/$(M)/../utgard/platform/meson_bu
 
 KBUILD_CFLAGS_MODULE += $(GKI_EXT_MODULE_PREDEFINE)

@@ -130,7 +130,7 @@ endif
 
 ccflags-y += -I$(src)/platform/$(TARGET_PLATFORM)
 ccflags-y += -DMALI_FAKE_PLATFORM_DEVICE=1
-$(warning r7p0/Kbuild.plat ccflags-y is $(ccflags-y))
+$(warning Kbuild.plat ccflags-y is $(ccflags-y))
 
 ifndef CONFIG_MALI_DMA_BUF_LAZY_MAP
 ifndef CONFIG_MALI_DMA_BUF_MAP_ON_ATTACH
