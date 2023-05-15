@@ -176,6 +176,10 @@ static u32 mali_get_online_pp(void)
     struct platform_device* ptr_plt_dev = pmali_plat->pdev;
     struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
 
+    if (!kbdev->pm.backend.gpu_powered) {
+        return 0;
+    }
+
     core_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_SHADER);
     l2_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_L2);
     tiler_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_TILER);
