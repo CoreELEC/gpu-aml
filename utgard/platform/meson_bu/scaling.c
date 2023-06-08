@@ -364,7 +364,8 @@ static int mali_stay_count = 0;
 static void mali_decide_next_status(struct mali_gpu_utilization_data *data, int* next_fs_idx,
 		int* pp_change_flag)
 {
-	u32 utilization, mali_up_limit, decided_fs_idx;
+	u32 utilization, mali_up_limit;
+	s32 decided_fs_idx;
 	u32 ld_left, ld_right;
 	u32 ld_up, ld_down;
 	u32 change_mode;

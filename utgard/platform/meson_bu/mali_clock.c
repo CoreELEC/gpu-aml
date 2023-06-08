@@ -432,7 +432,6 @@ int mali_clock_init_clk_tree(struct platform_device* pdev)
 
 int mali_clock_init(mali_plat_info_t *pdev)
 {
-	*pdev = *pdev;
 	return 0;
 }
 
@@ -671,7 +670,7 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	if ((is_meson_gxl_package_805Y()) && (length > mpdata->dvfs_table_size)) {
 		dvfs_tbl = last_dvfs_tbl;
 		last_dvfs_tbl = dvfs_tbl - 1;
-		if (dvfs_tbl->clk_freq != last_dvfs_tbl->clk_freq) {
+		if ((dvfs_tbl != NULL) && (dvfs_tbl->clk_freq != last_dvfs_tbl->clk_freq)) {
 			dvfs_tbl ++;
 			last_dvfs_tbl ++;
 			memcpy(dvfs_tbl, last_dvfs_tbl, sizeof(*dvfs_tbl));
