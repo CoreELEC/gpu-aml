@@ -501,6 +501,21 @@ void kbase_phy_alloc_mapping_put(struct kbase_context *kctx,
  */
 u32 kbase_get_cache_line_alignment(struct kbase_device *kbdev);
 
+/**
+ * kbase_mem_mmgrab - Wrapper function to take reference on mm_struct of current process
+ */
+static inline void kbase_mem_mmgrab(void)
+{
+	/* This merely takes a reference on the memory descriptor structure
+	 * i.e. mm_struct of current process and not on its address space and
+	 * so won't block the freeing of address space on process exit.
+	 */
+#if KERNEL_VERSION(4, 11, 0) > LINUX_VERSION_CODE
+	atomic_inc(&current->mm->mm_count);
+#else
+	mmgrab(current->mm);
+#endif
+}
 #if (KERNEL_VERSION(4, 20, 0) > LINUX_VERSION_CODE)
 static inline vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
 			unsigned long addr, unsigned long pfn, pgprot_t pgprot)
