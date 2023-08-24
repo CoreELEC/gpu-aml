@@ -168,6 +168,8 @@ static struct mutex kbase_probe_mutex;
 #endif
 
 static void kbase_file_destroy_kctx_worker(struct work_struct *work);
+static ssize_t js_ctx_scheduling_mode_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count);
 
 /**
  * mali_kbase_supports_cap - Query whether a kbase capability is supported
@@ -1869,6 +1871,17 @@ static int kbasep_ioctl_set_limited_core_count(struct kbase_context *kctx,
 	return 0;
 }
 
+static int kbasep_ioctl_set_scheduling_mode(struct kbase_context *kctx,
+			struct kbase_ioctl_set_scheduling_mode *scheduling_mode)
+{
+	char buf[2] = { 0 };
+
+	buf[0] = (scheduling_mode->mode == 0) ? '0' : '1';
+	dev_info(kctx->kbdev->dev, "%s: try change scheduling mode to %s", __func__, buf);
+
+	js_ctx_scheduling_mode_store(kctx->kbdev->dev, NULL, buf, 1);
+	return 0;
+}
 static long kbase_kfile_ioctl(struct kbase_file *kfile, unsigned int cmd, unsigned long arg)
 {
 	struct kbase_context *kctx = NULL;
@@ -2263,6 +2276,12 @@ static long kbase_kfile_ioctl(struct kbase_file *kfile, unsigned int cmd, unsign
 		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_SET_LIMITED_CORE_COUNT,
 				kbasep_ioctl_set_limited_core_count,
 				struct kbase_ioctl_set_limited_core_count,
+				kctx);
+		break;
+	case KBASE_IOCTL_SET_SCHEDULING_MODE:
+		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_SET_SCHEDULING_MODE,
+				kbasep_ioctl_set_scheduling_mode,
+				struct kbase_ioctl_set_scheduling_mode,
 				kctx);
 		break;
 	}
