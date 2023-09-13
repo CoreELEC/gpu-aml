@@ -44,7 +44,9 @@
 #include <mali_kbase_config_defaults.h>
 #include <mali_kbase_trace_gpu_mem.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
+#endif
 /*
  * Alignment of objects allocated by the GPU inside a just-in-time memory
  * region whose size is given by an end address
@@ -3120,8 +3122,12 @@ void kbase_mem_kref_free(struct kref *kref)
 		/* raw pages, external cleanup */
 		break;
 	case KBASE_MEM_TYPE_IMPORTED_UMM:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 		if (!dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
 			!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+#else
+		if (!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+#endif
 			WARN_ONCE(alloc->imported.umm.current_mapping_usage_count != 1,
 					"WARNING: expected exactly 1 mapping, got %d",
 					alloc->imported.umm.current_mapping_usage_count);

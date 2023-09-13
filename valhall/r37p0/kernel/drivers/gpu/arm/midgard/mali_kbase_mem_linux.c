@@ -84,7 +84,9 @@
 #endif
 
 #define IR_THRESHOLD_STEPS (256u)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
+#endif
 #if MALI_USE_CSF
 static int kbase_csf_cpu_mmap_user_reg_page(struct kbase_context *kctx,
 			struct vm_area_struct *vma);
@@ -1224,19 +1226,25 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx,
 		for (j = 0; (j < pages) && (count < reg->nr_pages); j++, count++)
 			*pa++ = as_tagged(sg_dma_address(s) +
 				(j << PAGE_SHIFT));
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
 			(j < pages))
 			dev_info(kctx->kbdev->dev,
 			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
 			alloc->imported.umm.dma_buf->size);
 		else
+#endif
 			WARN_ONCE(j < pages,
 			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
 			alloc->imported.umm.dma_buf->size);
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
 	    !(reg->flags & KBASE_REG_IMPORT_PAD) &&
+#else
+	if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
+#endif
 	    (count < reg->nr_pages))
 		dev_info(kctx->kbdev->dev,
 			"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
@@ -1287,6 +1295,7 @@ int kbase_mem_umm_map(struct kbase_context *kctx,
 				WARN_ON_ONCE(err);
 			}
 		}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
 			kbase_ctx_flag(kctx, KCTX_LAZY_MAP_UVM)) {
 			dev_dbg(kctx->kbdev->dev,
@@ -1295,6 +1304,9 @@ int kbase_mem_umm_map(struct kbase_context *kctx,
 		} else {
 			return 0;
 		}
+#else
+		return 0;
+#endif
 	}
 
 	err = kbase_mem_umm_map_attachment(kctx, reg);
@@ -1522,12 +1534,16 @@ static struct kbase_va_region *kbase_mem_from_umm(struct kbase_context *kctx,
 	reg->gpu_alloc->imported.umm.kctx = kctx;
 	reg->extension = 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	if (dmabuf_uvm_realloc(dma_buf)) {
 		*flags |= BASE_MEM_UVM_REALLOC;
 	}
 
 	if (!dmabuf_uvm_realloc(dma_buf) &&
 		!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+#else
+	if (!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+#endif
 		int err;
 
 		reg->gpu_alloc->imported.umm.current_mapping_usage_count = 1;

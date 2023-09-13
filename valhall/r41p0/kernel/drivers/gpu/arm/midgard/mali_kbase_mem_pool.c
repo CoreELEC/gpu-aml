@@ -267,6 +267,7 @@ struct page *kbase_mem_alloc_page(struct kbase_mem_pool *pool)
 	dma_addr_t dma_addr;
 	int i;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	if (is_meson_t5m_cpu() && is_meson_rev_b() &&
 		get_gpu_total_mem() > KBASE_T5M_MEM_THRESHOLD) {
 		if (pool->order)
@@ -274,12 +275,15 @@ struct page *kbase_mem_alloc_page(struct kbase_mem_pool *pool)
 		else
 			gfp |= GFP_HIGHUSER_MOVABLE;
 	} else {
+#endif
 		/* don't warn on higher order failures */
 		if (pool->order)
 			gfp |= GFP_HIGHUSER | __GFP_NOWARN;
 		else
 			gfp |= kbase_page_migration_enabled ? GFP_HIGHUSER_MOVABLE : GFP_HIGHUSER;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	}
+#endif
 
 	p = kbdev->mgm_dev->ops.mgm_alloc_page(kbdev->mgm_dev,
 		pool->group_id, gfp, pool->order);
