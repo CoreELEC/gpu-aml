@@ -185,9 +185,6 @@ static void mali_hw_init(struct kbase_device *kbdev)
 {
 	mali_reset();
 	udelay(10); // OR POLL for reset done
-	dev_info(kbdev->dev, "hw_init_kbdec-reg_start=%lld\n",kbdev->reg_start);
-	dev_info(kbdev->dev, "hw_init_kbdec-reg_size=%ld\n",kbdev->reg_size);
-	dev_info(kbdev->dev, "hw_init_kbdec-reg=%p\n",kbdev->reg);
 	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
 	Mali_WrReg(GPU_CONTROL_REG(PWR_OVERRIDE1), 0xfff | (0x20<<16));
 	Mali_pwr_on_with_kdev(kbdev, 0x1);
