@@ -5408,6 +5408,7 @@ struct kbase_ctx_ext_res_meta *kbase_sticky_resource_acquire(
 			meta = walker;
 			meta->ref++;
 			if (kbase_ctx_flag(kctx, KCTX_LAZY_MAP_UVM)) {
+				kbase_unmap_external_resource(kctx, meta->reg);
 				if (kbase_map_external_resource(kctx,
 					meta->reg, NULL))
 					goto fail_map;
