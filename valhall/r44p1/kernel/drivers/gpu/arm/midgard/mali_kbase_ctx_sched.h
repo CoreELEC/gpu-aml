@@ -66,7 +66,7 @@ void kbase_ctx_sched_term(struct kbase_device *kbdev);
  * This must be called during context initialization before any other context
  * scheduling functions are called on @kctx
  */
-void kbase_ctx_sched_init_ctx(struct kbase_context *kctx);
+int kbase_ctx_sched_init_ctx(struct kbase_context *kctx);
 
 /**
  * kbase_ctx_sched_retain_ctx - Retain a reference to the @ref kbase_context
@@ -221,7 +221,9 @@ bool kbase_ctx_sched_inc_refcount(struct kbase_context *kctx);
  * kbase_ctx_sched_release_ctx_lock - Release a reference count of a context
  * @kctx: Context for which refcount should be decreased
  *
- * effectively, this is a wrapper for kbase_ctx_sched_release_ctx, but
+
+ * Effectively, this is a wrapper for kbase_ctx_sched_release_ctx, but
+
  * kbase_device::hwaccess_lock is required NOT to be locked.
  */
 void kbase_ctx_sched_release_ctx_lock(struct kbase_context *kctx);

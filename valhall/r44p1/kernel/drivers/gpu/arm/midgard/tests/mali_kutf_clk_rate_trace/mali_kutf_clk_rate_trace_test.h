@@ -50,7 +50,7 @@
  *                                 its internal PM_CTX_COUNT. If this increase
  *                                 yielded a count of 0 -> 1 change, the portal
  *                                 will initiate a PM_CTX_ACTIVE call to the
- *                                 Kbase power management. Futher increase
+ *                                 Kbase power management. Further increase
  *                                 requests will limit to only affect the
  *                                 portal internal count value.
  * @PORTAL_CMD_DEC_PM_CTX_CNT:     Request the clock trace portal to decrease

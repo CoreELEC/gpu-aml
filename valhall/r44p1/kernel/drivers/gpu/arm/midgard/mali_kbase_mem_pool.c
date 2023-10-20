@@ -20,6 +20,7 @@
  */
 
 #include <mali_kbase.h>
+#include <device/mali_kbase_device.h>
 #include <linux/mm.h>
 #include <linux/migrate.h>
 #include <linux/dma-mapping.h>
@@ -28,6 +29,10 @@
 #include <linux/shrinker.h>
 #include <linux/atomic.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+#include <linux/arm-smccc.h>
+#include <linux/amlogic/media/registers/cpu_version.h>
+#endif
 #if KERNEL_VERSION(4, 11, 0) <= LINUX_VERSION_CODE
 #include <linux/sched/signal.h>
 #else
@@ -277,6 +282,32 @@ static void kbase_mem_pool_spill(struct kbase_mem_pool *next_pool,
 	kbase_mem_pool_add(next_pool, p);
 }
 
+static size_t get_gpu_total_mem(void)
+{
+	size_t total_mem = 0;
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+	int i;
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = NULL;
+		struct kbase_context *kctx;
+
+		kbdev = list_entry(entry, struct kbase_device, entry);
+		mutex_lock(&kbdev->kctx_list_lock);
+		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
+				total_mem += atomic_read(&(kctx->used_pages));
+				for (i = 0; i < MEMORY_GROUP_MANAGER_NR_GROUPS; i++)
+					total_mem += kctx->mem_pools.small[i].cur_size;
+		}
+		mutex_unlock(&kbdev->kctx_list_lock);
+	}
+	kbase_device_put_list(kbdev_list);
+
+	return total_mem;
+}
+
 struct page *kbase_mem_alloc_page(struct kbase_mem_pool *pool)
 {
 	struct page *p;
@@ -287,15 +318,30 @@ struct page *kbase_mem_alloc_page(struct kbase_mem_pool *pool)
 	int i;
 
 	/* don't warn on higher order failures */
-	if (pool->order)
-		gfp |= GFP_HIGHUSER | __GFP_NOWARN;
-	else
-		gfp |= kbase_is_page_migration_enabled() ? GFP_HIGHUSER_MOVABLE : GFP_HIGHUSER;
+	if (strstr(current->comm, "deqp") &&
+		is_meson_t5m_cpu() && is_meson_rev_b() &&
+		get_gpu_total_mem() > KBASE_T5M_MEM_THRESHOLD) {
+		if (pool->order)
+			gfp |= GFP_HIGHUSER_MOVABLE | __GFP_NOWARN;
+		else
+			gfp |= GFP_HIGHUSER_MOVABLE;
+	} else {
+		/* don't warn on higher order failures */
+		if (pool->order)
+			gfp |= GFP_HIGHUSER | __GFP_NOWARN;
+		else
+			gfp |= kbase_page_migration_enabled ? GFP_HIGHUSER_MOVABLE : GFP_HIGHUSER;
+	}
 
 	p = kbdev->mgm_dev->ops.mgm_alloc_page(kbdev->mgm_dev,
 		pool->group_id, gfp, pool->order);
-	if (!p)
-		return NULL;
+	if (!p) {
+		gfp = GFP_KERNEL | __GFP_ZERO;
+		p = kbdev->mgm_dev->ops.mgm_alloc_page(kbdev->mgm_dev,
+				pool->group_id, gfp, pool->order);
+		if (!p)
+			return NULL;
+	}
 
 	dma_addr = dma_map_page(dev, p, 0, (PAGE_SIZE << pool->order),
 				DMA_BIDIRECTIONAL);

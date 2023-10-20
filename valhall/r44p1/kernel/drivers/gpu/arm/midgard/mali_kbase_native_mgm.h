@@ -35,4 +35,13 @@
  */
 extern struct memory_group_manager_device kbase_native_mgm_dev;
 
+#define CONFIG_MALI_USE_ION 0
+#if CONFIG_MALI_USE_ION
+struct memory_group_cma {
+        struct dma_buf *dmabuf;
+        struct page *page;
+        struct list_head list;
+};
+#endif
+
 #endif /* _KBASE_NATIVE_MGM_H_ */

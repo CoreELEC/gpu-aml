@@ -543,7 +543,7 @@ void kbase_job_done(struct kbase_device *kbdev, u32 done)
 				 * that the value read back from
 				 * JOB_IRQ_JS_STATE is the correct number of
 				 * remaining jobs because the failed job will
-				 * have prevented any futher jobs from starting
+				 * have prevented any further jobs from starting
 				 * execution.
 				 */
 				u32 rawstat = kbase_reg_read(kbdev,

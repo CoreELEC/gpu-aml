@@ -689,6 +689,7 @@ static void kbase_gpu_mmu_handle_write_fault(struct kbase_context *kctx,
 	}
 
 	pfn_offset = fault_pfn - region->start_pfn;
+	/* may have risk if the gpu_alloc is alloc by vmalloc otherwise kzalloc!!?? */
 	fault_phys_addr = &kbase_get_gpu_phy_pages(region)[pfn_offset];
 
 	/* Capture addresses of faulting write location
@@ -2429,7 +2430,7 @@ static int mmu_insert_pages_no_flush(struct kbase_device *kbdev, struct kbase_mm
 				 * should be performed with
 				 * kbase_mmu_update_pages()
 				 */
-				WARN_ON((*target & 1UL) != 0);
+				WARN_ON_ONCE((*target & 1UL) != 0);
 
 				*target = kbase_mmu_create_ate(kbdev,
 					phys[i], flags, cur_level, group_id);

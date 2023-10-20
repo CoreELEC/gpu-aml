@@ -525,12 +525,18 @@ static inline u8 kbase_csf_priority_queue_group_priority_to_relative(u8 priority
 }
 
 /**
+
  * kbase_csf_ktrace_gpu_cycle_cnt - Wrapper to relative the GPU cycle counter
+
+
  *                                  value for Ktrace purpose.
  *
  * @kbdev: Instance of a GPU platform device that implements a CSF interface.
  *
+
  * This function is just a wrapper to relative the GPU cycle counter value, to
+
+
  * avoid any overhead on Release builds where Ktrace is disabled by default.
  *
  * Return: Snapshot of the GPU cycle count register.

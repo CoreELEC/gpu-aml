@@ -77,7 +77,7 @@ struct clk_trace_snapshot {
  * @listener:         Clock rate change listener structure.
  * @invoke_notify:    When true, invoke notify command is being executed.
  * @snapshot:         Clock trace update snapshot data array. A snapshot
- *                    for each clock contains info accumulated beteen two
+ *                    for each clock contains info accumulated between two
  *                    GET_TRACE_SNAPSHOT requests.
  * @nclks:            Number of clocks visible to the trace portal.
  * @pm_ctx_cnt:       Net count of PM (Power Management) context INC/DEC
@@ -87,7 +87,7 @@ struct clk_trace_snapshot {
  * @total_update_cnt: Total number of received trace write callbacks.
  * @server_state:     Portal server operational state.
  * @result_msg:       Message for the test result.
- * @test_status:      Portal test reslt status.
+ * @test_status:      Portal test result status.
  */
 struct kutf_clk_rate_trace_fixture_data {
 	struct kbase_device *kbdev;
@@ -616,7 +616,7 @@ static int kutf_clk_trace_do_nack_response(struct kutf_context *context,
  * This function carries out some basic test on the tracing operation:
  *     1). GPU idle on test start, trace rate should be 0 (low power state)
  *     2). Make sure GPU is powered up, the trace rate should match
- *         that from the clcok manager's internal recorded rate
+ *         that from the clock manager's internal recorded rate
  *     3). If the GPU active transition occurs following 2), there
  *         must be rate change event from tracing.
  */

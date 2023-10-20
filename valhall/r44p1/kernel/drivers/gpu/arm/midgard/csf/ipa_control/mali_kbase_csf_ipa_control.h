@@ -249,7 +249,7 @@ void kbase_ipa_control_rate_change_notify_test(struct kbase_device *kbdev,
  * This function provides a means through which IPA_CONTROL can be informed
  * that the GPU has entered protected mode. Since the GPU cannot access
  * performance counters while in this mode, this information is useful as
- * it implies (a) the values of these registers cannot change, so theres no
+ * it implies (a) the values of these registers cannot change, so there's no
  * point trying to read them, and (b) IPA_CONTROL has a means through which
  * to record the duration of time the GPU is in protected mode, which can
  * then be forwarded on to clients, who may wish, for example, to assume

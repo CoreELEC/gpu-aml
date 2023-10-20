@@ -24,7 +24,7 @@
 
 #include "mali_kbase.h"
 /**
- * kbase_csf_protected_memory_init - Initilaise protected memory allocator.
+ * kbase_csf_protected_memory_init - Initialise protected memory allocator.
  *
  * @kbdev:	Device pointer.
  *

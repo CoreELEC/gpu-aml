@@ -741,7 +741,7 @@ struct kbase_mmu_mode const *kbase_mmu_mode_get_aarch64(void);
 /**
  * enum kbase_devfreq_work_type - The type of work to perform in the devfreq
  *                                suspend/resume worker.
- * @DEVFREQ_WORK_NONE:    Initilisation state.
+ * @DEVFREQ_WORK_NONE:    Initialization state.
  * @DEVFREQ_WORK_SUSPEND: Call devfreq_suspend_device().
  * @DEVFREQ_WORK_RESUME:  Call devfreq_resume_device().
  */
@@ -1634,6 +1634,7 @@ enum kbase_context_flags {
 	KCTX_PULLED_SINCE_ACTIVE_JS2 = 1U << 14,
 	KCTX_AS_DISABLED_ON_FAULT = 1U << 15,
 	KCTX_JPL_ENABLED = 1U << 16,
+	KCTX_LAZY_MAP_UVM = 1U << 17,
 };
 #else
 /**
@@ -1711,6 +1712,7 @@ enum kbase_context_flags {
 	KCTX_PULLED_SINCE_ACTIVE_JS1 = 1U << 13,
 	KCTX_PULLED_SINCE_ACTIVE_JS2 = 1U << 14,
 	KCTX_AS_DISABLED_ON_FAULT = 1U << 15,
+	KCTX_LAZY_MAP_UVM = 1U << 16,
 };
 #endif /* MALI_JIT_PRESSURE_LIMIT_BASE */
 
@@ -1734,7 +1736,7 @@ struct kbase_sub_alloc {
  * @api_version:          contains the version number for User/kernel interface,
  *                        used for compatibility check.
  * @event_list:           list of posted events about completed atoms, to be sent to
- *                        event handling thread of Userpsace.
+ *                        event handling thread of Userspace.
  * @event_coalesce_list:  list containing events corresponding to successive atoms
  *                        which have requested deferred delivery of the completion
  *                        events to Userspace.

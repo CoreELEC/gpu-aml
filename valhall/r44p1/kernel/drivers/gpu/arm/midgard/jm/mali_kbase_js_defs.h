@@ -275,7 +275,7 @@ typedef u32 kbase_atom_ordering_flag_t;
  *              read
  * @nr_contexts_pullable:Number of contexts that can currently be pulled from
  * @nr_contexts_runnable:Number of contexts that can either be pulled from or
- *                       arecurrently running
+ *                       are currently running
  * @soft_job_timeout_ms:Value for JS_SOFT_JOB_TIMEOUT
  * @js_free_wait_time_ms: Maximum waiting time in ms for a Job Slot to be seen free.
  * @queue_mutex: Queue Lock, used to access the Policy's queue of contexts
@@ -385,7 +385,7 @@ struct kbasep_js_device_data {
  *	jobs. See kbase_jd_context::job_nr for such jobs
  * @ctx.ctx_attr_ref_count: Context Attributes ref count. Each is large enough
  *	to hold a refcount of the number of atoms on the context.
- * @ctx.is_scheduled_wait: Wait queue to wait for KCTX_SHEDULED flag state
+ * @ctx.is_scheduled_wait: Wait queue to wait for KCTX_SCHEDULED flag state
  *	changes.
  * @ctx.ctx_list_entry: Link implementing JS queues. Context can be present on
  *	one list per job slot.

@@ -38,10 +38,9 @@
 #define PAGE_MOVABLE_SHIFT (6)
 #define PAGE_MOVABLE_MASK ((u8)1 << PAGE_MOVABLE_SHIFT)
 #define PAGE_MOVABLE_CLEAR(status) ((status) & ~PAGE_MOVABLE_MASK)
-#define PAGE_MOVABLE_SET(status) (status | PAGE_MOVABLE_MASK)
+#define PAGE_MOVABLE_SET(status) (PAGE_MOVABLE_CLEAR(status) | (1 << PAGE_MOVABLE_SHIFT))
 
 #define IS_PAGE_MOVABLE(status) ((bool)(status & PAGE_MOVABLE_MASK))
-
 /* Global integer used to determine if module parameter value has been
  * provided and if page migration feature is enabled.
  */

@@ -83,7 +83,7 @@
 #endif
 
 #define IR_THRESHOLD_STEPS (256u)
-
+extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
 #if MALI_USE_CSF
 static int kbase_csf_cpu_mmap_user_reg_page(struct kbase_context *kctx, struct vm_area_struct *vma);
 static int kbase_csf_cpu_mmap_user_io_pages(struct kbase_context *kctx, struct vm_area_struct *vma);
@@ -1245,12 +1245,24 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx,
 		for (j = 0; (j < pages) && (count < reg->nr_pages); j++, count++)
 			*pa++ = as_tagged(sg_dma_address(s) +
 				(j << PAGE_SHIFT));
-		WARN_ONCE(j < pages,
-		"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
-		alloc->imported.umm.dma_buf->size);
+		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			(j < pages))
+			dev_info(kctx->kbdev->dev,
+			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+		else
+			WARN_ONCE(j < pages,
+			"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
 	}
 
-	if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
+	if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+	    !(reg->flags & KBASE_REG_IMPORT_PAD) &&
+	    (count < reg->nr_pages))
+		dev_info(kctx->kbdev->dev,
+			"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+	else if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
 			WARN_ONCE(count < reg->nr_pages,
 			"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
 			alloc->imported.umm.dma_buf->size)) {
@@ -1296,7 +1308,14 @@ int kbase_mem_umm_map(struct kbase_context *kctx,
 				WARN_ON_ONCE(err);
 			}
 		}
-		return 0;
+		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			kbase_ctx_flag(kctx, KCTX_LAZY_MAP_UVM)) {
+			dev_dbg(kctx->kbdev->dev,
+				"[%s][%d] process uvm map from userspace----\n",
+				__func__, __LINE__);
+		} else {
+			return 0;
+		}
 	}
 
 	err = kbase_mem_umm_map_attachment(kctx, reg);
@@ -1520,7 +1539,12 @@ static struct kbase_va_region *kbase_mem_from_umm(struct kbase_context *kctx,
 	reg->gpu_alloc->imported.umm.kctx = kctx;
 	reg->extension = 0;
 
-	if (!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
+	if (dmabuf_uvm_realloc(dma_buf)) {
+		*flags |= BASE_MEM_UVM_REALLOC;
+	}
+
+	if (!dmabuf_uvm_realloc(dma_buf) &&
+		!IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
 		int err;
 
 		reg->gpu_alloc->imported.umm.current_mapping_usage_count = 1;

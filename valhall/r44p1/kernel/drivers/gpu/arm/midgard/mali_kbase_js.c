@@ -792,8 +792,6 @@ int kbasep_js_kctx_init(struct kbase_context *const kctx)
 		return ret;
 #endif
 
-	kbase_ctx_sched_init_ctx(kctx);
-
 	for (i = 0; i < BASE_JM_MAX_NR_SLOTS; ++i)
 		INIT_LIST_HEAD(&kctx->jctx.sched_info.ctx.ctx_list_entry[i]);
 
@@ -1992,7 +1990,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 	}
 
 	/* Make a set of checks to see if the context should be scheduled out.
-	 * Note that there'll always be at least 1 reference to the context
+	 * Note that there will always be at least 1 reference to the context
 	 * which was previously acquired by kbasep_js_schedule_ctx().
 	 */
 	if (new_ref_count == 1 &&
@@ -2026,7 +2024,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 		/* Ctx Attribute handling
 		 *
 		 * Releasing atoms attributes must either happen before this, or
-		 * after the KCTX_SHEDULED flag is changed, otherwise we
+		 * after the KCTX_SCHEDULED flag is changed, otherwise we
 		 * double-decount the attributes
 		 */
 		runpool_ctx_attr_change |=

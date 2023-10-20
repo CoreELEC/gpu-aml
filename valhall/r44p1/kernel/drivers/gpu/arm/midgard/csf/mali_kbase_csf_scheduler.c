@@ -6571,8 +6571,6 @@ int kbase_csf_scheduler_context_init(struct kbase_context *kctx)
 		return err;
 #endif /* CONFIG_MALI_TRACE_POWER_GPU_WORK_PERIOD */
 
-	kbase_ctx_sched_init_ctx(kctx);
-
 	for (priority = 0; priority < KBASE_QUEUE_GROUP_PRIORITY_COUNT;
 	     ++priority) {
 		INIT_LIST_HEAD(&kctx->csf.sched.runnable_groups[priority]);

@@ -978,6 +978,17 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg,
 	return 0;
 }
 
+#if (CONFIG_MALI_LOW_MEM == 1)
+/*
+ * Max size for kbdev memory pool (in pages)
+ */
+#define KBASE_MEM_POOL_MAX_SIZE_KBDEV (SZ_16M >> PAGE_SHIFT)
+
+/*
+ * Max size for kctx memory pool (in pages)
+ */
+#define KBASE_MEM_POOL_MAX_SIZE_KCTX  (SZ_16M >> PAGE_SHIFT)
+#else
 /*
  * Max size for kbdev memory pool (in pages)
  */
@@ -987,7 +998,9 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg,
  * Max size for kctx memory pool (in pages)
  */
 #define KBASE_MEM_POOL_MAX_SIZE_KCTX  (SZ_64M >> PAGE_SHIFT)
+#endif
 
+#define KBASE_T5M_MEM_THRESHOLD  (KBASE_MEM_POOL_MAX_SIZE_KCTX * 9)
 /*
  * The order required for a 2MB page allocation (2^order * 4KB = 2MB)
  */

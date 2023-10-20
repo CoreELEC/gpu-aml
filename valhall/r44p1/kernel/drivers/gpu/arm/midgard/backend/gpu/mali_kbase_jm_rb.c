@@ -1348,6 +1348,7 @@ void kbase_gpu_complete_hw(struct kbase_device *kbdev, unsigned int js, u32 comp
 		unsigned int i;
 
 		if (!kbase_ctx_flag(katom->kctx, KCTX_DYING)) {
+			meson_gpu_data_invalid_count++;
 			dev_warn(kbdev->dev, "error detected from slot %d, job status 0x%08x (%s)",
 					js, completion_code,
 					kbase_gpu_exception_name(

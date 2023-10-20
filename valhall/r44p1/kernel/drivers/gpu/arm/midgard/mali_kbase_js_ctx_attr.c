@@ -82,7 +82,9 @@ static bool kbasep_js_ctx_attr_runpool_retain_attr(struct kbase_device *kbdev, s
  *
  * @kbdev: Device pointer
  * @kctx:  KBase context
+
  * @attribute: attribute to release
+
  *
  * Requires:
  * - jsctx mutex
@@ -132,7 +134,6 @@ static bool kbasep_js_ctx_attr_runpool_release_attr(struct kbase_device *kbdev, 
  * @kbdev: Device pointer
  * @kctx:  KBase context
  * @attribute: attribute to retain
- *
  * Requires:
  * - jsctx mutex
  * - If the context is scheduled, then runpool_irq spinlock must also be held
@@ -173,7 +174,6 @@ static bool kbasep_js_ctx_attr_ctx_retain_attr(struct kbase_device *kbdev, struc
  * @kbdev: Device pointer
  * @kctx:  KBase context
  * @attribute: attribute to release
- *
  * Requires:
  * - jsctx mutex
  * - If the context is scheduled, then runpool_irq spinlock must also be held

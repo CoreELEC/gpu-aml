@@ -553,7 +553,7 @@ static void kbase_arbiter_pm_vm_gpu_start(struct kbase_device *kbdev)
 		kbase_install_interrupts(kbdev);
 		/*
 		 * GPU GRANTED received while in stop can be a result of a
-		 * repartitioning.
+		 * repartition.
 		 */
 		kbase_gpuprops_req_curr_config_update(kbdev);
 		/* curr_config will be updated while resuming the PM. */

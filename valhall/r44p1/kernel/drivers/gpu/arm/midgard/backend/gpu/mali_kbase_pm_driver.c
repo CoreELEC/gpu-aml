@@ -664,7 +664,7 @@ bool kbase_pm_is_mcu_inactive(struct kbase_device *kbdev,
  * @kbdev: Pointer to the device.
  *
  * This function is called to re-enable the Doorbell notification on MCU side
- * when MCU needs to beome active again.
+ * when MCU needs to become active again.
  */
 static void kbase_pm_enable_mcu_db_notification(struct kbase_device *kbdev)
 {
@@ -2765,8 +2765,8 @@ void kbase_pm_clock_on(struct kbase_device *kbdev, bool is_resume)
 		}
 	}
 	/*
-	 * This point means that the GPU trasitioned to ON. So there is a chance
-	 * that a repartitioning occurred. In this case the current config
+	 * This point means that the GPU transitioned to ON. So there is a chance
+	 * that a repartition occurred. In this case the current config
 	 * should be read again.
 	 */
 	kbase_gpuprops_get_curr_config_props(kbdev,

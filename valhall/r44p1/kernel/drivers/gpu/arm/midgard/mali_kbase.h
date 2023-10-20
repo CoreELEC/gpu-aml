@@ -866,4 +866,8 @@ static inline void kbase_file_dec_cpu_mapping_count(struct kbase_file *kfile)
 	spin_unlock(&kfile->lock);
 }
 
+/*meson graphics start */
+extern int meson_gpu_data_invalid_count;
+extern int meson_gpu_fault;
+/*meson graphics end*/
 #endif
