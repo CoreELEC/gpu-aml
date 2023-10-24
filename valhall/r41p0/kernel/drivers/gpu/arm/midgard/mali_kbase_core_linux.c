@@ -5628,6 +5628,28 @@ static int kbase_platform_device_remove(struct platform_device *pdev)
 	return 0;
 }
 
+static void kbase_platform_device_shutdown(struct platform_device *pdev)
+{
+	struct kbase_device *kbdev = to_kbase_device(&pdev->dev);
+
+	if (!kbdev)
+		return;
+
+	/* copy from suspend */
+	kbase_pm_suspend(kbdev);
+
+#if defined(CONFIG_MALI_DEVFREQ) && \
+		(LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+	dev_info(kbdev->dev, "kbase_platform_device_shutdown called\n");
+	if (kbdev->devfreq) {
+		kbase_devfreq_enqueue_work(kbdev, DEVFREQ_WORK_SUSPEND);
+		flush_workqueue(kbdev->devfreq_queue.workq);
+	}
+#endif
+
+	return;
+}
+
 void kbase_backend_devfreq_term(struct kbase_device *kbdev)
 {
 #ifdef CONFIG_MALI_DEVFREQ
@@ -5910,6 +5932,7 @@ MODULE_DEVICE_TABLE(of, kbase_dt_ids);
 static struct platform_driver kbase_platform_driver = {
 	.probe = kbase_platform_device_probe,
 	.remove = kbase_platform_device_remove,
+	.shutdown = kbase_platform_device_shutdown,
 	.driver = {
 		   .name = kbase_drv_name,
 		   .pm = &kbase_pm_ops,
