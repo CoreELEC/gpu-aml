@@ -169,17 +169,22 @@ static u32 mali_get_online_pp(void)
     u64 core_ready;
     u64 l2_ready;
     u64 tiler_ready;
+    unsigned long flags;
     mali_plat_info_t* pmali_plat = get_mali_plat_data();
     struct platform_device* ptr_plt_dev = pmali_plat->pdev;
     struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
 
+
+    spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
     if (!kbdev->pm.backend.gpu_powered) {
+        spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
         return 0;
     }
 
     core_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_SHADER);
     l2_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_L2);
     tiler_ready = kbase_pm_get_ready_cores(kbdev, KBASE_PM_CORE_TILER);
+    spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 
     if (!core_ready && !l2_ready && !tiler_ready) {
         return 0;
