@@ -309,8 +309,6 @@ int kbase_device_init(struct kbase_device *kbdev)
 
 	kbase_device_id_init(kbdev);
 	kbase_disjoint_init(kbdev);
-	dev_info(kbdev->dev, "device1_init_kbdec-reg_start=%d\n",kbdev->reg_start);
-	dev_info(kbdev->dev, "device1_init_kbdec-reg_size=%d\n",kbdev->reg_size);
 	for (i = 0; i < ARRAY_SIZE(dev_init); i++) {
 		if (dev_init[i].init) {
 			err = dev_init[i].init(kbdev);
@@ -323,8 +321,6 @@ int kbase_device_init(struct kbase_device *kbdev)
 			}
 		}
 	}
-	dev_info(kbdev->dev, "device2_init_kbdec-reg_start=%d\n",kbdev->reg_start);
-	dev_info(kbdev->dev, "device2_init_kbdec-reg_size=%d\n",kbdev->reg_size);
 	return err;
 }
 

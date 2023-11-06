@@ -5494,7 +5494,7 @@ int kbase_device_coherency_init(struct kbase_device *kbdev)
 
 			kbdev->system_coherency = override_coherency;
 
-			dev_info(kbdev->dev,
+			dev_info(dbg(kbdev->dev,
 				"Using coherency mode %u set from dtb",
 				override_coherency);
 		} else

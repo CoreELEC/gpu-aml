@@ -4460,8 +4460,6 @@ int registers_map(struct kbase_device * const kbdev)
 		dev_err(kbdev->dev, "Invalid register resource\n");
 		return -ENOENT;
 	}
-	dev_err(kbdev->dev, "reg_res->start=%d\n",reg_res->start);
-	dev_err(kbdev->dev, "resource_size(reg_res)=%d\n",resource_size(reg_res));
 	kbdev->reg_start = reg_res->start;
 	kbdev->reg_size = resource_size(reg_res);
 
@@ -5649,8 +5647,6 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 	}
 
 	kbdev->dev = &pdev->dev;
-	dev_info(kbdev->dev, "kbdec-reg_start=%d\n",kbdev->reg_start);
-	dev_info(kbdev->dev, "kbdec-reg_size=%d\n",kbdev->reg_size);
 #if (KERNEL_VERSION(6, 0, 0) <= LINUX_VERSION_CODE)
 	kbdev->token = -EPERM;
 #endif /* (KERNEL_VERSION(6, 0, 0) <= LINUX_VERSION_CODE) */

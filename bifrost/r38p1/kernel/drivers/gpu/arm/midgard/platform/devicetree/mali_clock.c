@@ -484,7 +484,7 @@ int mali_reset_info(struct platform_device *pdev, struct device_node *gpu_dn,
 	reset_dn = of_get_child_by_name(gpu_dn, "reset_cfg");
 	if (!reset_dn) {
 		mpdata->reset_flag = 0;
-		dev_err(&pdev->dev, "no reset_cfg\n");
+		dev_dbg(&pdev->dev, "no reset_cfg\n");
 	} else {
 		ret = of_property_read_u32(reset_dn,"reg_level",
 			&mpdata->module_reset.reg_level);
@@ -509,7 +509,7 @@ int mali_reset_info(struct platform_device *pdev, struct device_node *gpu_dn,
 	apb_reset_dn = of_get_child_by_name(gpu_dn, "capb_reset");
 	if (!apb_reset_dn) {
 		mpdata->reset_flag = 0;
-		dev_err(&pdev->dev, "no apb_reset\n");
+		dev_dbg(&pdev->dev, "no apb_reset\n");
 	} else {
 		ret = of_property_read_u32(apb_reset_dn,"reg_level",
 			&mpdata->apb_reset.reg_level);
