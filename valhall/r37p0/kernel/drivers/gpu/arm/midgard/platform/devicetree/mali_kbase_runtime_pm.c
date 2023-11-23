@@ -219,6 +219,7 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 	u32 pwr_override1;
 	struct mali_plat_info_t *mpdata;
 	struct clk *clk_mali;
+	struct clk *clk_stack;
 
 	dev_dbg(kbdev->dev, "pm_callback_resume in\n");
 	/* clock resume avoid clk be changed by system */
@@ -228,6 +229,14 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 	if (__clk_is_enabled(clk_mali)) {
 		clk_disable_unprepare(clk_mali);
 		dev_dbg(kbdev->dev, "reset gpu clock\n");
+	}
+	if (clk_stack) {
+		clk_stack = mpdata->clk_stack;
+		dev_dbg(kbdev->dev, "clk_stack = %lu\n", clk_get_rate(clk_stack));
+		if (__clk_is_enabled(clk_stack)) {
+			clk_disable_unprepare(clk_stack);
+			dev_dbg(kbdev->dev, "reset gpu stack clock\n");
+		}
 	}
 	mali_clock_init_clk_tree(mpdata->pdev);
 	dev_dbg(kbdev->dev, "mali clock resume done\n");
@@ -254,9 +263,11 @@ static void pm_callback_suspend(struct kbase_device *kbdev)
 {
 	struct mali_plat_info_t *mpdata;
 	struct clk *clk_mali;
+	struct clk *clk_stack;
 
 	mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
 	clk_mali = mpdata->clk_mali;
+	clk_stack = mpdata->clk_stack;
 	dev_dbg(kbdev->dev, "pm_callback_suspend in\n");
 	pm_callback_runtime_off(kbdev);
 	pm_runtime_put_sync(kbdev->dev);
@@ -267,6 +278,14 @@ static void pm_callback_suspend(struct kbase_device *kbdev)
 		dev_dbg(kbdev->dev, "disable gpu clk done\n");
 	} else {
 		dev_dbg(kbdev->dev, "gpu clk have disable before\n");
+	}
+	if (clk_stack) {
+		if (__clk_is_enabled(clk_stack)) {
+			clk_disable_unprepare(clk_stack);
+			dev_dbg(kbdev->dev, "disable gpu stack clk done\n");
+		} else {
+			dev_dbg(kbdev->dev, "gpu stack clk have disable before\n");
+		}
 	}
 	dev_dbg(kbdev->dev, "pm_callback_suspend out\n");
 }

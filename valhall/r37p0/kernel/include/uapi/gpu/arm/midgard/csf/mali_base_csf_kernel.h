@@ -158,6 +158,11 @@
 #define BASE_MEM_IMPORT_SYNC_ON_MAP_UNMAP ((base_mem_alloc_flags)1 << 26)
 
 /* OUT */
+/* UVM mem
+ */
+#define BASE_MEM_UVM_REALLOC ((base_mem_alloc_flags)1 << 27)
+
+/* OUT */
 /* Kernel side cache sync ops required */
 #define BASE_MEM_KERNEL_SYNC ((base_mem_alloc_flags)1 << 28)
 
