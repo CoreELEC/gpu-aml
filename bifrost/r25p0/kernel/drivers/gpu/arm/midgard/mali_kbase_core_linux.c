@@ -4443,6 +4443,12 @@ static int kbase_device_runtime_idle(struct device *dev)
 }
 #endif /* KBASE_PM_RUNTIME */
 
+static void kbase_platform_device_shutdown(struct platform_device *pdev)
+{
+	kbase_device_suspend(&pdev->dev);
+	dev_info(&pdev->dev, "kbase_platform_device_shutdown called\n");
+}
+
 /* The power management operations for the platform driver.
  */
 static const struct dev_pm_ops kbase_pm_ops = {
@@ -4468,6 +4474,7 @@ MODULE_DEVICE_TABLE(of, kbase_dt_ids);
 static struct platform_driver kbase_platform_driver = {
 	.probe = kbase_platform_device_probe,
 	.remove = kbase_platform_device_remove,
+	.shutdown = kbase_platform_device_shutdown,
 	.driver = {
 		   .name = kbase_drv_name,
 		   .owner = THIS_MODULE,
