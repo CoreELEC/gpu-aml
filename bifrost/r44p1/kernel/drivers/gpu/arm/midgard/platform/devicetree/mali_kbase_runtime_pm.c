@@ -301,10 +301,22 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 /* the out power of gpu on t7 will be power off by platform when suspend */
 static void pm_callback_suspend(struct kbase_device *kbdev)
 {
+	struct mali_plat_info_t *mpdata;
+	struct clk *clk_mali;
+
 	dev_dbg(kbdev->dev, "pm_callback_suspend in\n");
 	pm_callback_runtime_off(kbdev);
 	pm_runtime_put_sync(kbdev->dev);
 	pm_runtime_disable(kbdev->dev);
+	/* for power save,disable gpu clock */
+	mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
+	clk_mali = mpdata->clk_mali;
+	if (__clk_is_enabled(clk_mali)) {
+		clk_disable_unprepare(clk_mali);
+		dev_info(kbdev->dev, "disable gpu clk done\n");
+	} else {
+		dev_info(kbdev->dev, "gpu clk have disable before\n");
+	}
 	dev_dbg(kbdev->dev, "pm_callback_suspend out\n");
 }
 

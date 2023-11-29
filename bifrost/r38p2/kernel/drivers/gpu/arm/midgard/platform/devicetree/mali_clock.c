@@ -387,15 +387,29 @@ int mali_clock_init_clk_tree(struct platform_device* pdev)
 	if ((0 == strcmp(dvfs_tbl->clk_parent, "gp0_pll")) &&
 			!IS_ERR(dvfs_tbl->clkp_handle) &&
 			(0 != dvfs_tbl->clkp_freq)) {
-		clk_prepare_enable(dvfs_tbl->clkp_handle);
+		if (__clk_is_enabled(dvfs_tbl->clkp_handle))
+			pr_info("clk gp0_pll have enabled\n");
+		else
+			clk_prepare_enable(dvfs_tbl->clkp_handle);
 		clk_set_rate(dvfs_tbl->clkp_handle, dvfs_tbl->clkp_freq);
 	}
-	clk_prepare_enable(clk_mali);
+	if (__clk_is_enabled(clk_mali))
+		pr_info("clk mali have enabled\n");
+	else
+		clk_prepare_enable(clk_mali);
 	clk_set_rate(clk_mali, dvfs_tbl->clk_freq);
 #else
+	/* pay attention of the sequence,
+	 * if the set clock first,then enable clock
+	 * the clock may not be ready really.
+	 * which is related with our double gpu clk.
+	 */
 	dev_dbg(&pdev->dev, "kernel version >= 5.4\n");
+	if (__clk_is_enabled(clk_mali))
+		pr_info("clk mali have enabled\n");
+	else
+		clk_prepare_enable(clk_mali);
 	clk_set_rate(clk_mali, dvfs_tbl->clk_freq);
-	clk_prepare_enable(clk_mali);
 #endif
 
 	return 0;
