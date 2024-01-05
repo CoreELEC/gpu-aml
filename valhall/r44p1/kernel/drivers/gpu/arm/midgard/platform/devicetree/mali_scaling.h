@@ -109,7 +109,7 @@ typedef struct mali_plat_info_t {
 	/* for boost up gpu by user. */
 	void (*plat_preheat)(void);
 #ifdef CONFIG_MALI_DEVFREQ
-	enum STATUS{
+	enum preheat_status{
 		PREHEAT_NULL,
 		PREHEAT_START,
 		PREHEAT_DOING,
@@ -122,6 +122,7 @@ typedef struct mali_plat_info_t {
 	struct clk *clk_mali;
 	struct clk *clk_mali_0;
 	struct clk *clk_mali_1;
+	struct clk *clk_stack;//G310 in S7D have two clock
 	void __iomem *reg_base_reset;
 	void __iomem *reg_base_hiu;
 	u32 clk_cntl_reg;

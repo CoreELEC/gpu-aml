@@ -72,6 +72,7 @@ void platform_dt_term_func(struct kbase_device *kbdev)
 }
 
 static u32 last_utilisation, last_util_gl_share, last_util_cl_share[2];
+#if !MALI_USE_CSF
 inline int kbase_platform_dvfs_event(struct kbase_device *kbdev, u32 utilisation,
 	u32 util_gl_share, u32 util_cl_share[2])
 {
@@ -82,6 +83,14 @@ inline int kbase_platform_dvfs_event(struct kbase_device *kbdev, u32 utilisation
     mali_gpu_utilization_callback(utilisation*255/100);
     return 1;
 }
+#else
+inline int kbase_platform_dvfs_event(struct kbase_device *kbdev, u32 utilisation)
+{
+    last_utilisation = utilisation;
+    mali_gpu_utilization_callback(utilisation*255/100);
+    return 1;
+}
+#endif
 
 u32 mpgpu_get_utilization(void)
 {

@@ -266,7 +266,7 @@ void flush_scaling_job(void)
 #ifndef CONFIG_MALI_DEVFREQ
 static u32 enable_one_core(void)
 {
-	scalingdbg(2, "meson:	 one more pp, curent has %d pp cores\n",  num_cores_enabled + 1);
+	scalingdbg(2, "meson:	 one more pp, current has %d pp cores\n",  num_cores_enabled + 1);
 	return set_mali_rt_clkpp(currentStep, num_cores_enabled + 1, 0);
 }
 

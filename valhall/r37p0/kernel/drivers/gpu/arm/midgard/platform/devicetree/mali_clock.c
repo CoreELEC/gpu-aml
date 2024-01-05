@@ -243,6 +243,8 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 
 	mpdata->reg_base_reset = of_iomap(gpu_dn, 1);
 	dev_dbg(&pdev->dev, "reset bus 0x%p\n", mpdata->reg_base_reset);
+	mpdata->reg_base_hiu = of_iomap(gpu_dn, 2);
+	dev_dbg(&pdev->dev, "hiu bus 0x%p\n", mpdata->reg_base_hiu);
 
 	ret = of_property_read_u32(gpu_dn,"sc_mpp",
 			&mpdata->sc_mpp);

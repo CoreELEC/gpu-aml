@@ -221,7 +221,7 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 	struct clk *clk_mali;
 	struct clk *clk_stack;
 
-	dev_dbg(kbdev->dev, "pm_callback_resume in\n");
+	dev_info(kbdev->dev, "pm_callback_resume in\n");
 	/* clock resume avoid clk be changed by system */
 	mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
 	clk_mali = mpdata->clk_mali;
@@ -255,7 +255,7 @@ static void pm_callback_resume(struct kbase_device *kbdev)
 		mali_hw_init(kbdev);
 	}
 	ret = pm_callback_runtime_on(kbdev);
-	dev_dbg(kbdev->dev, "pm_callback_resume out\n");
+	dev_info(kbdev->dev, "pm_callback_resume out\n");
 }
 
 /* the out power of gpu on t7 will be power off by platform when suspend */
@@ -268,7 +268,7 @@ static void pm_callback_suspend(struct kbase_device *kbdev)
 	mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
 	clk_mali = mpdata->clk_mali;
 	clk_stack = mpdata->clk_stack;
-	dev_dbg(kbdev->dev, "pm_callback_suspend in\n");
+	dev_info(kbdev->dev, "pm_callback_suspend in\n");
 	pm_callback_runtime_off(kbdev);
 	pm_runtime_put_sync(kbdev->dev);
 	pm_runtime_disable(kbdev->dev);
@@ -287,7 +287,7 @@ static void pm_callback_suspend(struct kbase_device *kbdev)
 			dev_dbg(kbdev->dev, "gpu stack clk have disable before\n");
 		}
 	}
-	dev_dbg(kbdev->dev, "pm_callback_suspend out\n");
+	dev_info(kbdev->dev, "pm_callback_suspend out\n");
 }
 
 struct kbase_pm_callback_conf pm_callbacks = {

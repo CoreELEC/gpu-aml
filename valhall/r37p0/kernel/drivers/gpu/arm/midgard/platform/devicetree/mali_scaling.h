@@ -124,6 +124,7 @@ typedef struct mali_plat_info_t {
 	struct clk *clk_mali_1;
 	struct clk *clk_stack;//G310 in S7D have two clock
 	void __iomem *reg_base_reset;
+	void __iomem *reg_base_hiu;
 	u32 clk_cntl_reg;
 } mali_plat_info_t;
 mali_plat_info_t* get_mali_plat_data(void);
