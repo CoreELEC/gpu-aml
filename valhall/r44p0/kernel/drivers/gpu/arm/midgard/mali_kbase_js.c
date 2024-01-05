@@ -644,8 +644,6 @@ int kbasep_js_kctx_init(struct kbase_context *const kctx)
 
 	CSTD_UNUSED(ret);
 
-	kbase_ctx_sched_init_ctx(kctx);
-
 	for (i = 0; i < BASE_JM_MAX_NR_SLOTS; ++i)
 		INIT_LIST_HEAD(&kctx->jctx.sched_info.ctx.ctx_list_entry[i]);
 
