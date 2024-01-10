@@ -246,6 +246,11 @@ static int kbase_devfreq_status(struct device *dev, struct devfreq_dev_status *s
 {
 	struct kbase_device *kbdev = dev_get_drvdata(dev);
 	struct kbasep_pm_metrics diff;
+#if !defined(CONFIG_MALI_MIDGARD_DVFS) && defined(CONFIG_AMLOGIC_MODIFY)
+	int utilisation, util_gl_share;
+	int util_cl_share[2];
+	int busy;
+#endif
 
 	kbase_pm_get_dvfs_metrics(kbdev, &kbdev->last_devfreq_metrics, &diff);
 
@@ -256,6 +261,18 @@ static int kbase_devfreq_status(struct device *dev, struct devfreq_dev_status *s
 
 #if MALI_USE_CSF && defined CONFIG_DEVFREQ_THERMAL
 	kbase_ipa_reset_data(kbdev);
+#endif
+
+#if !defined(CONFIG_MALI_MIDGARD_DVFS) && defined(CONFIG_AMLOGIC_MODIFY)
+	utilisation = (100 * diff.time_busy) /
+			max(diff.time_busy + diff.time_idle, 1u);
+
+	busy = max(diff.busy_gl + diff.busy_cl[0] + diff.busy_cl[1], 1u);
+	util_gl_share = (100 * diff.busy_gl) / busy;
+	util_cl_share[0] = (100 * diff.busy_cl[0]) / busy;
+	util_cl_share[1] = (100 * diff.busy_cl[1]) / busy;
+
+	kbase_platform_dvfs_event(kbdev, utilisation, util_gl_share, util_cl_share);
 #endif
 
 	return 0;

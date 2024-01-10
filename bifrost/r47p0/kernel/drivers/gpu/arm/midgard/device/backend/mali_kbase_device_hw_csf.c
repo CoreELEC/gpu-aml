@@ -46,6 +46,7 @@ static void kbase_report_gpu_fault(struct kbase_device *kbdev, u32 status, u32 a
 	/* Report GPU fault for all contexts in case either
 	 * the address space is invalid or it's MCU address space.
 	 */
+	meson_gpu_fault++;
 	kbase_mmu_gpu_fault_interrupt(kbdev, status, as_nr, address, as_valid);
 }
 

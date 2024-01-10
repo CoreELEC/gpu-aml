@@ -2398,7 +2398,15 @@ static int mmu_insert_pages_no_flush(struct kbase_device *kbdev, struct kbase_mm
 					 * should be performed with
 					 * kbase_mmu_update_pages()
 					 */
-					WARN_ON_ONCE((*target & 1UL) != 0);
+					WARN_ONCE((*target & 1UL) != 0,
+						  "vindex=0x%x, count=%d, pgd=0x%pa, "
+						  "insert_vpfn=0x%llx, start_vpfn=0x%llx, "
+						  "nr=%d, remain=%d, group_id=%d, "
+						  "is_huge_head(*phys)=%d\n",
+						  vindex, count, &pgd,
+						  insert_vpfn, start_vpfn,
+						  (u32)nr, (u32)remain, group_id,
+						  is_huge_head(*phys));
 
 					*target = kbase_mmu_create_ate(kbdev,
 								       as_tagged(page_address),

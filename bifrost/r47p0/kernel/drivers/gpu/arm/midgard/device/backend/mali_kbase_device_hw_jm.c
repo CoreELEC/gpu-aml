@@ -42,6 +42,7 @@ static void kbase_report_gpu_fault(struct kbase_device *kbdev, int multiple)
 	u32 status = kbase_reg_read32(kbdev, GPU_CONTROL_ENUM(GPU_FAULTSTATUS));
 	uintptr_t phys_addr = kbase_reg_read64(kbdev, GPU_CONTROL_ENUM(GPU_FAULTADDRESS));
 
+	meson_gpu_fault++;
 	dev_warn(kbdev->dev, "GPU Fault 0x%08x (%s) at PA 0x%pK", status,
 		 kbase_gpu_exception_name(status & 0xFF), (void *)phys_addr);
 	if (multiple)
