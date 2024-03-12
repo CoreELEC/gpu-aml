@@ -124,8 +124,10 @@ int get_mali_freq_level(int freq)
         level = 0;
     else {
         for (i = 0; i < mali_freq_num; i++) {
-            if (freq < freq_table[i] / 1000000 && freq >= freq_table[i + 1] / 1000000)
+            if (freq < freq_table[i] / 1000000 && freq >= freq_table[i + 1] / 1000000) {
                 level = i + 1;
+                break;
+            }
         }
     }
     return level;
@@ -146,6 +148,7 @@ int get_mali_freq_level(int freq)
             if (freq >= mali_plat_data.clk_sample[i] && freq <= mali_plat_data.clk_sample[i + 1]) {
                 level = i;
                 level = mali_freq_num - level - 1;
+                break;
             }
         }
     }
