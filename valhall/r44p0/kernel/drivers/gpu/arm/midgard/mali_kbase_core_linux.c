@@ -6179,7 +6179,7 @@ static int kbase_device_runtime_idle(struct device *dev)
 static void kbase_platform_device_shutdown(struct platform_device *pdev)
 {
 	kbase_device_suspend(&pdev->dev);
-	dev_info(&pdev->dev, "kbase_platform_device_shutdown called\n");
+	dev_info(&pdev->dev, "%s called\n", __func__);
 }
 
 /* The power management operations for the platform driver.
@@ -6187,6 +6187,10 @@ static void kbase_platform_device_shutdown(struct platform_device *pdev)
 static const struct dev_pm_ops kbase_pm_ops = {
 	.suspend = kbase_device_suspend,
 	.resume = kbase_device_resume,
+	.freeze = kbase_device_suspend,
+	.thaw = kbase_device_resume,
+	.poweroff = kbase_device_suspend,
+	.restore = kbase_device_resume,
 #ifdef KBASE_PM_RUNTIME
 	.runtime_suspend = kbase_device_runtime_suspend,
 	.runtime_resume = kbase_device_runtime_resume,
