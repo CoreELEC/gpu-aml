@@ -2346,8 +2346,9 @@ static void kbase_mmu_report_fault_and_kill(struct kbase_context *kctx,
 	kbdev = kctx->kbdev;
 	js_devdata = &kbdev->js_data;
 
-	/* ASSERT that the context won't leave the runpool */
-	KBASE_DEBUG_ASSERT(atomic_read(&kctx->refcount) > 0);
+	/* Make sure the context was active */
+	if (WARN_ON(atomic_read(&kctx->refcount) <= 0))
+		return;
 
 	/* decode the fault status */
 	exception_type = fault->status & 0xFF;
@@ -2363,6 +2364,7 @@ static void kbase_mmu_report_fault_and_kill(struct kbase_context *kctx,
 		"exception type 0x%X: %s\n"
 		"access type 0x%X: %s\n"
 		"source id 0x%X\n"
+		"refcount %d\n"
 		"pid: %d\n",
 		as_no, fault->addr,
 		reason_str,
@@ -2370,7 +2372,7 @@ static void kbase_mmu_report_fault_and_kill(struct kbase_context *kctx,
 		(fault->status & (1 << 10) ? "DECODER FAULT" : "SLAVE FAULT"),
 		exception_type, kbase_exception_name(kbdev, exception_type),
 		access_type, access_type_name(kbdev, fault->status),
-		source_id,
+		source_id, atomic_read(&kctx->refcount),
 		kctx->pid);
 
 	/* hardware counters dump fault handling */
