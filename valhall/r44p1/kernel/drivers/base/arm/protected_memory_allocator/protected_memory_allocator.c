@@ -28,6 +28,7 @@
 #include <linux/mm.h>
 #include <linux/io.h>
 #include <linux/protected_memory_allocator.h>
+#include <linux/amlogic/tee.h>
 
 /* Size of a bitfield element in bytes */
 #define BITFIELD_ELEM_SIZE sizeof(u64)
@@ -436,6 +437,8 @@ static int protected_memory_allocator_probe(struct platform_device *pdev)
 #if (KERNEL_VERSION(4, 15, 0) <= LINUX_VERSION_CODE)
 	struct reserved_mem *rmem;
 #endif
+	unsigned int protected_memory_handle;
+	int err;
 
 	np = pdev->dev.of_node;
 
@@ -488,6 +491,14 @@ static int protected_memory_allocator_probe(struct platform_device *pdev)
 		devm_kfree(&pdev->dev, epma_dev);
 		return -ENOMEM;
 	}
+	err = tee_protect_mem_by_type(TEE_MEM_TYPE_GPU,
+				      (u32)rmem->base,
+				      (u32)rmem->size,
+				      &protected_memory_handle);
+	if (err)
+		dev_err(&pdev->dev, "tee protect protected_memory fail!\n");
+	else
+		dev_info(&pdev->dev, "tee protect protected_memory done.\n");
 
 	if (epma_dev->rmem_size % PAGES_PER_BITFIELD_ELEM) {
 		size_t extra_pages =
