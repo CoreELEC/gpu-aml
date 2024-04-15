@@ -53,6 +53,8 @@ struct tagged_addr { phys_addr_t tagged_addr; };
 #define HUGE_HEAD    (1u << 1)
 #define FROM_PARTIAL (1u << 2)
 
+#define KBASE_INVALID_PHYSICAL_ADDRESS (~(phys_addr_t)0 & PAGE_MASK)
+
 /*
  * Note: if macro for converting physical address to page is not defined
  * in the kernel itself, it is defined hereby. This is to avoid build errors
@@ -161,6 +163,18 @@ static inline bool is_huge_head(struct tagged_addr t)
 static inline bool is_partial(struct tagged_addr t)
 {
 	return t.tagged_addr & FROM_PARTIAL;
+}
+
+/**
+ * is_valid_addr() - Check if the physical page has a valid address
+ *
+ * @t: tagged address storing the tag in the lower order bits.
+ *
+ * Return: true if page has valid physical address, or false
+ */
+static inline bool is_valid_addr(struct tagged_addr t)
+{
+	return (as_phys_addr_t(t) != KBASE_INVALID_PHYSICAL_ADDRESS);
 }
 
 #endif /* _KBASE_LOWLEVEL_H */

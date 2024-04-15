@@ -47,6 +47,12 @@
 #define dev_pm_opp_find_freq_floor opp_find_freq_floor
 #endif /* Linux >= 3.13 */
 
+#ifdef CONFIG_AMLOGIC_MODIFY
+#include <platform/devicetree/mali_scaling.h>
+
+struct devfreq_simple_ondemand_data data;
+#endif
+
 /**
  * opp_translate - Translate nominal OPP frequency from devicetree into real
  *                 frequency and core mask
@@ -101,8 +107,32 @@ kbase_devfreq_target(struct device *dev, unsigned long *target_freq, u32 flags)
 	unsigned long volts[BASE_MAX_NR_CLOCKS_REGULATORS] = {0};
 	unsigned int i;
 	u64 core_mask;
+#ifdef CONFIG_AMLOGIC_MODIFY
+	struct devfreq_dev_profile *dp;
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+#endif
 
 	nominal_freq = *target_freq;
+#ifdef CONFIG_AMLOGIC_MODIFY
+	dp = &kbdev->devfreq_profile;
+	switch (pmali_plat->status) {
+		case PREHEAT_NULL:
+			break;
+		case PREHEAT_START:
+			dp->polling_ms = 2000;
+			nominal_freq = kbdev->devfreq->scaling_max_freq;
+			pmali_plat->status = PREHEAT_DOING;
+			break;
+		case PREHEAT_DOING:
+			nominal_freq = kbdev->devfreq->scaling_max_freq;
+			pmali_plat->status = PREHEAT_END;
+			break;
+		case PREHEAT_END:
+			dp->polling_ms = 100;
+			pmali_plat->status = PREHEAT_NULL;
+			break;
+	}
+#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
 	rcu_read_lock();
@@ -197,7 +227,10 @@ kbase_devfreq_target(struct device *dev, unsigned long *target_freq, u32 flags)
 	}
 #endif
 
+#ifndef CONFIG_AMLOGIC_MODIFY
+	/* this may result in GPU fault when do stress test with RiptideGP2.apk */
 	kbase_devfreq_set_core_mask(kbdev, core_mask);
+#endif
 
 	*target_freq = nominal_freq;
 	kbdev->current_nominal_freq = nominal_freq;
@@ -623,6 +656,10 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 	dp->get_dev_status = kbase_devfreq_status;
 	dp->get_cur_freq = kbase_devfreq_cur_freq;
 	dp->exit = kbase_devfreq_exit;
+#ifdef CONFIG_AMLOGIC_MODIFY
+	data.upthreshold = 30;
+	data.downdifferential = 5;
+#endif
 
 	if (kbase_devfreq_init_freq_table(kbdev, dp))
 		return -EFAULT;
@@ -647,8 +684,13 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 		return err;
 	}
 
+#ifdef CONFIG_AMLOGIC_MODIFY
+	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
+				"simple_ondemand", &data);
+#else
 	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
 				"simple_ondemand", NULL);
+#endif
 	if (IS_ERR(kbdev->devfreq)) {
 		err = PTR_ERR(kbdev->devfreq);
 		kbase_devfreq_work_term(kbdev);

@@ -42,6 +42,9 @@
 #include <mali_kbase_reset_gpu.h>
 #include <mmu/mali_kbase_mmu.h>
 #include <mmu/mali_kbase_mmu_internal.h>
+#if !MALI_USE_CSF
+#include <mali_kbase_hwaccess_jm.h>
+#endif
 
 #define KBASE_MMU_PAGE_ENTRIES 512
 
@@ -897,7 +900,7 @@ static phys_addr_t kbase_mmu_alloc_pgd(struct kbase_device *kbdev,
 
 	p = kbase_mem_pool_alloc(&kbdev->mem_pools.small[mmut->group_id]);
 	if (!p)
-		return 0;
+		return KBASE_INVALID_PHYSICAL_ADDRESS;
 
 	page = kmap(p);
 	if (page == NULL)
@@ -933,7 +936,7 @@ alloc_free:
 	kbase_mem_pool_free(&kbdev->mem_pools.small[mmut->group_id], p,
 		false);
 
-	return 0;
+	return KBASE_INVALID_PHYSICAL_ADDRESS;
 }
 
 /* Given PGD PFN for level N, return PGD PFN for level N+1, allocating the
@@ -969,7 +972,7 @@ static int mmu_get_next_pgd(struct kbase_device *kbdev,
 
 	if (!target_pgd) {
 		target_pgd = kbase_mmu_alloc_pgd(kbdev, mmut);
-		if (!target_pgd) {
+		if (target_pgd == KBASE_INVALID_PHYSICAL_ADDRESS) {
 			dev_dbg(kbdev->dev, "%s: kbase_mmu_alloc_pgd failure\n",
 					__func__);
 			kunmap(p);
@@ -1372,7 +1375,15 @@ int kbase_mmu_insert_pages_no_flush(struct kbase_device *kbdev,
 				 * should be performed with
 				 * kbase_mmu_update_pages()
 				 */
-				WARN_ON((*target & 1UL) != 0);
+				WARN_ONCE((*target & 1UL) != 0,
+					  "vindex=0x%x, count=%d, pgd=0x%pa, "
+					  "insert_vpfn=0x%llx, start_vpfn=0x%llx, "
+					  "nr=%d, remain=%d, group_id=%d, "
+					  "is_huge_head(*phys)=%d\n",
+					  vindex, count, &pgd,
+					  insert_vpfn, start_vpfn,
+					  (u32)nr, (u32)remain, group_id,
+					  is_huge_head(*phys));
 
 				*target = kbase_mmu_create_ate(kbdev,
 					phys[i], flags, cur_level, group_id);
@@ -1458,7 +1469,7 @@ static void kbase_mmu_flush_invalidate_noretain(struct kbase_context *kctx,
 		 */
 		dev_err(kbdev->dev, "Flush for GPU page table update did not complete. Issuing GPU soft-reset to recover\n");
 
-		if (kbase_prepare_to_reset_gpu_locked(kbdev))
+		if (kbase_prepare_to_reset_gpu_locked(kbdev, RESET_FLAGS_NONE))
 			kbase_reset_gpu_locked(kbdev);
 	}
 }
@@ -1495,7 +1506,8 @@ static void kbase_mmu_flush_invalidate_as(struct kbase_device *kbdev,
 		 */
 		dev_err(kbdev->dev, "Flush for GPU page table update did not complete. Issuing GPU soft-reset to recover\n");
 
-		if (kbase_prepare_to_reset_gpu(kbdev))
+		if (kbase_prepare_to_reset_gpu(kbdev,
+					       RESET_FLAGS_HWC_UNRECOVERABLE_ERROR))
 			kbase_reset_gpu(kbdev);
 	}
 
@@ -1581,6 +1593,15 @@ void kbase_mmu_disable(struct kbase_context *kctx)
 	kbase_mmu_flush_invalidate_noretain(kctx, 0, ~0, true);
 
 	kctx->kbdev->mmu_mode->disable_as(kctx->kbdev, kctx->as_nr);
+#if !MALI_USE_CSF
+	/*
+	 * JM GPUs has some L1 read only caches that need to be invalidated
+	 * with START_FLUSH configuration. Purge the MMU disabled kctx from
+	 * the slot_rb tracking field so such invalidation is performed when
+	 * a new katom is executed on the affected slots.
+	 */
+	kbase_backend_slot_kctx_purge_locked(kctx->kbdev, kctx);
+#endif
 }
 KBASE_EXPORT_TEST_API(kbase_mmu_disable);
 
@@ -1909,12 +1930,12 @@ int kbase_mmu_init(struct kbase_device *const kbdev,
 	if (mmut->mmu_teardown_pages == NULL)
 		return -ENOMEM;
 
-	mmut->pgd = 0;
+	mmut->pgd = KBASE_INVALID_PHYSICAL_ADDRESS;
 	/* We allocate pages into the kbdev memory pool, then
 	 * kbase_mmu_alloc_pgd will allocate out of that pool. This is done to
 	 * avoid allocations from the kernel happening with the lock held.
 	 */
-	while (!mmut->pgd) {
+	while (mmut->pgd == KBASE_INVALID_PHYSICAL_ADDRESS) {
 		int err;
 
 		err = kbase_mem_pool_grow(
@@ -1935,7 +1956,7 @@ int kbase_mmu_init(struct kbase_device *const kbdev,
 
 void kbase_mmu_term(struct kbase_device *kbdev, struct kbase_mmu_table *mmut)
 {
-	if (mmut->pgd) {
+	if (mmut->pgd != KBASE_INVALID_PHYSICAL_ADDRESS) {
 		mutex_lock(&mmut->mmu_lock);
 		mmu_teardown_level(kbdev, mmut, mmut->pgd, MIDGARD_MMU_TOPLEVEL,
 				mmut->mmu_teardown_pages);

@@ -81,22 +81,28 @@ static struct rb_root *kbase_gpu_va_to_rbtree(struct kbase_context *kctx,
 								    u64 gpu_pfn)
 {
 	struct rb_root *rbtree = NULL;
+	struct kbase_reg_zone *exec_va_zone =
+		kbase_ctx_reg_zone_get(kctx, KBASE_REG_ZONE_EXEC_VA);
 
 	/* The gpu_pfn can only be greater than the starting pfn of the EXEC_VA
 	 * zone if this has been initialized.
 	 */
-	if (gpu_pfn >= kctx->exec_va_start)
+	if (gpu_pfn >= exec_va_zone->base_pfn)
 		rbtree = &kctx->reg_rbtree_exec;
 	else {
 		u64 same_va_end;
 
 #ifdef CONFIG_64BIT
-		if (kbase_ctx_flag(kctx, KCTX_COMPAT))
+		if (kbase_ctx_flag(kctx, KCTX_COMPAT)) {
 #endif /* CONFIG_64BIT */
 			same_va_end = KBASE_REG_ZONE_CUSTOM_VA_BASE;
 #ifdef CONFIG_64BIT
-		else
-			same_va_end = kctx->same_va_end;
+		} else {
+			struct kbase_reg_zone *same_va_zone =
+				kbase_ctx_reg_zone_get(kctx,
+						       KBASE_REG_ZONE_SAME_VA);
+			same_va_end = kbase_reg_zone_end_pfn(same_va_zone);
+		}
 #endif /* CONFIG_64BIT */
 
 		if (gpu_pfn >= same_va_end)
@@ -320,13 +326,15 @@ static struct kbase_va_region *kbase_region_tracker_find_region_meeting_reqs(
 
 /**
  * @brief Remove a region object from the global list.
+ * @kbdev: The kbase device
  *
  * The region reg is removed, possibly by merging with other free and
  * compatible adjacent regions.  It must be called with the context
  * region lock held. The associated memory is not released (see
  * kbase_free_alloced_region). Internal use only.
  */
-int kbase_remove_va_region(struct kbase_va_region *reg)
+void kbase_remove_va_region(struct kbase_device *kbdev,
+		struct kbase_va_region *reg)
 {
 	struct rb_node *rbprev;
 	struct kbase_va_region *prev = NULL;
@@ -336,19 +344,26 @@ int kbase_remove_va_region(struct kbase_va_region *reg)
 
 	int merged_front = 0;
 	int merged_back = 0;
-	int err = 0;
 
 	reg_rbtree = reg->rbtree;
+
+	if (WARN_ON(RB_EMPTY_ROOT(reg_rbtree)))
+		return;
 
 	/* Try to merge with the previous block first */
 	rbprev = rb_prev(&(reg->rblink));
 	if (rbprev) {
 		prev = rb_entry(rbprev, struct kbase_va_region, rblink);
 		if (prev->flags & KBASE_REG_FREE) {
-			/* We're compatible with the previous VMA,
-			 * merge with it */
+			/* We're compatible with the previous VMA, merge with
+			 * it, handling any gaps for robustness.
+			 */
+			u64 prev_end_pfn = prev->start_pfn + prev->nr_pages;
+
 			WARN_ON((prev->flags & KBASE_REG_ZONE_MASK) !=
 					    (reg->flags & KBASE_REG_ZONE_MASK));
+			if (!WARN_ON(reg->start_pfn < prev_end_pfn))
+				prev->nr_pages += reg->start_pfn - prev_end_pfn;
 			prev->nr_pages += reg->nr_pages;
 			rb_erase(&(reg->rblink), reg_rbtree);
 			reg = prev;
@@ -360,11 +375,17 @@ int kbase_remove_va_region(struct kbase_va_region *reg)
 	/* Note we do the lookup here as the tree may have been rebalanced. */
 	rbnext = rb_next(&(reg->rblink));
 	if (rbnext) {
-		/* We're compatible with the next VMA, merge with it */
 		next = rb_entry(rbnext, struct kbase_va_region, rblink);
 		if (next->flags & KBASE_REG_FREE) {
+			/* We're compatible with the next VMA, merge with it,
+			 * handling any gaps for robustness.
+			 */
+			u64 reg_end_pfn = reg->start_pfn + reg->nr_pages;
+
 			WARN_ON((next->flags & KBASE_REG_ZONE_MASK) !=
 					    (reg->flags & KBASE_REG_ZONE_MASK));
+			if (!WARN_ON(next->start_pfn < reg_end_pfn))
+				next->nr_pages += next->start_pfn - reg_end_pfn;
 			next->start_pfn = reg->start_pfn;
 			next->nr_pages += reg->nr_pages;
 			rb_erase(&(reg->rblink), reg_rbtree);
@@ -379,8 +400,8 @@ int kbase_remove_va_region(struct kbase_va_region *reg)
 	/* If we failed to merge then we need to add a new block */
 	if (!(merged_front || merged_back)) {
 		/*
-		 * We didn't merge anything. Add a new free
-		 * placeholder and remove the original one.
+		 * We didn't merge anything. Try to add a new free
+		 * placeholder, and in any case, remove the original one.
 		 */
 		struct kbase_va_region *free_reg;
 
@@ -388,14 +409,37 @@ int kbase_remove_va_region(struct kbase_va_region *reg)
 				reg->start_pfn, reg->nr_pages,
 				reg->flags & KBASE_REG_ZONE_MASK);
 		if (!free_reg) {
-			err = -ENOMEM;
+			/* In case of failure, we cannot allocate a replacement
+			 * free region, so we will be left with a 'gap' in the
+			 * region tracker's address range (though, the rbtree
+			 * will itself still be correct after erasing
+			 * 'reg').
+			 *
+			 * The gap will be rectified when an adjacent region is
+			 * removed by one of the above merging paths. Other
+			 * paths will gracefully fail to allocate if they try
+			 * to allocate in the gap.
+			 *
+			 * There is nothing that the caller can do, since free
+			 * paths must not fail. The existing 'reg' cannot be
+			 * repurposed as the free region as callers must have
+			 * freedom of use with it by virtue of it being owned
+			 * by them, not the region tracker insert/remove code.
+			 */
+			dev_warn(
+				kbdev->dev,
+				"Could not alloc a replacement free region for 0x%.16llx..0x%.16llx",
+				(unsigned long long)reg->start_pfn << PAGE_SHIFT,
+				(unsigned long long)(reg->start_pfn + reg->nr_pages) << PAGE_SHIFT);
+			rb_erase(&(reg->rblink), reg_rbtree);
+
 			goto out;
 		}
 		rb_replace_node(&(reg->rblink), &(free_reg->rblink), reg_rbtree);
 	}
 
- out:
-	return err;
+out:
+	return;
 }
 
 KBASE_EXPORT_TEST_API(kbase_remove_va_region);
@@ -423,6 +467,9 @@ static int kbase_insert_va_region_nolock(struct kbase_va_region *new_reg,
 	KBASE_DEBUG_ASSERT((start_pfn >= at_reg->start_pfn) && (start_pfn < at_reg->start_pfn + at_reg->nr_pages));
 	/* at least nr_pages from start_pfn should be contained within at_reg */
 	KBASE_DEBUG_ASSERT(start_pfn + nr_pages <= at_reg->start_pfn + at_reg->nr_pages);
+	/* having at_reg means the rb_tree should not be empty */
+	if (WARN_ON(RB_EMPTY_ROOT(reg_rbtree)))
+		return -ENOMEM;
 
 	new_reg->start_pfn = start_pfn;
 	new_reg->nr_pages = nr_pages;
@@ -696,21 +743,24 @@ int kbase_region_tracker_init(struct kbase_context *kctx)
 	u64 custom_va_size = KBASE_REG_ZONE_CUSTOM_VA_SIZE;
 	u64 gpu_va_limit = (1ULL << kctx->kbdev->gpu_props.mmu.va_bits) >> PAGE_SHIFT;
 	u64 same_va_pages;
+	u64 same_va_base = 1u;
 	int err;
 
 	/* Take the lock as kbase_free_alloced_region requires it */
 	kbase_gpu_vm_lock(kctx);
 
-	same_va_pages = (1ULL << (same_va_bits - PAGE_SHIFT)) - 1;
+	same_va_pages = (1ULL << (same_va_bits - PAGE_SHIFT)) - same_va_base;
 	/* all have SAME_VA */
-	same_va_reg = kbase_alloc_free_region(&kctx->reg_rbtree_same, 1,
-			same_va_pages,
-			KBASE_REG_ZONE_SAME_VA);
+	same_va_reg =
+		kbase_alloc_free_region(&kctx->reg_rbtree_same, same_va_base,
+					same_va_pages, KBASE_REG_ZONE_SAME_VA);
 
 	if (!same_va_reg) {
 		err = -ENOMEM;
 		goto fail_unlock;
 	}
+	kbase_ctx_reg_zone_init(kctx, KBASE_REG_ZONE_SAME_VA, same_va_base,
+				same_va_pages);
 
 #ifdef CONFIG_64BIT
 	/* 32-bit clients have custom VA zones */
@@ -736,17 +786,23 @@ int kbase_region_tracker_init(struct kbase_context *kctx)
 			err = -ENOMEM;
 			goto fail_free_same_va;
 		}
+		kbase_ctx_reg_zone_init(kctx, KBASE_REG_ZONE_CUSTOM_VA,
+					KBASE_REG_ZONE_CUSTOM_VA_BASE,
+					custom_va_size);
 #ifdef CONFIG_64BIT
 	} else {
 		custom_va_size = 0;
 	}
 #endif
+	/* EXEC_VA zone's codepaths are slightly easier when its base_pfn is
+	 * initially U64_MAX
+	 */
+	kbase_ctx_reg_zone_init(kctx, KBASE_REG_ZONE_EXEC_VA, U64_MAX, 0u);
+	/* Other zones are 0: kbase_create_context() uses vzalloc */
 
 	kbase_region_tracker_ds_init(kctx, same_va_reg, custom_va_reg);
 
-	kctx->same_va_end = same_va_pages + 1;
-	kctx->gpu_va_end = kctx->same_va_end + custom_va_size;
-	kctx->exec_va_start = U64_MAX;
+	kctx->gpu_va_end = same_va_base + same_va_pages + custom_va_size;
 	kctx->jit_va = false;
 
 
@@ -760,44 +816,146 @@ fail_unlock:
 	return err;
 }
 
+static bool kbase_has_exec_va_zone_locked(struct kbase_context *kctx)
+{
+	struct kbase_reg_zone *exec_va_zone;
+
+	lockdep_assert_held(&kctx->reg_lock);
+	exec_va_zone = kbase_ctx_reg_zone_get(kctx, KBASE_REG_ZONE_EXEC_VA);
+
+	return (exec_va_zone->base_pfn != U64_MAX);
+}
+
+bool kbase_has_exec_va_zone(struct kbase_context *kctx)
+{
+	bool has_exec_va_zone;
+
+	kbase_gpu_vm_lock(kctx);
+	has_exec_va_zone = kbase_has_exec_va_zone_locked(kctx);
+	kbase_gpu_vm_unlock(kctx);
+
+	return has_exec_va_zone;
+}
+
+/**
+ * Determine if any allocations have been made on a context's region tracker
+ * @kctx: KBase context
+ *
+ * Check the context to determine if any allocations have been made yet from
+ * any of its zones. This check should be done before resizing a zone, e.g. to
+ * make space to add a second zone.
+ *
+ * Whilst a zone without allocations can be resized whilst other zones have
+ * allocations, we still check all of @kctx 's zones anyway: this is a stronger
+ * guarantee and should be adhered to when creating new zones anyway.
+ *
+ * Allocations from kbdev zones are not counted.
+ *
+ * Return: true if any allocs exist on any zone, false otherwise
+ */
+bool kbase_region_tracker_has_allocs(struct kbase_context *kctx)
+{
+	unsigned int zone_idx;
+
+	lockdep_assert_held(&kctx->reg_lock);
+
+	for (zone_idx = 0; zone_idx < KBASE_REG_ZONE_MAX; ++zone_idx) {
+		struct kbase_reg_zone *zone;
+		struct kbase_va_region *reg;
+		u64 zone_base_addr;
+		unsigned long zone_bits = KBASE_REG_ZONE(zone_idx);
+		unsigned long reg_zone;
+
+		zone = kbase_ctx_reg_zone_get(kctx, zone_bits);
+		zone_base_addr = zone->base_pfn << PAGE_SHIFT;
+
+		reg = kbase_region_tracker_find_region_base_address(
+				kctx, zone_base_addr);
+
+		if (!zone->va_size_pages) {
+			WARN(reg,
+			     "Should not have found a region that starts at 0x%.16llx for zone 0x%lx",
+			     (unsigned long long)zone_base_addr, zone_bits);
+			continue;
+		}
+
+		if (WARN(!reg,
+			 "There should always be a region that starts at 0x%.16llx for zone 0x%lx, couldn't find it",
+			 (unsigned long long)zone_base_addr, zone_bits))
+			return true; /* Safest return value */
+
+		reg_zone = reg->flags & KBASE_REG_ZONE_MASK;
+		if (WARN(reg_zone != zone_bits,
+			 "The region that starts at 0x%.16llx should be in zone 0x%lx but was found in the wrong zone 0x%lx",
+			 (unsigned long long)zone_base_addr, zone_bits,
+			 reg_zone))
+			return true; /* Safest return value */
+
+		/* Unless the region is completely free, of the same size as
+		 * the original zone, then it has allocs
+		 */
+		if ((!(reg->flags & KBASE_REG_FREE)) ||
+		    (reg->nr_pages != zone->va_size_pages))
+			return true;
+	}
+	/* All zones are the same size as originally made, so there are no
+	 * allocs
+	 */
+	return false;
+}
+
 #ifdef CONFIG_64BIT
 static int kbase_region_tracker_init_jit_64(struct kbase_context *kctx,
 		u64 jit_va_pages)
 {
-	struct kbase_va_region *same_va;
+	struct kbase_va_region *same_va_reg;
+	struct kbase_reg_zone *same_va_zone;
+	u64 same_va_zone_base_addr;
+	const unsigned long same_va_zone_bits = KBASE_REG_ZONE_SAME_VA;
 	struct kbase_va_region *custom_va_reg;
+	u64 jit_va_start;
 
 	lockdep_assert_held(&kctx->reg_lock);
 
-	/* First verify that a JIT_VA zone has not been created already. */
-	if (kctx->jit_va)
-		return -EINVAL;
-
 	/*
-	 * Modify the same VA free region after creation. Be careful to ensure
-	 * that allocations haven't been made as they could cause an overlap
-	 * to happen with existing same VA allocations and the custom VA zone.
+	 * Modify the same VA free region after creation. The caller has
+	 * ensured that allocations haven't been made, as any allocations could
+	 * cause an overlap to happen with existing same VA allocations and the
+	 * custom VA zone.
 	 */
-	same_va = kbase_region_tracker_find_region_base_address(kctx,
-			PAGE_SIZE);
-	if (!same_va)
+	same_va_zone = kbase_ctx_reg_zone_get(kctx, same_va_zone_bits);
+	same_va_zone_base_addr = same_va_zone->base_pfn << PAGE_SHIFT;
+
+	same_va_reg = kbase_region_tracker_find_region_base_address(
+			kctx, same_va_zone_base_addr);
+	if (WARN(!same_va_reg,
+		 "Already found a free region at the start of every zone, but now cannot find any region for zone base 0x%.16llx zone 0x%lx",
+		 (unsigned long long)same_va_zone_base_addr, same_va_zone_bits))
 		return -ENOMEM;
 
-	if (same_va->nr_pages < jit_va_pages || kctx->same_va_end < jit_va_pages)
+	/* kbase_region_tracker_has_allocs() in the caller has already ensured
+	 * that all of the zones have no allocs, so no need to check that again
+	 * on same_va_reg
+	 */
+	WARN_ON((!(same_va_reg->flags & KBASE_REG_FREE)) ||
+		same_va_reg->nr_pages != same_va_zone->va_size_pages);
+
+	if (same_va_reg->nr_pages < jit_va_pages ||
+	    same_va_zone->va_size_pages < jit_va_pages)
 		return -ENOMEM;
 
 	/* It's safe to adjust the same VA zone now */
-	same_va->nr_pages -= jit_va_pages;
-	kctx->same_va_end -= jit_va_pages;
+	same_va_reg->nr_pages -= jit_va_pages;
+	same_va_zone->va_size_pages -= jit_va_pages;
+	jit_va_start = kbase_reg_zone_end_pfn(same_va_zone);
 
 	/*
 	 * Create a custom VA zone at the end of the VA for allocations which
 	 * JIT can use so it doesn't have to allocate VA from the kernel.
 	 */
-	custom_va_reg = kbase_alloc_free_region(&kctx->reg_rbtree_custom,
-				kctx->same_va_end,
-				jit_va_pages,
-				KBASE_REG_ZONE_CUSTOM_VA);
+	custom_va_reg =
+		kbase_alloc_free_region(&kctx->reg_rbtree_custom, jit_va_start,
+					jit_va_pages, KBASE_REG_ZONE_CUSTOM_VA);
 
 	/*
 	 * The context will be destroyed if we fail here so no point
@@ -805,6 +963,11 @@ static int kbase_region_tracker_init_jit_64(struct kbase_context *kctx,
 	 */
 	if (!custom_va_reg)
 		return -ENOMEM;
+	/* Since this is 64-bit, the custom zone will not have been
+	 * initialized, so initialize it now
+	 */
+	kbase_ctx_reg_zone_init(kctx, KBASE_REG_ZONE_CUSTOM_VA, jit_va_start,
+				jit_va_pages);
 
 	kbase_region_tracker_insert(custom_va_reg);
 	return 0;
@@ -825,6 +988,23 @@ int kbase_region_tracker_init_jit(struct kbase_context *kctx, u64 jit_va_pages,
 
 	kbase_gpu_vm_lock(kctx);
 
+	/* Verify that a JIT_VA zone has not been created already. */
+	if (kctx->jit_va) {
+		err = -EINVAL;
+		goto exit_unlock;
+	}
+
+	/* If in 64-bit, we always lookup the SAME_VA zone. To ensure it has no
+	 * allocs, we can ensure there are no allocs anywhere.
+	 *
+	 * This check is also useful in 32-bit, just to make sure init of the
+	 * zone is always done before any allocs.
+	 */
+	if (kbase_region_tracker_has_allocs(kctx)) {
+		err = -ENOMEM;
+		goto exit_unlock;
+	}
+
 #ifdef CONFIG_64BIT
 	if (!kbase_ctx_flag(kctx, KCTX_COMPAT))
 		err = kbase_region_tracker_init_jit_64(kctx, jit_va_pages);
@@ -841,6 +1021,7 @@ int kbase_region_tracker_init_jit(struct kbase_context *kctx, u64 jit_va_pages,
 		kctx->jit_group_id = group_id;
 	}
 
+exit_unlock:
 	kbase_gpu_vm_unlock(kctx);
 
 	return err;
@@ -848,24 +1029,33 @@ int kbase_region_tracker_init_jit(struct kbase_context *kctx, u64 jit_va_pages,
 
 int kbase_region_tracker_init_exec(struct kbase_context *kctx, u64 exec_va_pages)
 {
-	struct kbase_va_region *shrinking_va_reg;
 	struct kbase_va_region *exec_va_reg;
-	u64 exec_va_start, exec_va_base_addr;
+	struct kbase_reg_zone *exec_va_zone;
+	struct kbase_reg_zone *target_zone;
+	struct kbase_va_region *target_reg;
+	u64 target_zone_base_addr;
+	unsigned long target_zone_bits;
+	u64 exec_va_start;
 	int err;
 
-	/* The EXEC_VA zone shall be created by making space at the end of the
-	 * address space. Firstly, verify that the number of EXEC_VA pages
-	 * requested by the client is reasonable and then make sure that it is
-	 * not greater than the address space itself before calculating the base
-	 * address of the new zone.
+	/* The EXEC_VA zone shall be created by making space either:
+	 * - for 64-bit clients, at the end of the process's address space
+	 * - for 32-bit clients, in the CUSTOM zone
+	 *
+	 * Firstly, verify that the number of EXEC_VA pages requested by the
+	 * client is reasonable and then make sure that it is not greater than
+	 * the address space itself before calculating the base address of the
+	 * new zone.
 	 */
 	if (exec_va_pages == 0 || exec_va_pages > KBASE_REG_ZONE_EXEC_VA_MAX_PAGES)
 		return -EINVAL;
 
 	kbase_gpu_vm_lock(kctx);
 
-	/* First verify that a JIT_VA zone has not been created already. */
-	if (kctx->jit_va) {
+	/* Verify that we've not already created a EXEC_VA zone, and that the
+	 * EXEC_VA zone must come before JIT's CUSTOM_VA.
+	 */
+	if (kbase_has_exec_va_zone_locked(kctx) || kctx->jit_va) {
 		err = -EPERM;
 		goto exit_unlock;
 	}
@@ -875,27 +1065,49 @@ int kbase_region_tracker_init_exec(struct kbase_context *kctx, u64 exec_va_pages
 		goto exit_unlock;
 	}
 
-	exec_va_start = kctx->gpu_va_end - exec_va_pages;
-	exec_va_base_addr = exec_va_start << PAGE_SHIFT;
-
-	shrinking_va_reg = kbase_region_tracker_find_region_enclosing_address(kctx,
-			exec_va_base_addr);
-	if (!shrinking_va_reg) {
+	/* Verify no allocations have already been made */
+	if (kbase_region_tracker_has_allocs(kctx)) {
 		err = -ENOMEM;
 		goto exit_unlock;
 	}
 
-	/* Make sure that the EXEC_VA region is still uninitialized */
-	if ((shrinking_va_reg->flags & KBASE_REG_ZONE_MASK) ==
-			KBASE_REG_ZONE_EXEC_VA) {
-		err = -EPERM;
-		goto exit_unlock;
+#ifdef CONFIG_64BIT
+	if (kbase_ctx_flag(kctx, KCTX_COMPAT)) {
+#endif
+		/* 32-bit client: take from CUSTOM_VA zone */
+		target_zone_bits = KBASE_REG_ZONE_CUSTOM_VA;
+#ifdef CONFIG_64BIT
+	} else {
+		/* 64-bit client: take from SAME_VA zone */
+		target_zone_bits = KBASE_REG_ZONE_SAME_VA;
 	}
+#endif
+	target_zone = kbase_ctx_reg_zone_get(kctx, target_zone_bits);
+	target_zone_base_addr = target_zone->base_pfn << PAGE_SHIFT;
 
-	if (shrinking_va_reg->nr_pages <= exec_va_pages) {
+	target_reg = kbase_region_tracker_find_region_base_address(
+			kctx, target_zone_base_addr);
+	if (WARN(!target_reg,
+		 "Already found a free region at the start of every zone, but now cannot find any region for zone base 0x%.16llx zone 0x%lx",
+		 (unsigned long long)target_zone_base_addr, target_zone_bits)) {
 		err = -ENOMEM;
 		goto exit_unlock;
 	}
+	/* kbase_region_tracker_has_allocs() above has already ensured that all
+	 * of the zones have no allocs, so no need to check that again on
+	 * target_reg
+	 */
+	WARN_ON((!(target_reg->flags & KBASE_REG_FREE)) ||
+		target_reg->nr_pages != target_zone->va_size_pages);
+
+	if (target_reg->nr_pages <= exec_va_pages ||
+	    target_zone->va_size_pages <= exec_va_pages) {
+		err = -ENOMEM;
+		goto exit_unlock;
+	}
+
+	/* Taken from the end of the target zone */
+	exec_va_start = kbase_reg_zone_end_pfn(target_zone) - exec_va_pages;
 
 	exec_va_reg = kbase_alloc_free_region(&kctx->reg_rbtree_exec,
 			exec_va_start,
@@ -905,13 +1117,17 @@ int kbase_region_tracker_init_exec(struct kbase_context *kctx, u64 exec_va_pages
 		err = -ENOMEM;
 		goto exit_unlock;
 	}
+	/* Update EXEC_VA zone
+	 *
+	 * not using kbase_ctx_reg_zone_init() - it was already initialized
+	 */
+	exec_va_zone = kbase_ctx_reg_zone_get(kctx, KBASE_REG_ZONE_EXEC_VA);
+	exec_va_zone->base_pfn = exec_va_start;
+	exec_va_zone->va_size_pages = exec_va_pages;
 
-	shrinking_va_reg->nr_pages -= exec_va_pages;
-#ifdef CONFIG_64BIT
-	if (!kbase_ctx_flag(kctx, KCTX_COMPAT))
-		kctx->same_va_end -= exec_va_pages;
-#endif
-	kctx->exec_va_start = exec_va_start;
+	/* Update target zone and corresponding region */
+	target_reg->nr_pages -= exec_va_pages;
+	target_zone->va_size_pages -= exec_va_pages;
 
 	kbase_region_tracker_insert(exec_va_reg);
 	err = 0;
@@ -1215,7 +1431,9 @@ int kbase_gpu_mmap(struct kbase_context *kctx, struct kbase_va_region *reg, u64 
 				if (err)
 					goto bad_insert;
 
-				kbase_mem_phy_alloc_gpu_mapped(alloc->imported.alias.aliased[i].alloc);
+				/* Note: mapping count is tracked at alias
+				 * creation time
+				 */
 			} else {
 				err = kbase_mmu_insert_single_page(kctx,
 					reg->start_pfn + i * stride,
@@ -1274,14 +1492,7 @@ bad_insert:
 				 reg->start_pfn, reg->nr_pages,
 				 kctx->as_nr);
 
-	if (alloc->type == KBASE_MEM_TYPE_ALIAS) {
-		KBASE_DEBUG_ASSERT(alloc->imported.alias.aliased);
-		while (i--)
-			if (alloc->imported.alias.aliased[i].alloc)
-				kbase_mem_phy_alloc_gpu_unmapped(alloc->imported.alias.aliased[i].alloc);
-	}
-
-	kbase_remove_va_region(reg);
+	kbase_remove_va_region(kctx->kbdev, reg);
 
 	return err;
 }
@@ -1294,7 +1505,6 @@ static void kbase_jd_user_buf_unmap(struct kbase_context *kctx,
 int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 {
 	int err = 0;
-	size_t i;
 
 	if (reg->start_pfn == 0)
 		return 0;
@@ -1319,10 +1529,9 @@ int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 	/* Update tracking, and other cleanup, depending on memory type. */
 	switch (reg->gpu_alloc->type) {
 	case KBASE_MEM_TYPE_ALIAS:
-		KBASE_DEBUG_ASSERT(reg->gpu_alloc->imported.alias.aliased);
-		for (i = 0; i < reg->gpu_alloc->imported.alias.nents; i++)
-			if (reg->gpu_alloc->imported.alias.aliased[i].alloc)
-				kbase_mem_phy_alloc_gpu_unmapped(reg->gpu_alloc->imported.alias.aliased[i].alloc);
+		/* We mark the source allocs as unmapped from the GPU when
+		 * putting reg's allocs
+		 */
 		break;
 	case KBASE_MEM_TYPE_IMPORTED_USER_BUF: {
 			struct kbase_alloc_import_user_buf *user_buf =
@@ -1335,7 +1544,8 @@ int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 				/* The allocation could still have active mappings. */
 				if (user_buf->current_mapping_usage_count == 0) {
 					kbase_jd_user_buf_unmap(kctx, reg->gpu_alloc,
-						(reg->flags & KBASE_REG_GPU_WR));
+						(reg->flags & (KBASE_REG_CPU_WR |
+							       KBASE_REG_GPU_WR)));
 				}
 			}
 		}
@@ -1508,6 +1718,7 @@ static int kbase_do_syncset(struct kbase_context *kctx,
 	u64 page_off, page_count;
 	u64 i;
 	u64 offset;
+	size_t sz;
 
 	kbase_os_mem_map_lock(kctx);
 	kbase_gpu_vm_lock(kctx);
@@ -1560,29 +1771,39 @@ static int kbase_do_syncset(struct kbase_context *kctx,
 		goto out_unlock;
 	}
 
-	/* Sync first page */
-	if (as_phys_addr_t(cpu_pa[page_off])) {
-		size_t sz = MIN(((size_t) PAGE_SIZE - offset), size);
+	if (page_off >= reg->gpu_alloc->nents) {
+		/* Start of sync range is outside the physically backed region
+		 * so nothing to do
+		 */
+		goto out_unlock;
+	}
 
-		kbase_sync_single(kctx, cpu_pa[page_off], gpu_pa[page_off],
-				offset, sz, sync_fn);
+	/* Sync first page */
+	sz = MIN(((size_t) PAGE_SIZE - offset), size);
+
+	kbase_sync_single(kctx, cpu_pa[page_off], gpu_pa[page_off],
+			  offset, sz, sync_fn);
+
+	/* Calculate the size for last page */
+	sz = ((start + size - 1) & ~PAGE_MASK) + 1;
+
+	/* Limit the sync range to the physically backed region */
+	if (page_off + page_count > reg->gpu_alloc->nents) {
+		page_count = reg->gpu_alloc->nents - page_off;
+		/* Since we limit the pages then size for last page
+		 * is the whole page
+		 */
+		sz = PAGE_SIZE;
 	}
 
 	/* Sync middle pages (if any) */
 	for (i = 1; page_count > 2 && i < page_count - 1; i++) {
-		/* we grow upwards, so bail on first non-present page */
-		if (!as_phys_addr_t(cpu_pa[page_off + i]))
-			break;
-
 		kbase_sync_single(kctx, cpu_pa[page_off + i],
 				gpu_pa[page_off + i], 0, PAGE_SIZE, sync_fn);
 	}
 
 	/* Sync last page (if any) */
-	if (page_count > 1 &&
-	    as_phys_addr_t(cpu_pa[page_off + page_count - 1])) {
-		size_t sz = ((start + size - 1) & ~PAGE_MASK) + 1;
-
+	if (page_count > 1) {
 		kbase_sync_single(kctx, cpu_pa[page_off + page_count - 1],
 				gpu_pa[page_off + page_count - 1], 0, sz,
 				sync_fn);
@@ -2491,8 +2712,10 @@ void kbase_mem_kref_free(struct kref *kref)
 		aliased = alloc->imported.alias.aliased;
 		if (aliased) {
 			for (i = 0; i < alloc->imported.alias.nents; i++)
-				if (aliased[i].alloc)
+				if (aliased[i].alloc) {
+					kbase_mem_phy_alloc_gpu_unmapped(aliased[i].alloc);
 					kbase_mem_phy_alloc_put(aliased[i].alloc);
+				}
 			vfree(aliased);
 		}
 		break;
@@ -3535,18 +3758,6 @@ void kbase_jit_term(struct kbase_context *kctx)
 	cancel_work_sync(&kctx->jit_work);
 }
 
-bool kbase_has_exec_va_zone(struct kbase_context *kctx)
-{
-	bool has_exec_va_zone;
-
-	kbase_gpu_vm_lock(kctx);
-	has_exec_va_zone = (kctx->exec_va_start != U64_MAX);
-	kbase_gpu_vm_unlock(kctx);
-
-	return has_exec_va_zone;
-}
-
-
 int kbase_jd_user_buf_pin_pages(struct kbase_context *kctx,
 		struct kbase_va_region *reg)
 {
@@ -3556,6 +3767,7 @@ int kbase_jd_user_buf_pin_pages(struct kbase_context *kctx,
 	struct mm_struct *mm = alloc->imported.user_buf.mm;
 	long pinned_pages;
 	long i;
+	int write;
 
 	if (WARN_ON(alloc->type != KBASE_MEM_TYPE_IMPORTED_USER_BUF))
 		return -EINVAL;
@@ -3570,35 +3782,43 @@ int kbase_jd_user_buf_pin_pages(struct kbase_context *kctx,
 	if (WARN_ON(reg->gpu_alloc->imported.user_buf.mm != current->mm))
 		return -EINVAL;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
+	write = reg->flags & (KBASE_REG_CPU_WR | KBASE_REG_GPU_WR);
+
+#if KERNEL_VERSION(4, 6, 0) > LINUX_VERSION_CODE
 	pinned_pages = get_user_pages(NULL, mm,
 			address,
 			alloc->imported.user_buf.nr_pages,
 #if KERNEL_VERSION(4, 4, 168) <= LINUX_VERSION_CODE && \
 KERNEL_VERSION(4, 5, 0) > LINUX_VERSION_CODE
-			reg->flags & KBASE_REG_GPU_WR ? FOLL_WRITE : 0,
+			write ? FOLL_WRITE : 0,
 			pages, NULL);
 #else
-			reg->flags & KBASE_REG_GPU_WR,
+			write,
 			0, pages, NULL);
 #endif
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 0)
+#elif KERNEL_VERSION(4, 9, 0) > LINUX_VERSION_CODE
 	pinned_pages = get_user_pages_remote(NULL, mm,
 			address,
 			alloc->imported.user_buf.nr_pages,
-			reg->flags & KBASE_REG_GPU_WR,
+			write,
 			0, pages, NULL);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+#elif KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE
 	pinned_pages = get_user_pages_remote(NULL, mm,
 			address,
 			alloc->imported.user_buf.nr_pages,
-			reg->flags & KBASE_REG_GPU_WR ? FOLL_WRITE : 0,
+			write ? FOLL_WRITE : 0,
 			pages, NULL);
-#else
+#elif KERNEL_VERSION(5, 9, 0) > LINUX_VERSION_CODE
 	pinned_pages = get_user_pages_remote(NULL, mm,
 			address,
 			alloc->imported.user_buf.nr_pages,
-			reg->flags & KBASE_REG_GPU_WR ? FOLL_WRITE : 0,
+			write ? FOLL_WRITE : 0,
+			pages, NULL, NULL);
+#else
+	pinned_pages = pin_user_pages_remote(mm,
+			address,
+			alloc->imported.user_buf.nr_pages,
+			write ? FOLL_WRITE : 0,
 			pages, NULL, NULL);
 #endif
 
@@ -3823,7 +4043,7 @@ void kbase_unmap_external_resource(struct kbase_context *kctx,
 						kbase_reg_current_backed_size(reg),
 						kctx->as_nr);
 
-			if (reg && ((reg->flags & KBASE_REG_GPU_WR) == 0))
+			if (reg && ((reg->flags & (KBASE_REG_CPU_WR | KBASE_REG_GPU_WR)) == 0))
 				writeable = false;
 
 			kbase_jd_user_buf_unmap(kctx, alloc, writeable);

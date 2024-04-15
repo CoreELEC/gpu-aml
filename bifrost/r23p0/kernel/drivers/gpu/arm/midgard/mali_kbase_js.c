@@ -1457,7 +1457,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 	}
 
 	/* Make a set of checks to see if the context should be scheduled out.
-	 * Note that there'll always be at least 1 reference to the context
+	 * Note that there will always be at least 1 reference to the context
 	 * which was previously acquired by kbasep_js_schedule_ctx(). */
 	if (new_ref_count == 1 &&
 		(!kbasep_js_is_submit_allowed(js_devdata, kctx) ||
@@ -1483,7 +1483,7 @@ static kbasep_js_release_result kbasep_js_runpool_release_ctx_internal(
 		/* Ctx Attribute handling
 		 *
 		 * Releasing atoms attributes must either happen before this, or
-		 * after the KCTX_SHEDULED flag is changed, otherwise we
+		 * after the KCTX_SCHEDULED flag is changed, otherwise we
 		 * double-decount the attributes
 		 */
 		runpool_ctx_attr_change |=

@@ -188,7 +188,7 @@ struct kbasep_pm_metrics_state {
 
 	struct kbasep_pm_metrics values;
 
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS)
 	struct hrtimer timer;
 	bool timer_active;
 	struct kbasep_pm_metrics dvfs_last;

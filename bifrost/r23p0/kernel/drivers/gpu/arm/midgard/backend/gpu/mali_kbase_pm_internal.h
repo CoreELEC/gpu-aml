@@ -509,7 +509,7 @@ void kbase_pm_get_dvfs_metrics(struct kbase_device *kbdev,
 			       struct kbasep_pm_metrics *diff);
 #endif /* defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS) */
 
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if (!defined(CONFIG_MALI_MIDGARD_DVFS) && defined(CONFIG_AMLOGIC_MODIFY)) || defined(CONFIG_MALI_MIDGARD_DVFS)
 
 /**
  * kbase_platform_dvfs_event - Report utilisation to DVFS code

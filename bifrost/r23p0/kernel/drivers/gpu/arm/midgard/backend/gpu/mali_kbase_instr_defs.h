@@ -40,7 +40,11 @@ enum kbase_instr_state {
 	/* We've requested a clean to occur on a workqueue */
 	KBASE_INSTR_STATE_REQUEST_CLEAN,
 	/* An error has occurred during DUMPING (page fault). */
-	KBASE_INSTR_STATE_FAULT
+	KBASE_INSTR_STATE_FAULT,
+	/* An unrecoverable error has occurred, a reset is the only way to exit
+	 * from unrecoverable error state.
+	 */
+	KBASE_INSTR_STATE_UNRECOVERABLE_ERROR,
 };
 
 /* Structure used for instrumentation and HW counters dumping */
