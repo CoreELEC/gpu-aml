@@ -2925,6 +2925,14 @@ void kbase_vunmap(struct kbase_context *kctx, struct kbase_vmap_struct *map)
 }
 KBASE_EXPORT_TEST_API(kbase_vunmap);
 
+static void kbasep_add_mm_counter(struct mm_struct *mm, int member, long value)
+{
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
+	atomic_long_add(value, &mm->rss_stat.count[member]);
+#else
+	add_mm_counter(mm, member, value);
+#endif
+}
 void kbasep_os_process_page_usage_update(struct kbase_context *kctx, int pages)
 {
 	struct mm_struct *mm;
@@ -2934,10 +2942,10 @@ void kbasep_os_process_page_usage_update(struct kbase_context *kctx, int pages)
 	if (mm) {
 		atomic_add(pages, &kctx->nonmapped_pages);
 #ifdef SPLIT_RSS_COUNTING
-		add_mm_counter(mm, MM_FILEPAGES, pages);
+		kbasep_add_mm_counter(mm, MM_FILEPAGES, pages);
 #else
 		spin_lock(&mm->page_table_lock);
-		add_mm_counter(mm, MM_FILEPAGES, pages);
+		kbasep_add_mm_counter(mm, MM_FILEPAGES, pages);
 		spin_unlock(&mm->page_table_lock);
 #endif
 	}
@@ -2962,10 +2970,10 @@ static void kbasep_os_process_page_usage_drain(struct kbase_context *kctx)
 
 	pages = atomic_xchg(&kctx->nonmapped_pages, 0);
 #ifdef SPLIT_RSS_COUNTING
-	add_mm_counter(mm, MM_FILEPAGES, -pages);
+	kbasep_add_mm_counter(mm, MM_FILEPAGES, -pages);
 #else
 	spin_lock(&mm->page_table_lock);
-	add_mm_counter(mm, MM_FILEPAGES, -pages);
+	kbasep_add_mm_counter(mm, MM_FILEPAGES, -pages);
 	spin_unlock(&mm->page_table_lock);
 #endif
 }
