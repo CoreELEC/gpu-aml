@@ -130,10 +130,11 @@ static const struct kernel_param_ops large_page_config_params = {
 	.get = get_large_page_conf,
 };
 
+#if defined(CONFIG_LARGE_PAGE_SUPPORT) && CONFIG_LARGE_PAGE_SUPPORT
 module_param_cb(large_page_conf, &large_page_config_params, NULL, 0444);
 __MODULE_PARM_TYPE(large_page_conf, "charp");
 MODULE_PARM_DESC(large_page_conf, "User override for large page usage on supporting platforms.");
-
+#endif
 /**
  * kbasep_mem_page_size_init - Initialize kbase device for 2MB page.
  * @kbdev: Pointer to the device.
