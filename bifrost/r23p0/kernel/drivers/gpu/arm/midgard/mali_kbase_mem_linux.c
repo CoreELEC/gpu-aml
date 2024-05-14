@@ -703,6 +703,11 @@ void kbase_mem_evictable_unmark_reclaim(struct kbase_mem_phy_alloc *alloc)
 
 	new_page_count = atomic_add_return(alloc->nents,
 		&kctx->used_pages);
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	if (atomic_read(&kctx->used_pages) > kctx->max_used_pages) {
+		kctx->max_used_pages = atomic_read(&kctx->used_pages);
+	}
+#endif
 	atomic_add(alloc->nents, &kctx->kbdev->memdev.used_pages);
 
 	/* Increase mm counters so that the allocation is accounted for

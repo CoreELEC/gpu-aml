@@ -41,7 +41,7 @@
 #define KBASE_DEBUG_DISABLE_ASSERTS 1
 #endif
 #endif				/* KBASE_DEBUG_DISABLE_ASSERTS */
-
+#define MALI_GPU_MEMORY_DEBUGFS
 /** Function type that is called on an KBASE_DEBUG_ASSERT() or KBASE_DEBUG_ASSERT_MSG() */
 typedef void (kbase_debug_assert_hook) (void *);
 

@@ -1638,6 +1638,9 @@ struct kbase_device {
 
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *mali_debugfs_directory;
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	struct dentry *mali_debugfs_directory_gpu;
+#endif
 	struct dentry *debugfs_ctx_directory;
 
 #ifdef CONFIG_MALI_DEBUG
@@ -2166,6 +2169,10 @@ struct kbase_context {
 	struct kbase_jd_context jctx;
 	atomic_t used_pages;
 	atomic_t         nonmapped_pages;
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	atomic_t mali_mem_array[7];
+	size_t max_used_pages;
+#endif
 	atomic_t permanent_mapped_pages;
 
 	struct kbase_mem_pool_group mem_pools;
@@ -2194,6 +2201,8 @@ struct kbase_context {
 #ifdef CONFIG_DEBUG_FS
 	char *mem_profile_data;
 	size_t mem_profile_size;
+	uint64_t tex_mem;
+	uint64_t buf_mem;
 	struct mutex mem_profile_lock;
 	struct dentry *kctx_dentry;
 

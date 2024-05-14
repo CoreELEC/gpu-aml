@@ -2073,6 +2073,11 @@ int kbase_alloc_phy_pages_helper(struct kbase_mem_phy_alloc *alloc,
 
 	new_page_count = atomic_add_return(
 		nr_pages_requested, &kctx->used_pages);
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	if (atomic_read(&kctx->used_pages) > kctx->max_used_pages) {
+		kctx->max_used_pages = atomic_read(&kctx->used_pages);
+	}
+#endif
 	atomic_add(nr_pages_requested,
 		&kctx->kbdev->memdev.used_pages);
 
@@ -4014,6 +4019,9 @@ struct kbase_mem_phy_alloc *kbase_map_external_resource(
 	default:
 		goto exit;
 	}
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	atomic_add(reg->gpu_alloc->nents, &kctx->mali_mem_array[reg->gpu_alloc->type]);
+#endif
 
 	return kbase_mem_phy_alloc_get(reg->gpu_alloc);
 exit:
@@ -4025,6 +4033,9 @@ void kbase_unmap_external_resource(struct kbase_context *kctx,
 {
 	switch (alloc->type) {
 	case KBASE_MEM_TYPE_IMPORTED_UMM: {
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+		atomic_sub(alloc->nents, &kctx->mali_mem_array[alloc->type]);
+#endif
 		kbase_mem_umm_unmap(kctx, reg, alloc);
 	}
 	break;
@@ -4045,7 +4056,9 @@ void kbase_unmap_external_resource(struct kbase_context *kctx,
 
 			if (reg && ((reg->flags & (KBASE_REG_CPU_WR | KBASE_REG_GPU_WR)) == 0))
 				writeable = false;
-
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+			atomic_sub(alloc->nents, &kctx->mali_mem_array[alloc->type]);
+#endif
 			kbase_jd_user_buf_unmap(kctx, alloc, writeable);
 		}
 	}

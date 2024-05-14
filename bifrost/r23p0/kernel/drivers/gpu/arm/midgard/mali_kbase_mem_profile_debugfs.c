@@ -66,7 +66,7 @@ static const struct file_operations kbasep_mem_profile_debugfs_fops = {
 };
 
 int kbasep_mem_profile_debugfs_insert(struct kbase_context *kctx, char *data,
-					size_t size)
+					size_t size, uint64_t tex_mem, uint64_t buf_mem)
 {
 	int err = 0;
 
@@ -92,6 +92,8 @@ int kbasep_mem_profile_debugfs_insert(struct kbase_context *kctx, char *data,
 		kfree(kctx->mem_profile_data);
 		kctx->mem_profile_data = data;
 		kctx->mem_profile_size = size;
+		kctx->tex_mem = tex_mem;
+		kctx->buf_mem = buf_mem;
 	} else {
 		kfree(data);
 	}

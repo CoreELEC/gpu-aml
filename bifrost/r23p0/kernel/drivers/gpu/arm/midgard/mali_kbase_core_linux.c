@@ -1133,11 +1133,14 @@ static int kbase_api_mem_profile_add(struct kbase_context *kctx,
 {
 	char *buf;
 	int err;
+	uint64_t tex_mem, buf_mem;
 
 	if (data->len > KBASE_MEM_PROFILE_MAX_BUF_SIZE) {
 		dev_err(kctx->kbdev->dev, "mem_profile_add: buffer too big\n");
 		return -EINVAL;
 	}
+	tex_mem = data->text_mem;
+	buf_mem = data->buf_mem;
 
 	buf = kmalloc(data->len, GFP_KERNEL);
 	if (ZERO_OR_NULL_PTR(buf))
@@ -1150,7 +1153,7 @@ static int kbase_api_mem_profile_add(struct kbase_context *kctx,
 		return -EFAULT;
 	}
 
-	return kbasep_mem_profile_debugfs_insert(kctx, buf, data->len);
+	return kbasep_mem_profile_debugfs_insert(kctx, buf, data->len, tex_mem, buf_mem);
 }
 
 static int kbase_api_soft_event_update(struct kbase_context *kctx,
@@ -3792,7 +3795,15 @@ int kbase_device_debugfs_init(struct kbase_device *kbdev)
 		err = -ENOMEM;
 		goto out;
 	}
-
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	kbdev->mali_debugfs_directory_gpu = debugfs_create_dir("gpu",
+			NULL);
+	if (!kbdev->mali_debugfs_directory_gpu) {
+		dev_err(kbdev->dev, "Couldn't create mali debugfs directory (gpu)\n");
+		err = -ENOMEM;
+		goto out;
+	}
+#endif
 	kbdev->debugfs_ctx_directory = debugfs_create_dir("ctx",
 			kbdev->mali_debugfs_directory);
 	if (!kbdev->debugfs_ctx_directory) {
@@ -3883,6 +3894,9 @@ out:
 void kbase_device_debugfs_term(struct kbase_device *kbdev)
 {
 	debugfs_remove_recursive(kbdev->mali_debugfs_directory);
+#ifdef MALI_GPU_MEMORY_DEBUGFS
+	debugfs_remove_recursive(kbdev->mali_debugfs_directory_gpu);
+#endif
 }
 
 #else /* CONFIG_DEBUG_FS */

@@ -577,6 +577,8 @@ struct kbase_ioctl_fence_validate {
  */
 struct kbase_ioctl_mem_profile_add {
 	__u64 buffer;
+	__u64 buf_mem;
+	__u64 text_mem;
 	__u32 len;
 	__u32 padding;
 };
