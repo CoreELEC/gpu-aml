@@ -54,7 +54,6 @@ int platform_dt_init_func(struct kbase_device *kbdev)
 	err = mali_meson_init_start(pdev);
     mali_meson_init_finish(pdev);
     mpgpu_class_init();
-    mali_post_init();
     return err;
 }
 
@@ -107,7 +106,28 @@ u32 mpgpu_get_util_cl_share(u32 *util)
     return 0;
 }
 
+/* kbase->devfreq will be init in kbase_backend_late_init,
+ * platform_init_func is called in kbase_device_early_init,
+ * post-init will use devfreq,
+ * kbase_backend_late_init will be called after kbase_device_early_init
+ * so we move it out form platform_init_func,
+ * and call it in  platform_late_init_func which
+ * will be called kbase_device_late_init
+ */
+int platform_late_dt_init_func(struct kbase_device *kbdev)
+{
+    mali_post_init();
+    return 0;
+}
+
+void platform_late_dt_term_func(struct kbase_device *kbdev)
+{
+    printk("%s, %d\n", __FILE__, __LINE__);
+}
+
 struct kbase_platform_funcs_conf dt_funcs_conf = {
     .platform_init_func = platform_dt_init_func,
     .platform_term_func = platform_dt_term_func,
+    .platform_late_init_func = platform_late_dt_init_func,
+    .platform_late_term_func = platform_late_dt_term_func,
 };
