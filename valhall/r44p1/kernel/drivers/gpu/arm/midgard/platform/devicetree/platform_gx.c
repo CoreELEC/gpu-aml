@@ -276,6 +276,27 @@ static u32 get_limit_mali_freq(void)
 }
 
 #ifdef CONFIG_DEVFREQ_THERMAL
+static u32 get_devfreq_mali_freq(u32 idx)
+{
+    mali_plat_info_t* pmali_plat = get_mali_plat_data();
+    struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+    struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+    struct devfreq *devfreq = kbdev->devfreq;
+    unsigned long *freq_table;
+    int mali_freq_num;
+    int freq;
+
+    if (!devfreq || (idx >= devfreq->profile->max_state)) {
+        dev_warn(kbdev->dev, "%s, idx:%d\n", __func__, idx);
+        return 285;
+    }
+
+    mali_freq_num = devfreq->profile->max_state - 1;
+    freq_table = devfreq->profile->freq_table;
+    freq = freq_table[mali_freq_num - idx] / 1000000;
+    return freq;
+}
+
 static u32 get_mali_utilization(void)
 {
     u32 util = mpgpu_get_utilization();
@@ -393,9 +414,11 @@ void mali_post_init(void)
         gcdev->set_gpu_freq_idx = set_limit_mali_freq;
         gcdev->get_gpu_current_max_level = get_limit_mali_freq;
 #ifdef CONFIG_DEVFREQ_THERMAL
-        gcdev->get_gpu_freq = get_mali_freq;
+        gcdev->get_gpu_freq = get_devfreq_mali_freq;
         gcdev->get_gpu_loading = get_mali_utilization;
         gcdev->get_online_pp = mali_get_online_pp;
+#else
+        gcdev->get_gpu_freq = get_mali_freq;
 #endif
         err = gpufreq_cooling_register(gcdev);
 #ifdef CONFIG_DEVFREQ_THERMAL
