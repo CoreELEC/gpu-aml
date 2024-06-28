@@ -116,6 +116,11 @@ int get_mali_freq_level(int freq)
     if (freq < 0)
         return level;
 
+    if (!devfreq) {
+        dev_warn(kbdev->dev, "%s, kbdev->devfreq is NULL\n", __func__);
+        return 0;
+    }
+
     mali_freq_num = devfreq->profile->max_state - 1;
     freq_table = devfreq->profile->freq_table;
     if (freq <= freq_table[mali_freq_num] / 1000000)
@@ -166,7 +171,7 @@ unsigned int get_mali_max_level(void)
 
     if (!devfreq) {
         dev_warn(kbdev->dev, "%s, devfreq is NULL!\n", __func__);
-        return 5;
+        return 0;
     }
     return devfreq->profile->max_state;
 #else
@@ -244,6 +249,11 @@ static u32 get_limit_mali_freq(void)
     int i = 0;
     u32 idx;
 
+    if (!devfreq) {
+        dev_warn(kbdev->dev, "%s, kbdev->devfreq is NULL\n", __func__);
+        return 0;
+    }
+
     freq_table = devfreq->profile->freq_table;
     for (i = 0; i < devfreq->profile->max_state; i++) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
@@ -265,6 +275,29 @@ static u32 get_limit_mali_freq(void)
 }
 
 #ifdef CONFIG_DEVFREQ_THERMAL
+#ifdef CONFIG_MALI_DEVFREQ
+static u32 get_devfreq_mali_freq(u32 idx)
+{
+    mali_plat_info_t* pmali_plat = get_mali_plat_data();
+    struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+    struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+    struct devfreq *devfreq = kbdev->devfreq;
+    unsigned long *freq_table;
+    int mali_freq_num;
+    int freq;
+
+    if (!devfreq || (idx >= devfreq->profile->max_state)) {
+        dev_warn(kbdev->dev, "%s, idx:%d\n", __func__, idx);
+        return 0;
+    }
+
+    mali_freq_num = devfreq->profile->max_state - 1;
+    freq_table = devfreq->profile->freq_table;
+    freq = freq_table[mali_freq_num - idx] / 1000000;
+    return freq;
+}
+#endif
+
 static u32 get_mali_utilization(void)
 {
     u32 util = mpgpu_get_utilization();
@@ -370,7 +403,11 @@ void mali_post_init(void)
         gcdev->set_gpu_freq_idx = set_limit_mali_freq;
         gcdev->get_gpu_current_max_level = get_limit_mali_freq;
 #ifdef CONFIG_DEVFREQ_THERMAL
+#ifdef CONFIG_MALI_DEVFREQ
+        gcdev->get_gpu_freq = get_devfreq_mali_freq;
+#else
         gcdev->get_gpu_freq = get_mali_freq;
+#endif
         gcdev->get_gpu_loading = get_mali_utilization;
         gcdev->get_online_pp = mali_get_online_pp;
 #endif
