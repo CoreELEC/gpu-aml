@@ -173,6 +173,21 @@ static ssize_t scale_mode_write(struct class *class,
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t thermal_max_freq_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t thermal_max_freq_read(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	u32 idx = pmali_plat->scale_info.maxclk;
+	printk("%s: maxclk_idx:%d maxclk:%d\n",
+		__func__, pmali_plat->scale_info.maxclk, pmali_plat->clk_sample[idx]);
+	return sprintf(buf, "%d\n", pmali_plat->clk_sample[idx]);
+}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t max_freq_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
 #else
@@ -362,6 +377,7 @@ static struct class_attribute mali_class_attrs[] = {
 	__ATTR(domain_stat,	0644, domain_stat_read, NULL),
 	__ATTR(mpgpucmd,	0644, NULL,		mpgpu_write),
 #ifdef CONFIG_MALI_MIDGARD_DVFS
+	__ATTR(thermal_max_freq,	0644, thermal_max_freq_read,	NULL),
 	__ATTR(scale_mode,	0644, scale_mode_read,  scale_mode_write),
 	__ATTR(min_freq,	0644, min_freq_read,  	min_freq_write),
 	__ATTR(max_freq,	0644, max_freq_read,	max_freq_write),
