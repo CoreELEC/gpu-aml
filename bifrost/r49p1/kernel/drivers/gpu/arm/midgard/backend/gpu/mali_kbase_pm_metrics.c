@@ -77,7 +77,7 @@
  */
 enum dvfs_metric_timer_state { TIMER_OFF, TIMER_STOPPED, TIMER_ON };
 
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS)
 static enum hrtimer_restart dvfs_callback(struct hrtimer *timer)
 {
 	struct kbasep_pm_metrics_state *metrics;
@@ -136,7 +136,7 @@ int kbasep_pm_metrics_init(struct kbase_device *kbdev)
 #endif
 	spin_lock_init(&kbdev->pm.backend.metrics.lock);
 
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS)
 	hrtimer_init(&kbdev->pm.backend.metrics.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	kbdev->pm.backend.metrics.timer.function = dvfs_callback;
 	kbdev->pm.backend.metrics.initialized = true;
@@ -351,7 +351,7 @@ void kbase_pm_get_dvfs_metrics(struct kbase_device *kbdev, struct kbasep_pm_metr
 KBASE_EXPORT_TEST_API(kbase_pm_get_dvfs_metrics);
 #endif
 
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS)
 void kbase_pm_get_dvfs_action(struct kbase_device *kbdev)
 {
 	int utilisation;

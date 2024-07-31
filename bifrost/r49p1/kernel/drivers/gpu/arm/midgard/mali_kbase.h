@@ -796,4 +796,8 @@ bool kbasep_adjust_prioritized_process(struct kbase_device *kbdev, bool add, uin
 #define UINT32_MAX ((uint32_t)0xFFFFFFFFU)
 #endif
 
+/*meson graphics start */
+extern int meson_gpu_data_invalid_count;
+extern int meson_gpu_fault;
+/*meson graphics end*/
 #endif
