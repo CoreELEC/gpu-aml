@@ -642,6 +642,12 @@ union kbase_ioctl_kinstr_prfcnt_setup {
 #define KBASE_IOCTL_KINSTR_PRFCNT_SETUP \
 	_IOWR(KBASE_IOCTL_TYPE, 57, union kbase_ioctl_kinstr_prfcnt_setup)
 
+struct kbase_ioctl_set_scheduling_mode {
+	__u8 mode;
+};
+#define KBASE_IOCTL_SET_SCHEDULING_MODE                                                            \
+	_IOW(KBASE_IOCTL_TYPE, 58, struct kbase_ioctl_set_scheduling_mode)
+
 /***************
  * test ioctls *
  ***************/
