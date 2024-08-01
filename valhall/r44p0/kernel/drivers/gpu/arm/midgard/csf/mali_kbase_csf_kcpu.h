@@ -308,9 +308,7 @@ struct kbase_kcpu_command_queue {
 	bool command_started;
 	struct list_head jit_blocked;
 	bool has_error;
-#ifdef CONFIG_MALI_FENCE_DEBUG
 	struct timer_list fence_timeout;
-#endif /* CONFIG_MALI_FENCE_DEBUG */
 #if IS_ENABLED(CONFIG_SYNC_FILE)
 	struct kbase_kcpu_dma_fence_meta *metadata;
 #endif /* CONFIG_SYNC_FILE */
