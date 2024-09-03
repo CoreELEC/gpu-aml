@@ -1779,7 +1779,7 @@ next:
 	 * movable once they are returned to a memory pool.
 	 */
 	if (kbase_is_page_migration_enabled() && !ignore_page_migration && phys) {
-		const u64 num_pages = to_vpfn - from_vpfn + 1;
+		const u64 num_pages = to_vpfn - from_vpfn;
 		u64 i;
 
 		for (i = 0; i < num_pages; i++) {
@@ -2330,6 +2330,7 @@ static int mmu_insert_pages_no_flush(struct kbase_device *kbdev, struct kbase_mm
 	unsigned int i;
 	phys_addr_t new_pgds[MIDGARD_MMU_BOTTOMLEVEL + 1];
 	int l, cur_level, insert_level;
+	struct tagged_addr *start_phys = phys;
 
 	/* Note that 0 is a valid start_vpfn */
 	/* 64-bit address range is the max */
@@ -2497,7 +2498,7 @@ fail_unlock:
 	if (insert_vpfn != start_vpfn) {
 		/* Invalidate the pages we have partially completed */
 		mmu_insert_pages_failure_recovery(kbdev, mmut, start_vpfn, insert_vpfn, dirty_pgds,
-						  phys, ignore_page_migration);
+						  start_phys, ignore_page_migration);
 	}
 
 	mmu_flush_invalidate_insert_pages(kbdev, mmut, start_vpfn, nr,
