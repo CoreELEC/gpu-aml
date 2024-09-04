@@ -1,0 +1,355 @@
+From 70303db32c785c231351ec72af4b59b9bc8062e5 Mon Sep 17 00:00:00 2001
+From: Samuel Percival <samuel.percival@arm.com>
+Date: Tue, 25 Jun 2024 10:01:22 +0100
+Subject: [PATCH] GPUCORE-42983 kbase_reg_poll32_timeout does not work as expected on kernel 6.5+
+
+Due to a change to read_poll_timeout_atomic() in kernel 6.5 when the delay between checks is set to zero, the poll take longer than expected to timeout.
+This is because it no longer accounts for the time of each iteration, rather the timeout is converted to ns and just decremented by one each time.
+
+This change preserves the read_poll_timeout_atomic from pre 6.5 kernel which has the required timekeeping by updating the version_compat definition.
+
+Uses of read_poll_timeout_atomic() with a delay_us of zero have been changed to use mali_read_poll_timeout_atomic(), retaining the required timekeeping.
+
+TI2: 1199169 (PLAN-11965r1127 DDK Precommit)
+TI2: 1199170 (PLAN-49423r40 Optimisation Team - Mali-Krake CPU2B Performance) (PS21)
+TI2: 1199202 (PLAN-49423r40 Optimisation Team - Mali-Krake CPU2B Performance) (Parent of PS21)
+
+Change-Id: I676193438f348aa8f2964ed4e28bfc1f6b4786f2
+---
+
+diff --git a/product/kernel/drivers/gpu/arm/arbitration/am/mali_gpu_partition_control/mali_gpu_partition_control.c b/product/kernel/drivers/gpu/arm/arbitration/am/mali_gpu_partition_control/mali_gpu_partition_control.c
+index 9bf4c1e..2a85ed9 100644
+--- a/product/kernel/drivers/gpu/arm/arbitration/am/mali_gpu_partition_control/mali_gpu_partition_control.c
++++ b/product/kernel/drivers/gpu/arm/arbitration/am/mali_gpu_partition_control/mali_gpu_partition_control.c
+@@ -206,11 +206,11 @@
+ 		return 0;
+ 	case AM_PARTITION_STATE_WINDOW_CLOSED:
+ 		/* Await already running reset */
+-		error = read_poll_timeout_atomic(mali_readl, partition_state,
+-						 AM_PARTITION_STATE_GET(partition_state) ==
+-							 AM_PARTITION_STATE_RESET,
+-						 REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US,
+-						 false, partition_ctrl->mem + AM_PARTITION_STATE);
++		error = mali_read_poll_timeout_atomic(
++			mali_readl, partition_state,
++			AM_PARTITION_STATE_GET(partition_state) == AM_PARTITION_STATE_RESET,
++			REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US, false,
++			partition_ctrl->mem + AM_PARTITION_STATE);
+ 
+ 		if (error) {
+ 			dev_err(partition_ctrl->dev,
+@@ -223,11 +223,11 @@
+ 		return 0;
+ 	case AM_PARTITION_STATE_WINDOW_OPENING:
+ 		/* Await window open */
+-		error = read_poll_timeout_atomic(mali_readl, partition_state,
+-						 AM_PARTITION_STATE_GET(partition_state) ==
+-							 AM_PARTITION_STATE_WINDOW_OPEN,
+-						 REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US,
+-						 false, partition_ctrl->mem + AM_PARTITION_STATE);
++		error = mali_read_poll_timeout_atomic(
++			mali_readl, partition_state,
++			AM_PARTITION_STATE_GET(partition_state) == AM_PARTITION_STATE_WINDOW_OPEN,
++			REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US, false,
++			partition_ctrl->mem + AM_PARTITION_STATE);
+ 
+ 		if (error) {
+ 			dev_err(partition_ctrl->dev,
+@@ -248,11 +248,11 @@
+ 	command = AM_PARTITION_COMMAND_SET(0, AM_PARTITION_COMMAND_CLOSE_WINDOW);
+ 	mali_writel(command, partition_ctrl->mem + AM_PARTITION_COMMAND);
+ 
+-	error = read_poll_timeout_atomic(mali_readl, partition_state,
+-					 AM_PARTITION_STATE_GET(partition_state) ==
+-						 AM_PARTITION_STATE_RESET,
+-					 REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US, false,
+-					 partition_ctrl->mem + AM_PARTITION_STATE);
++	error = mali_read_poll_timeout_atomic(mali_readl, partition_state,
++					      AM_PARTITION_STATE_GET(partition_state) ==
++						      AM_PARTITION_STATE_RESET,
++					      REG_POLL_SLEEP_US, REG_POLL_RESET_TIMEOUT_US, false,
++					      partition_ctrl->mem + AM_PARTITION_STATE);
+ 
+ 	/* GPUCORE-42685 TODO: Remove below IRQ disabling */
+ 	if (arb_vm_yield_now_is_enabled()) {
+@@ -357,7 +357,7 @@
+ 		break;
+ 	case AM_PARTITION_STATE_WINDOW_OPENING:
+ 		/* Block until the window is open */
+-		error = read_poll_timeout_atomic(
++		error = mali_read_poll_timeout_atomic(
+ 			mali_readl, partition_state,
+ 			AM_PARTITION_STATE_GET(partition_state) == AM_PARTITION_STATE_WINDOW_OPEN &&
+ 				AM_PARTITION_STATE_WINDOW_GET(partition_state) == aw_id,
+diff --git a/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c b/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c
+index b24722b..f12945f 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c
++++ b/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c
+@@ -938,9 +938,8 @@
+ 		const u32 timeout_us =
+ 			kbase_get_timeout_ms(kbdev, KBASE_CLEAN_CACHE_TIMEOUT) * USEC_PER_MSEC;
+ 		/* Ensure that L2 is not transitioning when we send the reset command */
+-		const int err = read_poll_timeout_atomic(kbase_pm_get_trans_cores, val, !val, 0,
+-							 timeout_us, false, kbdev,
+-							 KBASE_PM_CORE_L2);
++		const int err = kbase_reg_poll64_timeout(kbdev, GPU_CONTROL_ENUM(L2_PWRTRANS), val,
++							 !val, 0, timeout_us, false);
+ 
+ 		WARN(err, "L2 power transition timed out while trying to reset\n");
+ 	}
+diff --git a/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_driver.c b/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_driver.c
+index 8119033..35c0f5c 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_driver.c
++++ b/product/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_driver.c
+@@ -1131,14 +1131,14 @@
+ static int wait_mcu_active(struct kbase_device *kbdev)
+ {
+ 	int err = 0;
++	const u64 timeout_us =
++		kbase_get_timeout_ms(kbdev, CSF_FIRMWARE_WAKE_UP_TIMEOUT) * USEC_PER_MSEC;
+ 
+ 	if (kbdev->pm.backend.has_host_pwr_iface) {
+ 		u32 glb_ack;
+-		err = read_poll_timeout_atomic(
+-			kbase_csf_fw_io_global_read, glb_ack,
+-			GLB_ACK_STATE_GET(glb_ack) == GLB_ACK_STATE_ACTIVE, 1,
+-			kbase_get_timeout_ms(kbdev, CSF_FIRMWARE_WAKE_UP_TIMEOUT) * USEC_PER_MSEC,
+-			true, &kbdev->csf.fw_io, GLB_ACK);
++		err = read_poll_timeout_atomic(kbase_csf_fw_io_global_read, glb_ack,
++					       GLB_ACK_STATE_GET(glb_ack) == GLB_ACK_STATE_ACTIVE,
++					       1, timeout_us, true, &kbdev->csf.fw_io, GLB_ACK);
+ 		if (unlikely(err))
+ 			dev_warn(kbdev->dev, "GLB_ACK_STATE didn't change to active");
+ 	}
+diff --git a/product/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_csf.c b/product/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_csf.c
+index 2c0c826..f418bf7 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_csf.c
++++ b/product/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_csf.c
+@@ -254,12 +254,14 @@
+ 			 * cases so timeouts are tolerable.
+ 			 */
+ 			u32 mcu_status;
+-			int err = read_poll_timeout_atomic(
+-				kbase_reg_read32, mcu_status,
+-				MCU_STATUS_VALUE_GET(mcu_status) != MCU_STATUS_VALUE_ENABLED, 1,
++			const u32 timeout_us =
+ 				kbase_get_timeout_ms(kbdev, CSF_FIRMWARE_SOI_HALT_TIMEOUT) *
+-					USEC_PER_MSEC,
+-				false, kbdev, GPU_CONTROL_ENUM(MCU_STATUS));
++				USEC_PER_MSEC;
++
++			int err = kbase_reg_poll32_timeout(
++				kbdev, GPU_CONTROL_ENUM(MCU_STATUS), mcu_status,
++				MCU_STATUS_VALUE_GET(mcu_status) != MCU_STATUS_VALUE_ENABLED, 1,
++				timeout_us, false);
+ 			if (unlikely(err))
+ 				dev_warn(kbdev->dev, "MCU hasn't halted after automatic sleep");
+ 
+diff --git a/product/kernel/drivers/gpu/arm/midgard/hw_access/mali_kbase_hw_access.h b/product/kernel/drivers/gpu/arm/midgard/hw_access/mali_kbase_hw_access.h
+index 109b662..62e7049 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/hw_access/mali_kbase_hw_access.h
++++ b/product/kernel/drivers/gpu/arm/midgard/hw_access/mali_kbase_hw_access.h
+@@ -219,10 +219,10 @@
+  *
+  * Return: 0 if condition is met, -ETIMEDOUT if timed out.
+  */
+-#define kbase_reg_poll32_timeout(kbdev, reg_enum, val, cond, delay_us, timeout_us,  \
+-				 delay_before_read)                                 \
+-	read_poll_timeout_atomic(kbase_reg_read32, val, cond, delay_us, timeout_us, \
+-				 delay_before_read, kbdev, reg_enum)
++#define kbase_reg_poll32_timeout(kbdev, reg_enum, val, cond, delay_us, timeout_us,       \
++				 delay_before_read)                                      \
++	mali_read_poll_timeout_atomic(kbase_reg_read32, val, cond, delay_us, timeout_us, \
++				      delay_before_read, kbdev, reg_enum)
+ 
+ /**
+  * kbase_reg_poll64_timeout - Poll a 64 bit register with timeout
+@@ -236,10 +236,10 @@
+  *
+  * Return: 0 if condition is met, -ETIMEDOUT if timed out.
+  */
+-#define kbase_reg_poll64_timeout(kbdev, reg_enum, val, cond, delay_us, timeout_us,  \
+-				 delay_before_read)                                 \
+-	read_poll_timeout_atomic(kbase_reg_read64, val, cond, delay_us, timeout_us, \
+-				 delay_before_read, kbdev, reg_enum)
++#define kbase_reg_poll64_timeout(kbdev, reg_enum, val, cond, delay_us, timeout_us,       \
++				 delay_before_read)                                      \
++	mali_read_poll_timeout_atomic(kbase_reg_read64, val, cond, delay_us, timeout_us, \
++				      delay_before_read, kbdev, reg_enum)
+ 
+ /**
+  * kbase_reg_gpu_irq_all - Return a mask for all GPU IRQ sources
+diff --git a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fault_unit_test/kernel/mali_kutf_csf_fault_unit_test_main.c b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fault_unit_test/kernel/mali_kutf_csf_fault_unit_test_main.c
+index dc22f58..ff83ef1 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fault_unit_test/kernel/mali_kutf_csf_fault_unit_test_main.c
++++ b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fault_unit_test/kernel/mali_kutf_csf_fault_unit_test_main.c
+@@ -449,10 +449,8 @@
+ 	kbase_reg_write32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT), host_irq_bit);
+ 
+ 	/* Wait until the interrupt has been handled */
+-	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit) {
+-		/* Sleep for few ms & then check again */
++	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit)
+ 		msleep(20);
+-	}
+ }
+ 
+ static void set_fault_event_info(struct kutf_user_data_in *in, struct kbase_device *kbdev,
+diff --git a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fw_io_test/kernel/mali_kutf_csf_fw_io_test_main.c b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fw_io_test/kernel/mali_kutf_csf_fw_io_test_main.c
+index ae9ff13..ae16f1f 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fw_io_test/kernel/mali_kutf_csf_fw_io_test_main.c
++++ b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_fw_io_test/kernel/mali_kutf_csf_fw_io_test_main.c
+@@ -312,9 +312,9 @@
+ 	int error;
+ 
+ 	/* Make sure the test called the wait function. */
+-	error = read_poll_timeout_atomic(waitqueue_active, wq_active, wq_active,
+-					 FW_WORK_POLL_SLEEP_US, FW_WORK_POLL_TIMEOUT_US, true,
+-					 &kbdev->csf.event_wait);
++	error = mali_read_poll_timeout_atomic(waitqueue_active, wq_active, wq_active,
++					      FW_WORK_POLL_SLEEP_US, FW_WORK_POLL_TIMEOUT_US, true,
++					      &kbdev->csf.event_wait);
+ 	if (error)
+ 		kutf_test_fail_msg(data->context, "Failed to call wait function.");
+ 
+@@ -341,9 +341,9 @@
+ 	bool fw_reloaded;
+ 
+ 	kbase_csf_firmware_trigger_reload(kbdev);
+-	if (read_poll_timeout_atomic(read_fw_reloaded, fw_reloaded, fw_reloaded,
+-				     FW_WORK_POLL_SLEEP_US, FW_WORK_POLL_TIMEOUT_US, true,
+-				     &kbdev->csf.firmware_reloaded)) {
++	if (mali_read_poll_timeout_atomic(read_fw_reloaded, fw_reloaded, fw_reloaded,
++					  FW_WORK_POLL_SLEEP_US, FW_WORK_POLL_TIMEOUT_US, true,
++					  &kbdev->csf.firmware_reloaded)) {
+ 		kutf_test_fail_msg(context, "FW reload timed out.");
+ 	}
+ #endif /* !IS_ENABLED(CONFIG_MALI_NO_MALI) */
+diff --git a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_tiler_heap_unit_test/kernel/mali_kutf_csf_tiler_heap_unit_test_main.c b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_tiler_heap_unit_test/kernel/mali_kutf_csf_tiler_heap_unit_test_main.c
+index 082cdd9..f5f98d2 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_tiler_heap_unit_test/kernel/mali_kutf_csf_tiler_heap_unit_test_main.c
++++ b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_tiler_heap_unit_test/kernel/mali_kutf_csf_tiler_heap_unit_test_main.c
+@@ -382,10 +382,8 @@
+ 	kbase_reg_write32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT), host_irq_bit);
+ 
+ 	/* Wait until the interrupt has been handled */
+-	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit) {
+-		/* Sleep for few ms & then check again */
++	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit)
+ 		msleep(20);
+-	}
+ }
+ 
+ static void set_oom_event_info(struct kutf_tiler_heap_in *in, struct kbase_device *kbdev,
+diff --git a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_timeout_unit_test/kernel/mali_kutf_csf_timeout_unit_test_main.c b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_timeout_unit_test/kernel/mali_kutf_csf_timeout_unit_test_main.c
+index b2a4e28..c513409 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_timeout_unit_test/kernel/mali_kutf_csf_timeout_unit_test_main.c
++++ b/product/kernel/drivers/gpu/arm/midgard/tests/mali_kutf_csf_timeout_unit_test/kernel/mali_kutf_csf_timeout_unit_test_main.c
+@@ -160,10 +160,8 @@
+ 	kbase_reg_write32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT), host_irq_bit);
+ 
+ 	/* Wait until the interrupt has been handled */
+-	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit) {
+-		/* Sleep for few ms & then check again */
++	while (kbase_reg_read32(kbdev, JOB_CONTROL_ENUM(JOB_IRQ_RAWSTAT)) & host_irq_bit)
+ 		msleep(20);
+-	}
+ }
+ 
+ static void set_timeout_event_info(struct kbase_device *const kbdev, int const csg_nr)
+diff --git a/product/kernel/drivers/gpu/arm/midgard/tests/mali_window_closed_test/kernel/mali_kutf_window_closed_test_main.c b/product/kernel/drivers/gpu/arm/midgard/tests/mali_window_closed_test/kernel/mali_kutf_window_closed_test_main.c
+index c6b03da..a6a1fdd 100644
+--- a/product/kernel/drivers/gpu/arm/midgard/tests/mali_window_closed_test/kernel/mali_kutf_window_closed_test_main.c
++++ b/product/kernel/drivers/gpu/arm/midgard/tests/mali_window_closed_test/kernel/mali_kutf_window_closed_test_main.c
+@@ -86,7 +86,6 @@
+ 	struct kbase_device *kbdev = data->kbdev;
+ 	int err = 0;
+ 	struct kutf_helper_named_val val;
+-	uint32_t reg_val;
+ #ifdef KBASE_PM_RUNTIME
+ 	u32 supports_gpu_sleep = 0;
+ #endif /* KBASE_PM_RUNTIME */
+@@ -115,6 +114,7 @@
+ 
+ #ifndef MALI_ONLY_INCLUDE_RELEASED_GPUS
+ 	if (kbdev->gpu_props.gpu_id.arch_id >= GPU_ID_ARCH_MAKE(14, 10, 0)) {
++		u32 reg_val;
+ 		/* disable MCU */
+ 		disable_mcu_wait(kbdev);
+ 		/* Force WINDOW_CLOSED irq */
+@@ -123,10 +123,8 @@
+ 				  reg_val | WINDOW_IRQ_WINDOW_CLOSED);
+ 		/* Wait until the interrupt has been handled */
+ 		while (kbase_reg_read32(kbdev, WINDOW_CONTROL_ENUM(WINDOW_IRQ_RAWSTAT)) &
+-		       WINDOW_IRQ_WINDOW_CLOSED) {
+-			/* Sleep for few ms & then check again */
++		       WINDOW_IRQ_WINDOW_CLOSED)
+ 			msleep(20);
+-		}
+ 	}
+ #endif
+ 	kutf_helper_send_named_u64(context, "KERNEL_READY", 0);
+diff --git a/product/kernel/include/linux/version_compat_defs.h b/product/kernel/include/linux/version_compat_defs.h
+index 3016306f..a3f45d0 100644
+--- a/product/kernel/include/linux/version_compat_defs.h
++++ b/product/kernel/include/linux/version_compat_defs.h
+@@ -311,29 +311,37 @@
+ #define kbase_totalram_pages() totalram_pages()
+ #endif /* KERNEL_VERSION(5, 0, 0) > LINUX_VERSION_CODE */
+ 
+-#ifndef read_poll_timeout_atomic
+-#define read_poll_timeout_atomic(op, val, cond, delay_us, timeout_us, delay_before_read, args...) \
+-	({                                                                                        \
+-		const u64 __timeout_us = (timeout_us);                                            \
+-		s64 __left_ns = __timeout_us * NSEC_PER_USEC;                                     \
+-		const unsigned long __delay_us = (delay_us);                                      \
+-		const u64 __delay_ns = __delay_us * NSEC_PER_USEC;                                \
+-		if (delay_before_read && __delay_us)                                              \
+-			udelay(__delay_us);                                                       \
+-		if (__timeout_us)                                                                 \
+-			__left_ns -= __delay_ns;                                                  \
+-		do {                                                                              \
+-			(val) = op(args);                                                         \
+-			if (__timeout_us) {                                                       \
+-				if (__delay_us) {                                                 \
+-					udelay(__delay_us);                                       \
+-					__left_ns -= __delay_ns;                                  \
+-				}                                                                 \
+-				__left_ns--;                                                      \
+-			}                                                                         \
+-		} while (!(cond) && (!__timeout_us || (__left_ns > 0)));                          \
+-		(cond) ? 0 : -ETIMEDOUT;                                                          \
++/* For kernel versions from 6.5 onward, the read_poll_timeout_atomic() implementation does not
++ * suit our usecase where we have a delay_us of zero. This causes the timeout to take allot longer
++ * than expected. mali_read_poll_timeout_atomic() is the previous kernel implementation with the
++ * desired timekeeping.
++ */
++#define mali_read_poll_timeout_atomic(op, val, cond, delay_us, timeout_us, delay_before_read, \
++				      args...)                                                \
++	({                                                                                    \
++		u64 __timeout_us = (timeout_us);                                              \
++		unsigned long __delay_us = (delay_us);                                        \
++		ktime_t __timeout = ktime_add_us(ktime_get(), __timeout_us);                  \
++		if (delay_before_read && __delay_us)                                          \
++			udelay(__delay_us);                                                   \
++		for (;;) {                                                                    \
++			(val) = op(args);                                                     \
++			if (cond)                                                             \
++				break;                                                        \
++			if (__timeout_us && ktime_compare(ktime_get(), __timeout) > 0) {      \
++				(val) = op(args);                                             \
++				break;                                                        \
++			}                                                                     \
++			if (__delay_us)                                                       \
++				udelay(__delay_us);                                           \
++		}                                                                             \
++		(cond) ? 0 : -ETIMEDOUT;                                                      \
+ 	})
++
++#ifndef read_poll_timeout_atomic
++#define read_poll_timeout_atomic(op, val, cond, delay_us, timeout_us, delay_before_read, ...) \
++	mali_read_poll_timeout_atomic(op, val, cond, delay_us, timeout_us, delay_before_read, \
++				      __VA_ARGS__)
+ #endif
+ 
+ #if (KERNEL_VERSION(4, 11, 0) > LINUX_VERSION_CODE)
