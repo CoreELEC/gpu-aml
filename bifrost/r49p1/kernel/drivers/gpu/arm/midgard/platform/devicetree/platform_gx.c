@@ -411,12 +411,12 @@ void mali_post_init(void)
         gcdev->get_online_pp = mali_get_online_pp;
 #endif
         err = gpufreq_cooling_register(gcdev);
-#ifdef CONFIG_DEVFREQ_THERMAL
-        meson_gcooldev_min_update(gcdev->cool_dev);
-#endif
         if (err < 0)
             printk("register GPU  cooling error\n");
-        /*printk("gpu cooling register okay with err=%d\n",err);*/
+        else
+#ifdef CONFIG_DEVFREQ_THERMAL
+            meson_gcooldev_min_update(gcdev->cool_dev);
+#endif
     }
 
     gccdev = gpucore_cooling_alloc();
@@ -428,12 +428,12 @@ void mali_post_init(void)
         gccdev->max_gpu_core_num = mali_plat_data.cfg_pp;
         gccdev->set_max_pp_num = set_limit_pp_num;
         err = (int)gpucore_cooling_register(gccdev);
-#ifdef CONFIG_DEVFREQ_THERMAL
-        meson_gcooldev_min_update(gccdev->cool_dev);
-#endif
         if (err < 0)
             printk("register GPU  cooling error\n");
-        /*printk("gpu core cooling register okay with err=%d\n",err);*/
+        else
+#ifdef CONFIG_DEVFREQ_THERMAL
+            meson_gcooldev_min_update(gccdev->cool_dev);
+#endif
     }
 #endif
 }
