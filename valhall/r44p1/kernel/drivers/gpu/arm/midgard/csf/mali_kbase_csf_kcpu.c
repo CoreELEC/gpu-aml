@@ -2850,13 +2850,6 @@ int kbase_csf_kcpu_queue_new(struct kbase_context *kctx,
 		goto out;
 	}
 
-	queue->wq = alloc_workqueue("mali_kbase_csf_kcpu_wq_%i", WQ_UNBOUND | WQ_HIGHPRI, 0, idx);
-	if (queue->wq == NULL) {
-		kfree(queue);
-		ret = -ENOMEM;
-
-		goto out;
-	}
 	*queue = (struct kbase_kcpu_command_queue)
 	{
 		.kctx = kctx, .start_offset = 0, .num_pending_cmds = 0, .enqueue_failed = false,
@@ -2866,6 +2859,14 @@ int kbase_csf_kcpu_queue_new(struct kbase_context *kctx,
 		.fence_wait_processed = false,
 #endif /* IS_ENABLED(CONFIG_SYNC_FILE) */
 	};
+
+	queue->wq = alloc_workqueue("mali_kbase_csf_kcpu_wq_%i", WQ_UNBOUND | WQ_HIGHPRI, 0, idx);
+	if (queue->wq == NULL) {
+		kfree(queue);
+		ret = -ENOMEM;
+
+		goto out;
+	}
 
 	mutex_init(&queue->lock);
 	INIT_WORK(&queue->work, kcpu_queue_process_worker);
