@@ -423,8 +423,8 @@ void mali_post_init(void)
         err = gpufreq_cooling_register(gcdev);
         if (err < 0)
             printk("register GPU  cooling error\n");
-        else
 #ifdef CONFIG_DEVFREQ_THERMAL
+        else
             meson_gcooldev_min_update(gcdev->cool_dev);
 #endif
     }
@@ -440,8 +440,8 @@ void mali_post_init(void)
         err = (int)gpucore_cooling_register(gccdev);
         if (err < 0)
             printk("register GPU  cooling error\n");
-        else
 #ifdef CONFIG_DEVFREQ_THERMAL
+        else
             meson_gcooldev_min_update(gccdev->cool_dev);
 #endif
     }
