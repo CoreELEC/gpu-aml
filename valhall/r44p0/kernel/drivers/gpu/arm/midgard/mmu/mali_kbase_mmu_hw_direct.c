@@ -232,15 +232,17 @@ static int wait_l2_power_trans_complete(struct kbase_device *kbdev)
 		unsigned int i;
 
 		for (i = 0; i < 1000; i++) {
-			if (!kbase_reg_read64(kbdev, GPU_CONTROL_ENUM(L2_PWRTRANS)))
+		if (!(kbase_reg_read(kbdev, GPU_CONTROL_REG(L2_PWRTRANS_HI))
+				&& kbase_reg_read(kbdev, GPU_CONTROL_REG(L2_PWRTRANS_LO))))
 				return 0;
 		}
 
 		diff = ktime_to_ms(ktime_sub(ktime_get_raw(), wait_loop_start));
 	} while (diff < pwr_trans_wait_time_ms);
 
-	dev_warn(kbdev->dev, "L2_PWRTRANS %016llx set for too long",
-		 kbase_reg_read64(kbdev, GPU_CONTROL_ENUM(L2_PWRTRANS)));
+	dev_warn(kbdev->dev, "L2_PWRTRANS %08x%08x set for too long",
+		kbase_reg_read(kbdev, GPU_CONTROL_REG( L2_PWRTRANS_HI)),
+		kbase_reg_read(kbdev, GPU_CONTROL_REG( L2_PWRTRANS_LO)));
 
 	if (kbase_prepare_to_reset_gpu_locked(kbdev, RESET_FLAGS_NONE))
 		kbase_reset_gpu_locked(kbdev);
