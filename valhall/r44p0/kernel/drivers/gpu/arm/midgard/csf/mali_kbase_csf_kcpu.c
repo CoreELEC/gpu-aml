@@ -2679,6 +2679,16 @@ int kbase_csf_kcpu_queue_new(struct kbase_context *kctx,
 		goto out;
 	}
 
+	*queue = (struct kbase_kcpu_command_queue)
+	{
+		.kctx = kctx, .start_offset = 0, .num_pending_cmds = 0, .enqueue_failed = false,
+		.command_started = false, .has_error = false, .id = idx,
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+		.fence_context = dma_fence_context_alloc(1), .fence_seqno = 0,
+		.fence_wait_processed = false,
+#endif /* IS_ENABLED(CONFIG_SYNC_FILE) */
+	};
+
 	queue->wq = alloc_workqueue("mali_kbase_csf_kcpu_wq_%i", WQ_UNBOUND | WQ_HIGHPRI, 0, idx);
 	if (queue->wq == NULL) {
 		kfree(queue);
