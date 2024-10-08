@@ -118,6 +118,11 @@ int get_mali_freq_level(int freq)
     if (freq < 0)
         return level;
 
+    if (!devfreq) {
+        dev_warn(kbdev->dev, "%s, kbdev->devfreq is NULL\n", __func__);
+        return 0;
+    }
+
     mali_freq_num = devfreq->profile->max_state - 1;
     freq_table = devfreq->profile->freq_table;
     if (freq <= freq_table[mali_freq_num] / 1000000)
@@ -246,6 +251,10 @@ static u32 get_limit_mali_freq(void)
     int i = 0;
     u32 idx;
 
+    if (!devfreq) {
+        dev_warn(kbdev->dev, "%s, kbdev->devfreq is NULL\n", __func__);
+        return 0;
+    }
     freq_table = devfreq->profile->freq_table;
     for (i = 0; i < devfreq->profile->max_state; i++) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
