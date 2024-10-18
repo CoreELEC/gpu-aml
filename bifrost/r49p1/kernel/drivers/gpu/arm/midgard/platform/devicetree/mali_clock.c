@@ -200,8 +200,10 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	mali_dvfs_threshold_table *dvfs_tbl = NULL;
 	uint32_t *clk_sample = NULL;
 
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 	struct property *prop;
 	const __be32 *p;
+#endif
 	int length = 0, i = 0;
 	u32 u;
 	int ret = 0;
@@ -273,7 +275,11 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	clk_sample = mpdata->clk_sample;
 	mpdata->dvfs_table_size = 0;
 
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 	of_property_for_each_u32(gpu_dn, "tbl", prop, p, u) {
+#else
+	of_property_for_each_u32(gpu_dn, "tbl", u) {
+#endif
 		dvfs_clk_hdl = (phandle) u;
 		gpu_clk_dn = of_find_node_by_phandle(dvfs_clk_hdl);
 		ret = of_property_read_u32(gpu_clk_dn,"clk_freq", &dvfs_tbl->clk_freq);
@@ -556,8 +562,10 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	mali_dvfs_threshold_table *dvfs_tbl = NULL;
 	uint32_t *clk_sample = NULL;
 
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 	struct property *prop;
 	const __be32 *p;
+#endif
 	int length = 0, i = 0;
 	u32 u;
 
@@ -645,7 +653,12 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	if (ret)
 		return ret;
 	/* dvfs clk table */
+
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 	of_property_for_each_u32(gpu_dn, "tbl", prop, p, u) {
+#else
+	of_property_for_each_u32(gpu_dn, "tbl", u) {
+#endif
 		dvfs_clk_hdl = (phandle) u;
 		gpu_clk_dn = of_find_node_by_phandle(dvfs_clk_hdl);
 		ret = of_property_read_u32(gpu_clk_dn,"clk_freq", &dvfs_tbl->clk_freq);

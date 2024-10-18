@@ -708,7 +708,10 @@ static int kbase_open(struct inode *inode, struct file *filp)
 	}
 
 	filp->private_data = kfile;
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
+	/* FMODE_* bit 13 has remove since kernel6.12 */
 	filp->f_mode |= FMODE_UNSIGNED_OFFSET;
+#endif
 
 	return 0;
 
@@ -5890,6 +5893,7 @@ void kbase_sysfs_term(struct kbase_device *kbdev)
 	put_device(kbdev->dev);
 }
 
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 static int kbase_platform_device_remove(struct platform_device *pdev)
 {
 	struct kbase_device *kbdev = to_kbase_device(&pdev->dev);
@@ -5903,6 +5907,22 @@ static int kbase_platform_device_remove(struct platform_device *pdev)
 
 	return 0;
 }
+#else
+/* .remove is void type since kernel6.12 */
+static void kbase_platform_device_remove(struct platform_device *pdev)
+{
+	struct kbase_device *kbdev = to_kbase_device(&pdev->dev);
+
+	if (!kbdev)
+		return;
+
+	kbase_device_term(kbdev);
+	dev_set_drvdata(kbdev->dev, NULL);
+	kbase_device_free(kbdev);
+
+	return;
+}
+#endif
 
 void kbase_backend_devfreq_term(struct kbase_device *kbdev)
 {
