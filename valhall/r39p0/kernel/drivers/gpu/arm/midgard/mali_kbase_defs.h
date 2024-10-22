@@ -614,9 +614,13 @@ struct kbase_devfreq_queue_info {
  * struct kbase_process - Representing an object of a kbase process instantiated
  *                        when the first kbase context is created under it.
  * @tgid:               Thread group ID.
+ * @name:               Thread group name.
  * @total_gpu_pages:    Total gpu pages allocated across all the contexts
  *                      of this process, it accounts for both native allocations
  *                      and dma_buf imported allocations.
+ * @dma_buf_pages:      Total dma_buf pages allocated across all the contexts
+ *                      of this process, native allocations can be accounted for
+ *                      by subtracting this from &total_gpu_pages.
  * @kctx_list:          List of kbase contexts created for the process.
  * @kprcs_node:         Node to a rb_tree, kbase_device will maintain a rb_tree
  *                      based on key tgid, kprcs_node is the node link to
@@ -626,14 +630,20 @@ struct kbase_devfreq_queue_info {
  *                      Used to ensure that pages of allocation are accounted
  *                      only once for the process, even if the allocation gets
  *                      imported multiple times for the process.
+ * @kobj:               Links to the per-process sysfs node
+ *                      &kbase_device.proc_sysfs_node.
  */
 struct kbase_process {
 	pid_t tgid;
+	char *name;
 	size_t total_gpu_pages;
+	size_t dma_buf_pages;
 	struct list_head kctx_list;
 
 	struct rb_node kprcs_node;
 	struct rb_root dma_buf_root;
+
+	struct kobject kobj;
 };
 
 /**
@@ -933,6 +943,7 @@ struct kbase_process {
  *                          mapping and gpu memory usage at device level and
  *                          other one at process level.
  * @total_gpu_pages:        Total GPU pages used for the complete GPU device.
+ * @dma_buf_pages:          Total dma_buf pages used for GPU platform device.
  * @dma_buf_lock:           This mutex should be held while accounting for
  *                          @total_gpu_pages from imported dma buffers.
  * @gpu_mem_usage_lock:     This spinlock should be held while accounting
@@ -950,6 +961,7 @@ struct kbase_process {
  * @pcm_dev:                The priority control manager device.
  * @oom_notifier_block:     notifier_block containing kernel-registered out-of-
  *                          memory handler.
+ * @proc_sysfs_node:        Sysfs directory node to store per-process stats.
  */
 struct kbase_device {
 	u32 hw_quirks_sc;
@@ -1202,6 +1214,7 @@ struct kbase_device {
 	struct rb_root dma_buf_root;
 
 	size_t total_gpu_pages;
+	size_t dma_buf_pages;
 	struct mutex dma_buf_lock;
 	spinlock_t gpu_mem_usage_lock;
 
@@ -1221,6 +1234,7 @@ struct kbase_device {
 
 	struct notifier_block oom_notifier_block;
 
+	struct kobject *proc_sysfs_node;
 };
 
 /**
@@ -1534,6 +1548,12 @@ struct kbase_sub_alloc {
  *                        which actually created the context. This is usually,
  *                        but not necessarily, the same as the thread which
  *                        opened the device file /dev/malixx instance.
+ * @name                  Thread group name of the process whose thread created
+ *                        the context (by calling KBASE_IOCTL_VERSION_CHECK or
+ *                        KBASE_IOCTL_SET_FLAGS, depending on the @api_version).
+ *                        This is usually, but not necessarily, the same as the
+ *                        process whose thread opened the device file
+ *                        /dev/malixx instance.
  * @csf:                  kbase csf context
  * @jctx:                 object encapsulating all the Job dispatcher related state,
  *                        including the array of atoms.
@@ -1787,6 +1807,7 @@ struct kbase_context {
 	wait_queue_head_t event_queue;
 	pid_t tgid;
 	pid_t pid;
+	char *name;
 	atomic_t used_pages;
 	atomic_t nonmapped_pages;
 	atomic_t permanent_mapped_pages;
