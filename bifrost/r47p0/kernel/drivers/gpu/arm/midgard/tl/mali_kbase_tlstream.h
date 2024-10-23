@@ -30,7 +30,11 @@
 #define PACKET_SIZE 4096 /* bytes */
 
 /* The number of packets used by one timeline stream. */
+#if (CONFIG_MALI_LOW_MEM == 1)
+#define PACKET_COUNT 2
+#else
 #define PACKET_COUNT 128
+#endif
 
 /* The maximum expected length of string in tracepoint descriptor. */
 #define STRLEN_MAX 64 /* bytes */
