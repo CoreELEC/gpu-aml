@@ -1491,7 +1491,7 @@ static phys_addr_t kbase_mmu_alloc_pgd(struct kbase_device *kbdev,
 
 	p = kbase_mem_pool_alloc(&kbdev->mem_pools.small[mmut->group_id]);
 	if (!p)
-		return KBASE_MMU_INVALID_PGD_ADDRESS;
+		return KBASE_INVALID_PHYSICAL_ADDRESS;
 
 	page = kbase_kmap(p);
 
@@ -1533,7 +1533,7 @@ static phys_addr_t kbase_mmu_alloc_pgd(struct kbase_device *kbdev,
 alloc_free:
 	kbase_mem_pool_free(&kbdev->mem_pools.small[mmut->group_id], p, false);
 
-	return KBASE_MMU_INVALID_PGD_ADDRESS;
+	return KBASE_INVALID_PHYSICAL_ADDRESS;
 }
 
 /**
@@ -1882,7 +1882,7 @@ static int update_parent_pgds(struct kbase_device *kbdev, struct kbase_mmu_table
 		struct page *parent_page = pfn_to_page(PFN_DOWN(parent_pgd));
 		u64 *parent_page_va;
 
-		if (WARN_ON_ONCE(target_pgd == KBASE_MMU_INVALID_PGD_ADDRESS)) {
+		if (WARN_ON_ONCE(target_pgd == KBASE_INVALID_PHYSICAL_ADDRESS)) {
 			err = -EFAULT;
 			goto failure_recovery;
 		}
@@ -1991,12 +1991,12 @@ static int mmu_insert_alloc_pgds(struct kbase_device *kbdev, struct kbase_mmu_ta
 
 	*pool_grown = false;
 	for (i = level_low; i <= level_high; i++) {
-		if (new_pgds[i] != KBASE_MMU_INVALID_PGD_ADDRESS)
+		if (new_pgds[i] != KBASE_INVALID_PHYSICAL_ADDRESS)
 			continue;
 
 		do {
 			new_pgds[i] = kbase_mmu_alloc_pgd(kbdev, mmut);
-			if (new_pgds[i] != KBASE_MMU_INVALID_PGD_ADDRESS)
+			if (new_pgds[i] != KBASE_INVALID_PHYSICAL_ADDRESS)
 				break;
 			mutex_unlock(&mmut->mmu_lock);
 			err = kbase_mem_pool_grow(&kbdev->mem_pools.small[mmut->group_id],
@@ -2079,7 +2079,7 @@ static int kbase_mmu_insert_single_page(struct kbase_context *kctx, u64 start_vp
 		insert_level = cur_level;
 
 		for (l = MIDGARD_MMU_TOPLEVEL + 1; l <= cur_level; l++)
-			new_pgds[l] = KBASE_MMU_INVALID_PGD_ADDRESS;
+			new_pgds[l] = KBASE_INVALID_PHYSICAL_ADDRESS;
 
 repeat_page_table_walk:
 		/*
@@ -2193,7 +2193,7 @@ repeat_page_table_walk:
 fail_unlock_free_pgds:
 	/* Free the pgds allocated by us from insert_level+1 to bottom level */
 	for (l = cur_level; l > insert_level; l--)
-		if (new_pgds[l] != KBASE_MMU_INVALID_PGD_ADDRESS)
+		if (new_pgds[l] != KBASE_INVALID_PHYSICAL_ADDRESS)
 			kbase_mmu_free_pgd(kbdev, mmut, new_pgds[l]);
 
 	if (insert_vpfn != start_vpfn) {
@@ -2304,7 +2304,7 @@ static void kbase_mmu_progress_migration_on_teardown(struct kbase_device *kbdev,
 					 * status will subsequently be freed in either
 					 * kbase_page_migrate() or kbase_page_putback()
 					 */
-					phys[i] = as_tagged(0);
+					phys[i] = as_tagged(KBASE_INVALID_PHYSICAL_ADDRESS);
 				} else
 					page_md->status = PAGE_STATUS_SET(page_md->status,
 									  (u8)FREE_IN_PROGRESS);
@@ -2385,7 +2385,7 @@ static int mmu_insert_pages_no_flush(struct kbase_device *kbdev, struct kbase_mm
 		insert_level = cur_level;
 
 		for (l = MIDGARD_MMU_TOPLEVEL + 1; l <= cur_level; l++)
-			new_pgds[l] = KBASE_MMU_INVALID_PGD_ADDRESS;
+			new_pgds[l] = KBASE_INVALID_PHYSICAL_ADDRESS;
 
 repeat_page_table_walk:
 		/*
@@ -2521,7 +2521,7 @@ repeat_page_table_walk:
 fail_unlock_free_pgds:
 	/* Free the pgds allocated by us from insert_level+1 to bottom level */
 	for (l = cur_level; l > insert_level; l--)
-		if (new_pgds[l] != KBASE_MMU_INVALID_PGD_ADDRESS)
+		if (new_pgds[l] != KBASE_INVALID_PHYSICAL_ADDRESS)
 			kbase_mmu_free_pgd(kbdev, mmut, new_pgds[l]);
 
 	if (insert_vpfn != start_vpfn) {
@@ -3739,13 +3739,13 @@ int kbase_mmu_init(struct kbase_device *const kbdev,
 	mmut->group_id = group_id;
 	mutex_init(&mmut->mmu_lock);
 	mmut->kctx = kctx;
-	mmut->pgd = KBASE_MMU_INVALID_PGD_ADDRESS;
+	mmut->pgd = KBASE_INVALID_PHYSICAL_ADDRESS;
 
 	/* We allocate pages into the kbdev memory pool, then
 	 * kbase_mmu_alloc_pgd will allocate out of that pool. This is done to
 	 * avoid allocations from the kernel happening with the lock held.
 	 */
-	while (mmut->pgd == KBASE_MMU_INVALID_PGD_ADDRESS) {
+	while (mmut->pgd == KBASE_INVALID_PHYSICAL_ADDRESS) {
 		int err;
 
 		err = kbase_mem_pool_grow(
@@ -3769,7 +3769,7 @@ void kbase_mmu_term(struct kbase_device *kbdev, struct kbase_mmu_table *mmut)
 	     "kctx-%d_%d must first be scheduled out to flush GPU caches+tlbs before tearing down MMU tables",
 	     mmut->kctx->tgid, mmut->kctx->id);
 
-	if (mmut->pgd != KBASE_MMU_INVALID_PGD_ADDRESS) {
+	if (mmut->pgd != KBASE_INVALID_PHYSICAL_ADDRESS) {
 		mutex_lock(&mmut->mmu_lock);
 		mmu_teardown_level(kbdev, mmut, mmut->pgd, MIDGARD_MMU_TOPLEVEL);
 		mutex_unlock(&mmut->mmu_lock);
