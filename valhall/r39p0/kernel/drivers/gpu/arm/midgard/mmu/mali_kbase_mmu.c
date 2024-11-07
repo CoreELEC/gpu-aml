@@ -1388,7 +1388,7 @@ static phys_addr_t kbase_mmu_alloc_pgd(struct kbase_device *kbdev,
 
 	p = kbase_mem_pool_alloc(&kbdev->mem_pools.small[mmut->group_id]);
 	if (!p)
-		return KBASE_MMU_INVALID_PGD_ADDRESS;
+		return KBASE_INVALID_PHYSICAL_ADDRESS;
 
 	page = kmap(p);
 	if (page == NULL)
@@ -1430,7 +1430,7 @@ static phys_addr_t kbase_mmu_alloc_pgd(struct kbase_device *kbdev,
 alloc_free:
 	kbase_mem_pool_free(&kbdev->mem_pools.small[mmut->group_id], p, false);
 
-	return KBASE_MMU_INVALID_PGD_ADDRESS;
+	return KBASE_INVALID_PHYSICAL_ADDRESS;
 }
 
 /* Given PGD PFN for level N, return PGD PFN for level N+1, allocating the
@@ -1468,7 +1468,7 @@ static int mmu_get_next_pgd(struct kbase_device *kbdev, struct kbase_mmu_table *
 		u64 managed_pte;
 
 		target_pgd = kbase_mmu_alloc_pgd(kbdev, mmut);
-		if (target_pgd == KBASE_MMU_INVALID_PGD_ADDRESS) {
+		if (target_pgd == KBASE_INVALID_PHYSICAL_ADDRESS) {
 			dev_dbg(kbdev->dev, "%s: kbase_mmu_alloc_pgd failure\n",
 					__func__);
 			kunmap(p);
@@ -2716,7 +2716,7 @@ int kbase_mmu_init(struct kbase_device *const kbdev,
 	mmut->group_id = group_id;
 	mutex_init(&mmut->mmu_lock);
 	mmut->kctx = kctx;
-	mmut->pgd = KBASE_MMU_INVALID_PGD_ADDRESS;
+	mmut->pgd = KBASE_INVALID_PHYSICAL_ADDRESS;
 
 	/* Preallocate MMU depth of 3 pages for mmu_teardown_level to use */
 	for (level = MIDGARD_MMU_TOPLEVEL;
@@ -2734,7 +2734,7 @@ int kbase_mmu_init(struct kbase_device *const kbdev,
 	 * kbase_mmu_alloc_pgd will allocate out of that pool. This is done to
 	 * avoid allocations from the kernel happening with the lock held.
 	 */
-	while (mmut->pgd == KBASE_MMU_INVALID_PGD_ADDRESS) {
+	while (mmut->pgd == KBASE_INVALID_PHYSICAL_ADDRESS) {
 		int err;
 
 		err = kbase_mem_pool_grow(
@@ -2757,7 +2757,7 @@ void kbase_mmu_term(struct kbase_device *kbdev, struct kbase_mmu_table *mmut)
 {
 	int level;
 
-	if (mmut->pgd != KBASE_MMU_INVALID_PGD_ADDRESS) {
+	if (mmut->pgd != KBASE_INVALID_PHYSICAL_ADDRESS) {
 		mutex_lock(&mmut->mmu_lock);
 		mmu_teardown_level(kbdev, mmut, mmut->pgd, MIDGARD_MMU_TOPLEVEL);
 		mutex_unlock(&mmut->mmu_lock);
