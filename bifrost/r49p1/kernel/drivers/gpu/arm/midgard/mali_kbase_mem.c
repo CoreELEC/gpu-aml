@@ -2086,8 +2086,10 @@ bool kbase_check_alloc_flags(unsigned long flags)
 	/* To have an allocation lie within a 4GB chunk is required only for
 	 * TLS memory, which will never be used to contain executable code.
 	 */
+#if IS_ENABLED(CONFIG_64BIT)
 	if ((flags & BASE_MEM_GPU_VA_SAME_4GB_PAGE) && (flags & BASE_MEM_PROT_GPU_EX))
 		return false;
+#endif
 
 #if !MALI_USE_CSF
 	/* TLS memory should also not be used for tiler heap */
