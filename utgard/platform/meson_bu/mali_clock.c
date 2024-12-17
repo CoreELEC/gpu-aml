@@ -54,7 +54,7 @@ MODULE_PARM_DESC(gpu_dbg_level, "gpu debug level");
 static mali_plat_info_t* pmali_plat = NULL;
 //static u32 mali_extr_backup = 0;
 //static u32 mali_extr_sample_backup = 0;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 struct timespec64 start;
 struct timespec64 end;
 #else
@@ -153,13 +153,13 @@ static int critical_clock_set(size_t param)
 	ret = clk_prepare_enable(clk_mali_x);
 #endif
 	GPU_CLK_DBG("new %s:enable(%d)\n", clk_mali_x->name,  clk_mali_x->enable_count);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	ktime_get_real_ts64(&start);
 #else
 	do_gettimeofday(&start);
 #endif
 	udelay(1);// delay 10ns
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	ktime_get_real_ts64(&end);
 #else
 	do_gettimeofday(&end);
@@ -171,7 +171,7 @@ static int critical_clock_set(size_t param)
 	clk_disable_unprepare(clk_mali_x_old);
 #endif
 	GPU_CLK_DBG("old %s:enable(%d)\n", clk_mali_x_old->name,  clk_mali_x_old->enable_count);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	time_use = (end.tv_sec - start.tv_sec)*1000000 + div64_u64(end.tv_nsec - start.tv_nsec, 1000);
 #else
 	time_use = (end.tv_sec - start.tv_sec)*1000000 + end.tv_usec - start.tv_usec;
@@ -455,13 +455,13 @@ static int critical_clock_set(size_t param)
 
 
 	GPU_CLK_DBG();
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	ktime_get_real_ts64(&start);
 #else
 	do_gettimeofday(&start);
 #endif
 	ret = clk_set_rate(clk_mali, dvfs_tbl->clk_freq);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	ktime_get_real_ts64(&end);
 #else
 	do_gettimeofday(&end);
@@ -471,7 +471,7 @@ static int critical_clock_set(size_t param)
 #ifndef AML_CLK_LOCK_ERROR
 	clk_disable_unprepare(clk_mali_x_old);
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	time_use = (end.tv_sec - start.tv_sec)*1000000 + div64_u64(end.tv_nsec - start.tv_nsec, 1000);
 #else
 	time_use = (end.tv_sec - start.tv_sec)*1000000 + end.tv_usec - start.tv_usec;

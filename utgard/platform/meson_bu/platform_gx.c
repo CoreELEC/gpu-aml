@@ -42,7 +42,7 @@
 #include <linux/amlogic/gpu_cooling.h>
 #include <linux/amlogic/gpucore_cooling.h>
 #ifdef CONFIG_DEVFREQ_THERMAL
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 #include <linux/amlogic/meson_cooldev.h>
 #else
 #include <linux/amlogic/aml_thermal_hw.h>
@@ -385,7 +385,7 @@ void mali_post_init(void)
 #endif
         err = gpufreq_cooling_register(gcdev);
 #if defined(CONFIG_AMLOGIC_GPU_THERMAL) || defined(CONFIG_GPU_THERMAL)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
         meson_gcooldev_min_update(gcdev->cool_dev);
 #else
         aml_thermal_min_update(gcdev->cool_dev);
@@ -406,7 +406,7 @@ void mali_post_init(void)
         gccdev->set_max_pp_num=set_limit_pp_num;
         err = (int)gpucore_cooling_register(gccdev);
 #ifdef CONFIG_DEVFREQ_THERMAL
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
         meson_gcooldev_min_update(gccdev->cool_dev);
 #else
         aml_thermal_min_update(gccdev->cool_dev);
