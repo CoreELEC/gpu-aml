@@ -369,6 +369,7 @@ static ssize_t mpgpu_set_err_count(struct class *class,
 		return -EINVAL;
 
 	meson_gpu_fault = val;
+	meson_gpu_data_invalid_count = val;
 
 	return count;
 }
