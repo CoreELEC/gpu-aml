@@ -641,11 +641,20 @@ static __poll_t reader_poll(struct file *const file, struct poll_table_struct *c
 }
 
 /* The file operations virtual function table */
+#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
 static const struct file_operations file_operations = { .owner = THIS_MODULE,
 							.llseek = no_llseek,
 							.read = reader_read,
 							.poll = reader_poll,
 							.release = reader_release };
+#else
+/* no_llseek is instead of noop_llseek since kernel6.12 */
+static const struct file_operations file_operations = { .owner = THIS_MODULE,
+							.llseek = noop_llseek,
+							.read = reader_read,
+							.poll = reader_poll,
+							.release = reader_release };
+#endif
 
 /* The maximum amount of readers that can be created on a context. */
 static const size_t kbase_kinstr_jm_readers_max = 16;
