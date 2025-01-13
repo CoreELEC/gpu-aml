@@ -1,5 +1,5 @@
 load("//build/kernel/kleaf:kernel.bzl", "kernel_module")
-load("//common:common_drivers/project/project.bzl", "GPU_TYPE")
+load(":gpu.bzl", "GPU_TYPE")
 
 kernel_module(
     name = "gpu",
