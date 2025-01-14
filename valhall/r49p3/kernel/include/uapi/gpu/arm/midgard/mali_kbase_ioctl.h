@@ -642,6 +642,7 @@ union kbase_ioctl_kinstr_prfcnt_setup {
 #define KBASE_IOCTL_KINSTR_PRFCNT_SETUP \
 	_IOWR(KBASE_IOCTL_TYPE, 57, union kbase_ioctl_kinstr_prfcnt_setup)
 
+
 /***************
  * test ioctls *
  ***************/
@@ -652,6 +653,8 @@ union kbase_ioctl_kinstr_prfcnt_setup {
 
 #define KBASE_IOCTL_TEST_TYPE (KBASE_IOCTL_TYPE + 1)
 
+#define KBASE_IOCTL_STICKY_RESOURCE_MAP_AML \
+        _IOW(KBASE_IOCTL_EXTRA_TYPE, 0, struct kbase_ioctl_sticky_resource_map)
 
 /**
  * struct kbase_ioctl_tlstream_stats - Read tlstream stats for test purposes

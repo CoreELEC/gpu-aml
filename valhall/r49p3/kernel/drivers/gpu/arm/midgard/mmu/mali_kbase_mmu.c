@@ -2813,7 +2813,15 @@ repeat_page_table_walk:
 					 * should be performed with
 					 * kbase_mmu_update_pages()
 					 */
-					WARN_ON_ONCE((*target & 1UL) != 0);
+					WARN_ONCE((*target & 1UL) != 0,
+						  "vindex=0x%x, count=%d, pgd=0x%pa, "
+						  "insert_vpfn=0x%llx, start_vpfn=0x%llx, "
+						  "nr=%d, remain=%d, group_id=%d, "
+						  "is_huge_head(*phys)=%d\n",
+						  vindex, count, &pgd,
+						  insert_vpfn, start_vpfn,
+						  (u32)nr, (u32)remain, group_id,
+						  is_huge_head(*phys));
 
 					*target = kbase_mmu_create_ate(kbdev,
 								       as_tagged(page_address),
@@ -3279,8 +3287,8 @@ static int kbase_mmu_teardown_pgd_pages(struct kbase_device *kbdev, struct kbase
 			if (mmu_mode->ate_is_valid(page[index], level))
 				break; /* keep the mapping */
 			else if (!mmu_mode->pte_is_valid(page[index], level)) {
-				dev_warn(kbdev->dev, "Invalid PTE found @ level %d for VA %llx",
-					 level, vpfn << PAGE_SHIFT);
+				//dev_warn(kbdev->dev, "Invalid PTE found @ level %d for VA %llx",
+				//	 level, vpfn << PAGE_SHIFT);
 				/* nothing here, advance to the next PTE of the current level */
 				count = (1 << ((3 - level) * 9));
 				count -= (vpfn & (count - 1));

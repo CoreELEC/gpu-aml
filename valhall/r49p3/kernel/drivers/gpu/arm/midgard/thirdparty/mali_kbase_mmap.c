@@ -514,6 +514,7 @@ unsigned long kbase_context_get_unmapped_area(struct kbase_context *const kctx,
 #else
 		ret = mm->get_unmapped_area(kctx->filp, addr, len, pgoff, flags);
 #endif
+		return ret;
 	}
 
 	info.flags = 0;
