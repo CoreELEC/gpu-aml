@@ -316,7 +316,11 @@ int mali_core_scaling_init(mali_plat_info_t *mali_plat)
 void mali_core_scaling_term(void)
 {
 #ifndef CONFIG_MALI_DEVFREQ
+#if KERNEL_VERSION(6, 6, 0) > LINUX_VERSION_CODE
 	flush_scheduled_work();
+#else
+	flush_work(&wq_work);
+#endif
 #if AMLOGIC_GPU_USE_GPPLL
 	gp_pll_user_unregister(gp_pll_user_gpu);
 #endif
