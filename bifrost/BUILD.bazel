@@ -1,4 +1,6 @@
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_module")
 load("//build/kernel/kleaf:kernel.bzl", "kernel_module")
+load("//common_drivers/project/kernel:kernel_select.bzl", "kernel_select")
 
 kernel_module(
     name = "gpu",
@@ -14,9 +16,396 @@ kernel_module(
     outs = [
         "mali_kbase.ko",
     ],
-    kernel_build = select({
-        "//common:common_drivers_on_top_dir": "//common_drivers:amlogic",
-        "//conditions:default": "//common:amlogic",
-    }),
+    kernel_build = kernel_select(),
     visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "config_mali_midgard",
+    values = {"define": "CONFIG_MALI_MIDGARD=y"},
+)
+
+config_setting(
+    name = "config_debug_fs",
+    values = {"define": "CONFIG_DEBUG_FS=1"},
+)
+
+config_setting(
+    name = "config_mali_cinstr_gwt",
+    values = {"define": "CONFIG_MALI_CINSTR_GWT=y"},
+)
+
+config_setting(
+    name = "config_sync_file",
+    values = {"define": "CONFIG_SYNC_FILE=y"},
+)
+
+config_setting(
+    name = "config_mali_trace_power_gpu_work_period",
+    values = {"define": "CONFIG_MALI_TRACE_POWER_GPU_WORK_PERIOD=y"},
+)
+
+config_setting(
+    name = "config_mali_csf_support",
+    values = {"define": "CONFIG_MALI_CSF_SUPPORT=y"},
+)
+
+config_setting(
+    name = "config_mali_arbiter_support",
+    values = {"define": "CONFIG_MALI_ARBITER_SUPPORT=y"},
+)
+
+config_setting(
+    name = "config_mali_devfreq",
+    values = {"define": "CONFIG_MALI_DEVFREQ=y"},
+)
+
+config_setting(
+    name = "config_devfreq_thermal",
+    values = {"define": "CONFIG_DEVFREQ_THERMAL=y"},
+)
+
+config_setting(
+    name = "config_mali_no_mali",
+    values = {"define": "CONFIG_MALI_NO_MALI=y"},
+)
+
+config_setting(
+    name = "config_mali_real_hw",
+    values = {"define": "CONFIG_MALI_REAL_HW=y"},
+)
+
+config_setting(
+    name = "config_am_video",
+    values = {"define":"CONFIG_AM_VIDEO=1"},
+)
+
+# 基础源文件
+MALI_BASE_SRCS = [
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_cache_policy.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_ccswe.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_reg_track.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_migrate.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_pool_group.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_native_mgm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_ctx_sched.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_gpuprops.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_pm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_config.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_kinstr_prfcnt.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_softjobs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_hw.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_gpu_memory_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_linux.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_core_linux.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_profile_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_disjoint_events.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug_mem_view.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug_mem_zones.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug_mem_allocs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_smc.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_pool.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_mem_pool_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debugfs_helper.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_as_fault_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_regs_history_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_dvfs_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_power_gpu_frequency_trace.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_trace_gpu_mem.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_pbha.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/mali_kbase_mmu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/mali_kbase_mmu_hw_direct.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/mali_kbase_mmu_faults_decoder_luts.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/mali_kbase_mmu_faults_decoder.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/mali_kbase_mmu_mode_aarch64.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/mali_kbase_timeline.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/mali_kbase_timeline_io.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/mali_kbase_tlstream.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/mali_kbase_tracepoints.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/context/mali_kbase_context.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_cache_policy_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_gpuprops_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_irq_linux.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_driver.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_metrics.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_ca.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_always_on.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_coarse_demand.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_pm_policy.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_time.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_l2_mmu_config.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_clk_rate_trace_mgr.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/mali_kbase_hwcnt.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/mali_kbase_hwcnt_gpu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/mali_kbase_hwcnt_types.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/mali_kbase_hwcnt_virtualizer.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/mali_kbase_hwcnt_watchdog_if_timer.c",
+	"r49p1/kernel/drivers/gpu/arm/midgard/device/mali_kbase_device.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/mali_kbase_device_hw.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hw_access/mali_kbase_hw_access.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/debug/mali_kbase_debug_ktrace.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/gpu/mali_kbase_gpu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/thirdparty/mali_kbase_mmap.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/mali_kbase_config_devicetree.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/mali_kbase_runtime_pm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/mali_clock.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/mpgpu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/meson_main2.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/platform_gx.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/scaling.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/mali_kbase_clk_rate_trace.c",
+]
+
+MALI_BASE_HDRS = glob([
+    "r49p1/kernel/drivers/gpu/arm/midgard/*.h",                    # 当前目录的头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/include/**/*.h",         # include 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/internal/**/*.h",        # internal 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/**/*.h",         # backend 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree/*.h",        # platform 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/debug/**/*.h",          # debug 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/**/*.h",         # device 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/gpu/**/*.h",            # gpu 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/**/*.h",             # tl 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/**/*.h",            # mmu 目录下的所有头文件
+    "r49p1/kernel/drivers/gpu/arm/midgard/hw_access/**/*.h",      # hw_access 目录下的所有头文件
+    "r49p1/kernel/include/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/jm/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/context/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/ipa/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/thirdparty/**/*.h",
+    "r49p1/kernel/drivers/gpu/arm/midgard/arbiter/**/*.h",
+])
+
+
+CSF_FILES = [
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_faults_decoder_luts_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/context/backend/mali_kbase_context_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_util.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_firmware_cfg.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_trace_buffer.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_scheduler.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_kcpu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_tiler_heap.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_timeout.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_tl_reader.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_heap_context_alloc.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_reset_gpu.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_csg.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_csg_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_kcpu_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_sync.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_sync_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_kcpu_fence_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_protected_memory.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_tiler_heap_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_cpu_queue.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_cpu_queue_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_event.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_firmware_log.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_firmware_core_dump.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_tiler_heap_reclaim.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/mali_kbase_csf_mcu_shared_reg.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/debug/backend/mali_kbase_debug_ktrace_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/gpu/backend/mali_kbase_gpu_fault_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hw_access/regmap/mali_kbase_regmap_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_csf_if_fw.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/backend/mali_kbase_timeline_csf.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/csf/**/*.h",
+]
+
+# 非 CSF 支持时的文件
+NON_CSF_FILES = [
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_dummy_job_wa.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug_job_fault.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_event.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jd.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jd_debugfs.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_js.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_js_ctx_attr.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_kinstr_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_faults_decoder_luts_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_instr_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_as.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_debug_job_fault_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_rb.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_js_backend.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/context/backend/mali_kbase_context_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/debug/backend/mali_kbase_debug_ktrace_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/gpu/backend/mali_kbase_gpu_fault_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hw_access/regmap/mali_kbase_regmap_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_jm.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_jm_watchdog.c",
+    "r49p1/kernel/drivers/gpu/arm/midgard/tl/backend/mali_kbase_timeline_jm.c",
+]
+
+ddk_module(
+    name = "gpu_ddk",
+    srcs = MALI_BASE_SRCS + MALI_BASE_HDRS,
+	conditional_srcs = {
+		"CONFIG_DEBUG_FS": {
+			True: [ "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_pbha_debugfs.c",],
+		},
+		"CONFIG_MALI_CINSTR_GWT": {
+			False: [ "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_gwt.c",],
+		},
+		"CONFIG_SYNC_FILE": {
+			True: [ "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_fence_ops.c",
+				    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_sync_file.c",
+				    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_sync_common.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_fence.c",],
+		},
+		"CONFIG_MALI_TRACE_POWER_GPU_WORK_PERIOD": {
+			True: [ "r49p1/kernel/drivers/gpu/arm/midgard/mali_power_gpu_work_period_trace.c",
+				    "r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_gpu_metrics.c",],
+		},
+		#"CONFIG_MALI_ARBITER_SUPPORT": {
+		#	True: [ "r49p1/kernel/drivers/gpu/arm/midgard/arbiter/mali_kbase_arbif.c",
+		#		    "r49p1/kernel/drivers/gpu/arm/midgard/arbiter/mali_kbase_arbiter_pm.c",],
+		#},
+		#"CONFIG_MALI_DEVFREQ": {
+		#	True: [ "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_devfreq.c"],
+		#},
+		"CONFIG_MALI_NO_MALI": {
+			True: [ "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_model_linux.c",
+				    "r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_model_dummy.c",],
+		},
+		"CONFIG_MALI_REAL_HW": {
+			True: [ "r49p1/kernel/drivers/gpu/arm/midgard/hw_access/backend/mali_kbase_hw_access_real_hw.c",],
+		},
+		"CONFIG_MALI_CSF_SUPPORT": {
+			False: ["r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_dummy_job_wa.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_debug_job_fault.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_event.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jd.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_jd_debugfs.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_js.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_js_ctx_attr.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mali_kbase_kinstr_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/mmu/backend/mali_kbase_mmu_faults_decoder_luts_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_instr_backend.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_as.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_debug_job_fault_backend.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_hw.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_jm_rb.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu/mali_kbase_js_backend.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/device/backend/mali_kbase_device_hw_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/context/backend/mali_kbase_context_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/debug/backend/mali_kbase_debug_ktrace_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/gpu/backend/mali_kbase_gpu_fault_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/hw_access/regmap/mali_kbase_regmap_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_jm.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/hwcnt/backend/mali_kbase_hwcnt_backend_jm_watchdog.c",
+					"r49p1/kernel/drivers/gpu/arm/midgard/tl/backend/mali_kbase_timeline_jm.c", ]
+		},
+	},
+    hdrs = [
+    ],
+    local_defines = ["pr_fmt(fmt)=\"[mali_kbase]: \" fmt",
+					"CONFIG_MALI_MIDGARD=m",
+					"CONFIG_MALI_PLATFORM_DEVICETREE=1",
+					"CONFIG_MALI_MIDGARD_DVFS=1",
+					"CONFIG_MALI_BACKEND=\\\"gpu\\\"",
+					"CONFIG_MALI_GATOR_SUPPORT=1",
+					"CONFIG_LARGE_PAGE_SUPPORT=0",
+					"CONFIG_MALI_REAL_HW=1",
+					"CONFIG_MALI_TRACE_POWER_GPU_WORK_PERIOD=1",
+					"CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND=1",
+					"CONFIG_MALI_DMA_BUF_LEGACY_COMPAT=0",
+					"CONFIG_MALI_LOW_MEM=0",
+					"MALI_RELEASE_NAME=\\\"r49p1-02bet0\\\"",
+					"AMLOGIC_GPU_USE_GPPLL=0",
+					"CONFIG_MALI_DEBUG=0",
+					"MALI_UNIT_TEST=0",
+					"MALI_CUSTOMER_RELEASE=1",
+					"MALI_COVERAGE = 0",
+					"CONFIG_MALI_CSF_SUPPORT=0",
+					"MALI_USE_CSF=0",
+					"MALI_JIT_PRESSURE_LIMIT_BASE=1",
+					"MALI_KERNEL_TEST_API=1",
+					"CONFIG_MALI_KUTF=0",
+					"CONFIG_MALI_ARBITRATION=0",
+					"CONFIG_MALI_PARTITION_MANAGER=0",
+					"CONFIG_MALI_NO_MALI=0",
+					#"CONFIG_MALI_DEVFREQ=0",
+					"CONFIG_PAGE_MIGRATION_SUPPORT=0",
+					"CONFIG_MALI_CORESTACK=0",
+					"CONFIG_MALI_PWRSOFT_765=0",
+					"CONFIG_MALI_JOB_DUMP=0",
+					"CONFIG_MALI_HW_ERRATA_1485982_NOT_AFFECTED=0",
+					"CONFIG_MALI_HW_ERRATA_1485982_USE_CLOCK_ALTERNATIVE=0",
+					"CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS=0",
+					"CONFIG_MALI_MIDGARD_ENABLE_TRACE=0",
+					"CONFIG_MALI_FENCE_DEBUG=0",
+					"CONFIG_MALI_SYSTEM_TRACE=0",
+					"CONFIG_MALI_KUTF_IRQ_TEST=0",
+					"CONFIG_MALI_KUTF_CLK_RATE_TRACE=0",
+					"CONFIG_MALI_KUTF_MGM_INTEGRATION_TEST=0",
+					"CONFIG_DEVFREQ_THERMAL=1",
+					#"CONFIG_MALI_ARBITER_SUPPORT=0",
+					"CONFIG_MALI_CORESIGHT=0",
+					"CONFIG_MALI_IS_FPGA=0",
+					"CONFIG_MALI_NO_MALI_DEFAULT_GPU=\\\"tMIx\\\"",
+					"CONFIG_GPU_HWVER=\\\"r1p0\\\"",
+					"CONFIG_MALI_PRFCNT_SET_TERTIARY=0",
+					"CONFIG_MALI_PRFCNT_SET_SECONDARY=0",
+					"CONFIG_MALI_PRFCNT_SET_PRIMARY=0",
+					"CONFIG_MALI_CINSTR_GWT=0",
+					"CONFIG_MALI_VECTOR_DUMP=0",
+	],
+	copts = [
+		"-Wno-sometimes-uninitialized",
+		"-Wno-uninitialized",
+		"-Wno-format",
+		"-Wno-incompatible-pointer-types",
+		"-Wno-strict-prototypes",
+		"-Wno-macro-redefined",
+		"-Wno-unused-variable",
+		"-Wno-int-to-pointer-cast",
+		"-Wno-implicit-fallthrough",
+		"-Wno-switch",
+		"-Wno-parentheses",
+		"-Wno-unused-label",
+		"-Wno-implicit-function-declaration",
+		"-Wno-attribute-warning",
+		"-Wno-pointer-type-mismatch",
+		"-Wno-unused-function",
+		"-Wno-shift-count-overflow",
+		"-Wno-return-type",
+		"-Wno-frame-larger-than",
+		"-Wno-excess-initializers",
+		"-Wno-self-assign",
+	],
+    out = "mali_kbase.ko",
+    defconfig  = "defconfig",
+    kconfig = "r49p1/kernel/drivers/gpu/arm/midgard/Mconfig",
+    kernel_build = "//common_drivers:amlogic",
+    visibility = ["//visibility:public"],
+    deps = [
+	"//common_drivers/drivers/thermal:amlogic-thermal",
+	"//common_drivers/drivers/clk/meson:amlogic-clk",
+    ],
+	linux_includes = [
+		".",
+		"r49p1/kernel/drivers/gpu/arm/midgard/backend/gpu",
+		"r49p1/kernel/include",
+		"r49p1/kernel/drivers/gpu/arm/midgard",
+		"r49p1/kernel/drivers/gpu/arm/midgard/platform/devicetree",
+    ],
 )

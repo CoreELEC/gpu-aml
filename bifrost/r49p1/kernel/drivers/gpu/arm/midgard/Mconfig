@@ -82,16 +82,16 @@ config MALI_CSF_SUPPORT
 	help
 	  Enables support for CSF based GPUs.
 
-config MALI_DEVFREQ
-	bool "Enable devfreq support for Mali"
-	depends on MALI_MIDGARD
-	default y
-	help
-	  Support devfreq for Mali.
+#config MALI_DEVFREQ
+#	bool "Enable devfreq support for Mali"
+#	depends on MALI_MIDGARD
+#	default y
+#	help
+#	  Support devfreq for Mali.
 
-	  Using the devfreq framework and, by default, the simple on-demand
-	  governor, the frequency of Mali will be dynamically selected from the
-	  available OPPs.
+#	  Using the devfreq framework and, by default, the simple on-demand
+#	  governor, the frequency of Mali will be dynamically selected from the
+#	  available OPPs.
 
 config MALI_MIDGARD_DVFS
 	bool "Enable legacy DVFS"
@@ -360,5 +360,5 @@ config MALI_FW_TRACE_MODE_AUTO_DISCARD
 
 endchoice
 
-source "kernel/drivers/gpu/arm/arbitration/Mconfig"
-source "kernel/drivers/gpu/arm/midgard/tests/Mconfig"
+#source "kernel/drivers/gpu/arm/arbitration/Mconfig"
+#source "kernel/drivers/gpu/arm/midgard/tests/Mconfig"
