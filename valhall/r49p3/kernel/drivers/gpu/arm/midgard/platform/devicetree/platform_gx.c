@@ -30,8 +30,6 @@
 #include <asm/io.h>
 #ifdef CONFIG_AMLOGIC_GPU_THERMAL
 #include <linux/amlogic/gpu_cooling.h>
-#include <linux/amlogic/gpucore_cooling.h>
-//#include <linux/amlogic/aml_thermal_hw.h>
 #include <linux/amlogic/meson_cooldev.h>
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
@@ -306,26 +304,6 @@ static u32 get_mali_utilization(void)
 #endif
 
 #ifdef CONFIG_AMLOGIC_GPU_THERMAL
-static u32 set_limit_pp_num(u32 num)
-{
-    u32 ret = -1;
-    if (mali_plat_data.limit_on == 0)
-        goto quit;
-    if (num > mali_plat_data.cfg_pp ||
-            num < mali_plat_data.scale_info.minpp)
-        goto quit;
-
-    if (num > mali_plat_data.maxpp_sysfs) {
-        printk("pp > sysfs set pp\n");
-        goto quit;
-    }
-
-    mali_plat_data.scale_info.maxpp = num;
-    revise_mali_rt();
-    ret = 0;
-quit:
-    return ret;
-}
 #ifdef CONFIG_DEVFREQ_THERMAL
 extern u64 kbase_pm_get_ready_cores(struct kbase_device *kbdev, enum kbase_pm_core_type type);
 static u32 mali_get_online_pp(void)
@@ -400,7 +378,6 @@ void mali_post_init(void)
 #ifdef CONFIG_AMLOGIC_GPU_THERMAL
     int err;
     struct gpufreq_cooling_device *gcdev = NULL;
-    struct gpucore_cooling_device *gccdev = NULL;
 
     gcdev = gpufreq_cooling_alloc();
     register_gpu_freq_info(get_current_frequency);
@@ -425,24 +402,7 @@ void mali_post_init(void)
             printk("register GPU  cooling error\n");
 #ifdef CONFIG_DEVFREQ_THERMAL
         else
-            meson_gcooldev_min_update(gcdev->cool_dev);
-#endif
-    }
-
-    gccdev = gpucore_cooling_alloc();
-    if (IS_ERR(gccdev))
-        printk("malloc gpu core cooling buffer error!!\n");
-    else if (!gccdev)
-        printk("system does not enable thermal driver\n");
-    else {
-        gccdev->max_gpu_core_num = mali_plat_data.cfg_pp;
-        gccdev->set_max_pp_num = set_limit_pp_num;
-        err = (int)gpucore_cooling_register(gccdev);
-        if (err < 0)
-            printk("register GPU  cooling error\n");
-#ifdef CONFIG_DEVFREQ_THERMAL
-        else
-            meson_gcooldev_min_update(gccdev->cool_dev);
+            return;
 #endif
     }
 #endif
