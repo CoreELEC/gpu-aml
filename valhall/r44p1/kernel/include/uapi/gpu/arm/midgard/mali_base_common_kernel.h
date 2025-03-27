@@ -27,6 +27,7 @@
 struct base_mem_handle {
 	struct {
 		__u64 handle;
+		__u64 flags;/* flag for uvm realloc */
 	} basep;
 };
 
