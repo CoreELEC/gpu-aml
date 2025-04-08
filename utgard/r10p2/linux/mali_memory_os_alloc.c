@@ -48,7 +48,11 @@ static unsigned long mali_mem_os_shrink_count(struct shrinker *shrinker, struct 
 #endif
 #endif
 static void mali_mem_os_trim_pool(struct work_struct *work);
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 extern void show_mem(unsigned int flags, nodemask_t *nodemask);
+#else
+extern void show_mem(void);
+#endif
 
 struct mali_mem_os_allocator mali_mem_os_allocator = {
 	.pool_lock = __SPIN_LOCK_UNLOCKED(pool_lock),
@@ -791,8 +795,11 @@ _mali_osk_errcode_t mali_mem_os_init(void)
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &dma_attrs_wc);
 #endif
-
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 	register_shrinker(&mali_mem_os_allocator.shrinker);
+#else
+	shrinker_register(&mali_mem_os_allocator.shrinker);
+#endif
 
 	return _MALI_OSK_ERR_OK;
 }
@@ -800,7 +807,11 @@ _mali_osk_errcode_t mali_mem_os_init(void)
 void mali_mem_os_term(void)
 {
 	struct mali_page_node *m_page, *m_tmp;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 	unregister_shrinker(&mali_mem_os_allocator.shrinker);
+#else
+	shrinker_free(&mali_mem_os_allocator.shrinker);
+#endif
 	cancel_delayed_work_sync(&mali_mem_os_allocator.timed_shrinker);
 
 	if (NULL != mali_mem_os_allocator.wq) {

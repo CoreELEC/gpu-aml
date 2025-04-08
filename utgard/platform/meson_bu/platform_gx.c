@@ -40,7 +40,9 @@
 #endif
 #ifdef CONFIG_AMLOGIC_GPU_THERMAL
 #include <linux/amlogic/gpu_cooling.h>
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 #include <linux/amlogic/gpucore_cooling.h>
+#endif
 #ifdef CONFIG_DEVFREQ_THERMAL
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 #include <linux/amlogic/meson_cooldev.h>
@@ -159,6 +161,7 @@ static u32 get_mali_utilization(void)
 #endif
 
 #if defined(CONFIG_AMLOGIC_GPU_THERMAL) || defined(CONFIG_GPU_THERMAL)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static u32 set_limit_pp_num(u32 num)
 {
     u32 ret = -1;
@@ -179,6 +182,7 @@ static u32 set_limit_pp_num(u32 num)
 quit:
     return ret;
 }
+#endif
 #ifdef CONFIG_DEVFREQ_THERMAL
 static u32 mali_get_online_pp(void)
 {
@@ -365,7 +369,9 @@ void mali_post_init(void)
 #if defined(CONFIG_AMLOGIC_GPU_THERMAL) || defined(CONFIG_GPU_THERMAL)
     int err;
     struct gpufreq_cooling_device *gcdev = NULL;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
     struct gpucore_cooling_device *gccdev = NULL;
+#endif
 
     gcdev = gpufreq_cooling_alloc();
     register_gpu_freq_info(get_current_frequency);
@@ -384,6 +390,7 @@ void mali_post_init(void)
         gcdev->get_online_pp = mali_get_online_pp;
 #endif
         err = gpufreq_cooling_register(gcdev);
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 #if defined(CONFIG_AMLOGIC_GPU_THERMAL) || defined(CONFIG_GPU_THERMAL)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
         meson_gcooldev_min_update(gcdev->cool_dev);
@@ -391,11 +398,12 @@ void mali_post_init(void)
         aml_thermal_min_update(gcdev->cool_dev);
 #endif
 #endif
+#endif
         if (err < 0)
             printk("register GPU  cooling error\n");
         printk("gpu cooling register okay with err=%d\n",err);
     }
-
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
     gccdev = gpucore_cooling_alloc();
     if (IS_ERR(gccdev))
         printk("malloc gpu core cooling buffer error!!\n");
@@ -416,5 +424,6 @@ void mali_post_init(void)
             printk("register GPU  cooling error\n");
         printk("gpu core cooling register okay with err=%d\n",err);
     }
+#endif
 #endif
 }

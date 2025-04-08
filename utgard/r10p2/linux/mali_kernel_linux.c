@@ -186,7 +186,11 @@ static int mali_release(struct inode *inode, struct file *filp);
 static long mali_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 
 static int mali_probe(struct platform_device *pdev);
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static int mali_remove(struct platform_device *pdev);
+#else
+static void mali_remove(struct platform_device *pdev);
+#endif
 static void mali_shutdown(struct platform_device *pdev);
 
 static int mali_driver_suspend_scheduler(struct device *dev);
@@ -644,7 +648,11 @@ clock_prepare_failed:
 	return -EFAULT;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static int mali_remove(struct platform_device *pdev)
+#else
+static void mali_remove(struct platform_device *pdev)
+#endif
 {
 #ifdef CONFIG_MALI_DEVFREQ
 	struct mali_device *mdev = dev_get_drvdata(&pdev->dev);
@@ -682,7 +690,9 @@ static int mali_remove(struct platform_device *pdev)
 	mali_platform_device_deinit(mali_platform_device);
 #endif
 	mali_platform_device = NULL;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 	return 0;
+#endif
 }
 
 static void mali_shutdown(struct platform_device *pdev)

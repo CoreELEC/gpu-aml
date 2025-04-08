@@ -315,7 +315,11 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	}
 	clk_item = mpdata->clk_items;
 //
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 	of_property_for_each_u32(gpu_dn, "tbl", prop, p, u) {
+#else
+	of_property_for_each_u32(gpu_dn, "tbl", u) {
+#endif
 		dvfs_clk_hdl = (phandle) u;
 		gpu_clk_dn = of_find_node_by_phandle(dvfs_clk_hdl);
 		ret = of_property_read_u32(gpu_clk_dn,"clk_freq", &dvfs_tbl->clk_freq);
@@ -608,7 +612,11 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	}
 	clk_item = mpdata->clk_items;
 //
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 	of_property_for_each_u32(gpu_dn, "tbl", prop, p, u) {
+#else
+	of_property_for_each_u32(gpu_dn, "tbl", u) {
+#endif
 		dvfs_clk_hdl = (phandle) u;
 		gpu_clk_dn = of_find_node_by_phandle(dvfs_clk_hdl);
 		ret = of_property_read_u32(gpu_clk_dn,"clk_freq", &dvfs_tbl->clk_freq);

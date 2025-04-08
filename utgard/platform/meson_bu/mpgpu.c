@@ -42,8 +42,13 @@
 extern int mali_l2_max_reads;
 
 #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t domain_stat_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t domain_stat_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	unsigned int val;
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
@@ -62,8 +67,13 @@ static ssize_t domain_stat_read(struct class *class,
 #define MAX_TOKEN 20
 #define FULL_UTILIZATION 256
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t mpgpu_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t mpgpu_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	char *pstart, *cprt = NULL;
 	u32 val = 0;
@@ -126,14 +136,24 @@ quit:
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t scale_mode_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t scale_mode_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	return sprintf(buf, "%d\n", get_mali_schel_mode());
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t scale_mode_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t scale_mode_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -149,8 +169,13 @@ static ssize_t scale_mode_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t max_pp_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t max_pp_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	printk("maxpp:%d, maxpp_sysfs:%d, total=%d\n",
@@ -159,8 +184,13 @@ static ssize_t max_pp_read(struct class *class,
 	return sprintf(buf, "%d\n", pmali_plat->cfg_pp);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t max_pp_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t max_pp_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -181,15 +211,25 @@ static ssize_t max_pp_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t min_pp_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t min_pp_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	return sprintf(buf, "%d\n", pmali_plat->scale_info.minpp);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t min_pp_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t min_pp_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -209,8 +249,13 @@ static ssize_t min_pp_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t thermal_max_freq_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t thermal_max_freq_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	u32 idx = pmali_plat->scale_info.maxclk;
@@ -219,8 +264,13 @@ static ssize_t thermal_max_freq_read(struct class *class,
 	return sprintf(buf, "%d\n", pmali_plat->clk_sample[idx]);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t max_freq_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t max_freq_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	printk("maxclk:%d, maxclk_sys:%d, max gpu level=%d\n",
@@ -228,8 +278,13 @@ static ssize_t max_freq_read(struct class *class,
 	return sprintf(buf, "%d\n", get_gpu_max_clk_level());
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t max_freq_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t max_freq_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -250,15 +305,25 @@ static ssize_t max_freq_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t min_freq_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t min_freq_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	return sprintf(buf, "%d\n", pmali_plat->scale_info.minclk);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t min_freq_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t min_freq_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -278,14 +343,24 @@ static ssize_t min_freq_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t freq_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t freq_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	return sprintf(buf, "%d\n", get_current_frequency());
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
 static ssize_t freq_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t freq_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -301,16 +376,26 @@ static ssize_t freq_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t current_pp_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t current_pp_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	u32 clk, pp;
 	get_mali_rt_clkpp(&clk, &pp);
 	return sprintf(buf, "%d\n", pp);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t current_pp_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t current_pp_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
@@ -332,14 +417,24 @@ static ssize_t current_pp_write(struct class *class,
 	return count;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t l2_max_reads_read(struct class *class,
 		struct class_attribute *attr, char *buf)
+#else
+static ssize_t l2_max_reads_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#endif
 {
 	return sprintf(buf, "%d\n", mali_l2_max_reads);
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
 static ssize_t l2_max_reads_write(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t l2_max_reads_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#endif
 {
 	int ret;
 	unsigned int val;
