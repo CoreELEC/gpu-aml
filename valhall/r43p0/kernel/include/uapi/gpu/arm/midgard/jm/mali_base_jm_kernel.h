@@ -30,9 +30,6 @@
  * See base_mem_alloc_flags.
  */
 
-/* Used as BASE_MEM_FIXED in other backends */
-#define BASE_MEM_RESERVED_BIT_8 ((base_mem_alloc_flags)1 << 8)
-
 /**
  * BASE_MEM_RESERVED_BIT_19 - Bit 19 is reserved.
  *
@@ -67,7 +64,7 @@
 /* A mask of all currently reserved flags
  */
 #define BASE_MEM_FLAGS_RESERVED \
-	(BASE_MEM_RESERVED_BIT_8 | BASE_MEM_RESERVED_BIT_19)
+	(BASE_MEM_RESERVED_BIT_19)
 
 
 /* Similar to BASE_MEM_TILER_ALIGN_TOP, memory starting from the end of the
