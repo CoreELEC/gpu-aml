@@ -272,6 +272,7 @@ static bool release_queue(struct kbase_queue *queue);
 void kbase_csf_free_command_stream_user_pages(struct kbase_context *kctx, struct kbase_queue *queue)
 {
 	kernel_unmap_user_io_pages(kctx, queue);
+	queue->user_io_addr = NULL;
 
 	kbase_mem_pool_free_pages(
 		&kctx->mem_pools.small[KBASE_MEM_GROUP_CSF_IO],
@@ -730,6 +731,12 @@ int kbase_csf_queue_bind(struct kbase_context *kctx, union kbase_ioctl_cs_queue_
 
 	if (bind->in.csi_index >= max_streams)
 		goto out;
+
+	if (queue->user_io_addr != NULL) {
+		dev_err(kctx->kbdev->dev, "Queue with stale user_io address: %pK",
+			(void *)queue->user_io_addr);
+		goto out;
+	}
 
 	if (group->run_state == KBASE_CSF_GROUP_TERMINATED)
 		goto out;
