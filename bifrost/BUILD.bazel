@@ -1,6 +1,6 @@
 load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "ddk_module")
 load("//build/kernel/kleaf:kernel.bzl", "kernel_module")
-load("//common_drivers/project/kernel:kernel_select.bzl", "kernel_select")
+load("//common_drivers:amlogic_utils.bzl", "kernel_select")
 
 kernel_module(
     name = "gpu",
@@ -395,7 +395,7 @@ ddk_module(
     out = "mali_kbase.ko",
     defconfig  = "defconfig",
     kconfig = "r49p1/kernel/drivers/gpu/arm/midgard/Mconfig",
-    kernel_build = "//common_drivers:amlogic",
+    kernel_build = kernel_select(),
     visibility = ["//visibility:public"],
     deps = [
 	"//common_drivers/drivers/thermal:amlogic-thermal",

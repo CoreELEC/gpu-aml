@@ -23,6 +23,8 @@ load(
     "kernel_module",
 )
 
+load("//common_drivers:amlogic_utils.bzl", "kernel_select")
+
 filegroup(
     name = "hwtracing_coresight_kconfig",
     srcs = glob([
@@ -49,7 +51,7 @@ kernel_module(
         "//common-modules/mali:headers",
     ],
     outs = _hwtracing_coresight_modules,
-    kernel_build = "//common:kernel_aarch64",
+    kernel_build = kernel_select(),
     visibility = [
         "//common:__pkg__",
         "//common-modules/mali:__subpackages__",

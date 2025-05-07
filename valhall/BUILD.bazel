@@ -1,5 +1,5 @@
 load("//build/kernel/kleaf:kernel.bzl", "kernel_module")
-load("//common_drivers/project/kernel:kernel_select.bzl", "kernel_select")
+load("//common_drivers:amlogic_utils.bzl", "kernel_select")
 load(":gpu.bzl", "GPU_TYPE")
 
 kernel_module(
