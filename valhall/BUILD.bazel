@@ -1,6 +1,5 @@
 load("//build/kernel/kleaf:kernel.bzl", "kernel_module")
 load("//common_drivers:amlogic_utils.bzl", "kernel_select")
-load(":gpu.bzl", "GPU_TYPE")
 
 kernel_module(
     name = "gpu",
@@ -13,8 +12,24 @@ kernel_module(
             "**/*.bp",
         ],
     ),
-    outs = ["mali_kbase.ko","protected_memory_allocator.ko",] if GPU_TYPE == "vale" else \
-           ["mali_kbase.ko",],
+    outs = ["mali_kbase.ko",],
+
+    kernel_build = kernel_select(),
+    visibility = ["//visibility:public"],
+)
+
+kernel_module(
+    name = "vale",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "BUILD.bazel",
+            "**/*.bzl",
+            "**/*.mk",
+            "**/*.bp",
+        ],
+    ),
+    outs = ["mali_kbase.ko","protected_memory_allocator.ko",],
 
     kernel_build = kernel_select(),
     visibility = ["//visibility:public"],
