@@ -3681,6 +3681,9 @@ static ssize_t gpuinfo_show(struct device *dev,
 #endif /* MALI_USE_CSF */
 
 	char cve_commits[] = "r44p1 ddk fixed cve ID:commit ID\n"
+						"CVE-2025-0050:38adbc26\n"
+						"CVE-2025-0072:800346e4\n"
+						"CVE-2025-0427:aa165ff4\n"
 						"CVE-2024-3655:fac83cb3\n"
 						"CVE-2023-5427:c624d7bf\n"
 						"CVE-2024-4607:c61f4587\n"
@@ -3690,7 +3693,7 @@ static ssize_t gpuinfo_show(struct device *dev,
 						"CVE-2023-6241:8a69ee9d\n"
 						"CVE-2023-6143:6ddb2a5a\n"
 						"CVE-2023-5643:4d4d0283\n"
-						"CVE-2023-6363:ec862dd1";
+						"CVE-2023-6363:ec862dd1\n";
 
 	return scnprintf(buf, PAGE_SIZE, "%s %d cores r%dp%d 0x%04X \n%s\n", product_name,
 			 kbdev->gpu_props.num_cores,
