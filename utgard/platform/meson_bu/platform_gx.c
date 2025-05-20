@@ -189,10 +189,6 @@ static u32 mali_get_online_pp(void)
     unsigned int val;
     mali_plat_info_t* pmali_plat = get_mali_plat_data();
 
-    val = readl(pmali_plat->reg_base_aobus + 0xf0) & 0xff;
-    if (val == 0x07)    /* No pp is working */
-        return 0;
-
     return mali_executor_get_num_cores_enabled();
 }
 #endif

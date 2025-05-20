@@ -42,21 +42,6 @@
 extern int mali_l2_max_reads;
 
 #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 12, 0)
-static ssize_t domain_stat_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#else
-static ssize_t domain_stat_read(const struct class *class,
-		const struct class_attribute *attr, char *buf)
-#endif
-{
-	unsigned int val;
-	mali_plat_info_t* pmali_plat = get_mali_plat_data();
-
-	val = readl(pmali_plat->reg_base_aobus + 0xf0) & 0xff;
-	return sprintf(buf, "%x\n", val>>4);
-	return 0;
-}
 
 #define PREHEAT_CMD "preheat"
 #define PLL2_CMD "mpl2"  /* mpl2 [11] or [0xxxxxxx] */
@@ -451,7 +436,6 @@ static ssize_t l2_max_reads_write(const struct class *class,
 
 
 static struct class_attribute mali_class_attrs[] = {
-	__ATTR(domain_stat,	0644, domain_stat_read, NULL),
 	__ATTR(mpgpucmd,	0644, NULL,		mpgpu_write),
 	__ATTR(thermal_max_freq,	0644, thermal_max_freq_read,	NULL),
 	__ATTR(scale_mode,	0644, scale_mode_read,  scale_mode_write),
