@@ -952,10 +952,29 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg, struct k
 	return 0;
 }
 
+#if (CONFIG_MALI_LOW_MEM == 1)
+/*
+ * Max size for kbdev memory pool (in pages)
+ */
+#define KBASE_MEM_POOL_MAX_SIZE_KBDEV (SZ_16M >> PAGE_SHIFT)
+
+/*
+ * Max size for kctx memory pool (in pages)
+ */
+#define KBASE_MEM_POOL_MAX_SIZE_KCTX  (SZ_16M >> PAGE_SHIFT)
+#else
 /*
  * Max size for kbdev memory pool (in pages)
  */
 #define KBASE_MEM_POOL_MAX_SIZE_KBDEV (SZ_64M >> PAGE_SHIFT)
+
+/*
+ * Max size for kctx memory pool (in pages)
+ */
+#define KBASE_MEM_POOL_MAX_SIZE_KCTX (SZ_64M >> PAGE_SHIFT)
+#endif
+
+#define KBASE_T5M_MEM_THRESHOLD  (KBASE_MEM_POOL_MAX_SIZE_KCTX * 9)
 
 /*
  * Max size for kbdev pgd memory pool (in pages)
@@ -966,10 +985,6 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg, struct k
  * Max size for kbdev fw memory pool (in pages)
  */
 #define KBASE_FW_MEM_POOL_MAX_SIZE_KBDEV ((4 * SZ_2M) >> PAGE_SHIFT)
-/*
- * Max size for kctx memory pool (in pages)
- */
-#define KBASE_MEM_POOL_MAX_SIZE_KCTX (SZ_64M >> PAGE_SHIFT)
 
 /*
  * Max size of kctx pgd memory pool (in pages)

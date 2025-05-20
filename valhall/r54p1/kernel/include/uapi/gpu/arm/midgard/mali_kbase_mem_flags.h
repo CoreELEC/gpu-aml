@@ -66,6 +66,11 @@
  */
 #define BASE_MEM_UNUSED_BIT_7 ((base_mem_alloc_flags)1 << 7)
 
+/* OUT */
+/* UVM mem
+ */
+#define BASE_MEM_UVM_REALLOC ((base_mem_alloc_flags)1 << 8)
+
 /* Grow backing store on GPU Page Fault
  */
 #define BASE_MEM_GROW_ON_GPF ((base_mem_alloc_flags)1 << 9)
