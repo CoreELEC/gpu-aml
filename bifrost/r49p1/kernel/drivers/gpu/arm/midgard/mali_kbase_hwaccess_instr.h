@@ -133,7 +133,7 @@ int kbase_instr_backend_init(struct kbase_device *kbdev);
  */
 void kbase_instr_backend_term(struct kbase_device *kbdev);
 
-#ifdef CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS
+#if IS_ENABLED(CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS)
 /**
  * kbase_instr_backend_debugfs_init() - Add a debugfs entry for the
  *                                      hardware counter set.

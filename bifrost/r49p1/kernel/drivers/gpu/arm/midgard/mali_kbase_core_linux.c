@@ -44,7 +44,7 @@
 #if !MALI_USE_CSF
 #include <mali_kbase_hwaccess_jm.h>
 #endif /* !MALI_USE_CSF */
-#ifdef CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS
+#if IS_ENABLED(CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS)
 #include <mali_kbase_hwaccess_instr.h>
 #endif
 #include <mali_kbase_reset_gpu.h>
@@ -5037,7 +5037,7 @@ static struct dentry *init_debugfs(struct kbase_device *kbdev)
 
 	kbasep_gpu_memory_debugfs_init(kbdev);
 	kbase_as_fault_debugfs_init(kbdev);
-#ifdef CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS
+#if IS_ENABLED(CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS)
 	kbase_instr_backend_debugfs_init(kbdev);
 #endif
 	kbase_pbha_debugfs_init(kbdev);

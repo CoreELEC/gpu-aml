@@ -50,7 +50,7 @@ enum kbase_instr_state {
 struct kbase_instr_backend {
 	wait_queue_head_t wait;
 	int triggered;
-#ifdef CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS
+#if IS_ENABLED(CONFIG_MALI_PRFCNT_SET_SELECT_VIA_DEBUG_FS)
 	enum kbase_hwcnt_physical_set override_counter_set;
 #endif
 
