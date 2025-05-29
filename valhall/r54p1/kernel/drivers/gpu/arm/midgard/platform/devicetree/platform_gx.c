@@ -40,7 +40,7 @@
 #include <mali_kbase.h>
 #include <mali_kbase_defs.h>
 #ifdef CONFIG_MALI_DEVFREQ
-#include <../drivers/devfreq/governor.h>
+#include  <governor.h>
 #endif
 #include "mali_scaling.h"
 #include "mali_clock.h"

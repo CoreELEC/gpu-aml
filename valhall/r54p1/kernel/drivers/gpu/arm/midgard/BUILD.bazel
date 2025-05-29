@@ -23,7 +23,7 @@ load(
     "ddk_headers",
     "ddk_module",
 )
-load("//config:cflags.bzl", "CFLAGS_MODULE", "COPTS_KBASE")
+load("//driver_modules/gpu/valhall/r54p1/kernel/config:cflags.bzl", "CFLAGS_MODULE", "COPTS_KBASE")
 
 package(
     default_visibility = [
@@ -37,11 +37,11 @@ ddk_headers(
     name = "kbase_kernel_headers",
     hdrs = [
         ":midgard_headers",
-        "//:kernel_headers",
-        "//drivers/gpu/arm:mali_arbitration_shared_config_defaults",
+        "//driver_modules/gpu/valhall/r54p1/kernel:kernel_headers",
+        "//driver_modules/gpu/valhall/r54p1/kernel/drivers/gpu/arm:mali_arbitration_shared_config_defaults",
         "@kleaf//common:all_headers",
     ],
-    defconfigs = ["//config/fragment:kbase_defconfig"],
+    defconfigs = ["//driver_modules/gpu/valhall/r54p1/kernel/config/fragment:kbase_defconfig"],
     kconfigs = [":midgard_kconfig"],
 )
 
@@ -72,10 +72,10 @@ ddk_headers(
         "tl",
     ] + select({
         "//conditions:default": ["platform/devicetree"],
-        "//config:mali_platform_name_meson": ["platform/meson"],
-        "//config:mali_platform_name_vexpress": ["platform/vexpress"],
-        "//config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57"],
-        "//config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz"],
+        ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_meson": ["platform/meson"],
+        ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress": ["platform/vexpress"],
+        ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57"],
+        ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz"],
     }),
 )
 
@@ -84,7 +84,7 @@ filegroup(
     srcs = [
         "Kconfig",
     ] + select({
-        "//config:mali_debug_kutf": ["//drivers/gpu/arm/midgard/tests:kutf_kconfig"],
+        "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_debug_kutf": ["//drivers/gpu/arm/midgard/tests:kutf_kconfig"],
         "//conditions:default": [],
     }),
 )
@@ -182,18 +182,22 @@ ddk_module(
            ) +
            select({
                "//conditions:default": glob(["platform/devicetree/*.c"]),
-               "//config:mali_platform_name_meson": glob(["platform/meson/*.c"]),
-               "//config:mali_platform_name_vexpress": glob(["platform/vexpress/*.c"]),
-               "//config:mali_platform_name_vexpress_1xv7_a57": glob(["platform/vexpress_1xv7_a57/*.c"]),
-               "//config:mali_platform_name_vexpress_6xvirtex7_10mhz": glob(["platform/vexpress_6xvirtex7_10mhz/*.c"]),
+               ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_meson": glob(["platform/meson/*.c"]),
+               ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress": glob(["platform/vexpress/*.c"]),
+               ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": glob(["platform/vexpress_1xv7_a57/*.c"]),
+               ##"//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": glob(["platform/vexpress_6xvirtex7_10mhz/*.c"]),
            }) +
            select({
-               "//config:mali_coresight": ["debug/backend/mali_kbase_debug_coresight_csf.c"],
+               "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_coresight": ["debug/backend/mali_kbase_debug_coresight_csf.c"],
                "//conditions:default": [],
            }),
+    local_defines = ["CONFIG_MALI_LOW_MEM=0",
+                     "AMLOGIC_GPU_USE_GPPLL=0"
+    ],
     out = "mali_kbase.ko",
     hdrs = [
         ":kbase_kernel_headers",
+        "//common:drivers/devfreq/governor.h",
     ],
     conditional_srcs = {
         "CONFIG_DEBUG_FS": {
@@ -249,6 +253,9 @@ ddk_module(
             ]),
         },
     },
-    copts = CFLAGS_MODULE + COPTS_KBASE,
+    copts = ["-Icommon/drivers/devfreq",] + CFLAGS_MODULE + COPTS_KBASE,
+    linux_includes = [
+        "../../../../../../../../../common/drivers/devfreq",
+    ],
     kernel_build = kernel_select(),
 )

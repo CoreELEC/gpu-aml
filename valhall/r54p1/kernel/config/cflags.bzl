@@ -33,7 +33,7 @@ CFLAGS_MODULE = [
     "-Wmissing-declarations",
     "-Wmissing-prototypes",
     "-Wold-style-definition",
-    "-Wunused-const-variable",
+    "-Wno-unused-const-variable",
     "-Wno-sign-compare",
     "-Wno-shift-negative-value",
     "-Wno-cast-function-type",
@@ -42,15 +42,16 @@ CFLAGS_MODULE = [
     "-Wmissing-field-initializers",
     "-Wno-type-limits",
     "-Wunused-macros",
+    "-Wno-missing-prototypes",
 ] + select({
-    "//config:mali_gcov_kernel": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_gcov_kernel": [
         "-DGCOV_PROFILE=1",
         "-ftest-coverage",
         "-fprofile-arcs",
     ],
     "//conditions:default": [],
 }) + select({
-    "//config:mali_kcov": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_kcov": [
         "-DKCOV=1",
         "-DKCOV_ENABLE_COMPARISONS=1",
         "-fsanitize-coverage=trace-cmp",
@@ -62,42 +63,48 @@ CFLAGS_CORESIGHT = [
     "-Wmissing-include-dirs",
     "-Wunused-but-set-variable",
     "-Wunused-const-variable",
-    # "-Wstringop-truncation",
+	"-Wunused-macros",
+    "-Wunused-const-variable",
+    "-Wstringop-truncation",
 ]
 
 COPTS_KBASE = [
     "-DMALI_COVERAGE=0",
     "-DMALI_JIT_PRESSURE_LIMIT_BASE=0",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-const-variable",
+    "-Wno-unused-macros",
+    "-Wno-unused-const-variable",
 ] + select({
-    "//config:mali_debug": ["-DMALI_UNIT_TEST=1"],
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_debug": ["-DMALI_UNIT_TEST=1"],
     "//conditions:default": ["-DMALI_UNIT_TEST=0"],
 }) + select({
-    "//config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
     "//conditions:default": ["-DMALI_CUSTOMER_RELEASE=0"],
 }) + select({
-    "//config:mali_debug_kutf": ["-DMALI_KERNEL_TEST_API=1"],
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_debug_kutf": ["-DMALI_KERNEL_TEST_API=1"],
     "//conditions:default": ["-DMALI_KERNEL_TEST_API=0"],
 }) + select({
     "//conditions:default": [
         "-DCONFIG_MALI_PLATFORM_NAME=\"devicetree\"",
     ],
-    "//config:mali_platform_name_meson": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_meson": [
         "-DCONFIG_MALI_PLATFORM_NAME=\"meson\"",
     ],
-    "//config:mali_platform_name_vexpress": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress": [
         "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress\"",
     ],
-    "//config:mali_platform_name_vexpress_1xv7_a57": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": [
         "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress_1xv7_a57\"",
     ],
-    "//config:mali_platform_name_vexpress_6xvirtex7_10mhz": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": [
         "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress_6xvirtex7_10mhz\"",
     ],
 }) + select({
     "//conditions:default": [
         "-DMALI_RELEASE_NAME=\"r54p0-00dev2\"",
     ],
-    "//config:mali_release_name_r54p0-00dev2": [
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_release_name_r54p0-00dev2": [
         "-DMALI_RELEASE_NAME=\"r54p0-00dev2\"",
     ],
 })
