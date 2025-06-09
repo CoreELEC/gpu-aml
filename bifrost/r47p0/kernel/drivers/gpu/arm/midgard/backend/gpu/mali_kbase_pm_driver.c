@@ -3257,6 +3257,7 @@ static void reenable_protected_mode_hwcnt(struct kbase_device *kbdev)
 }
 #endif
 
+extern int mali_reset_top_dmc(struct kbase_device *kbdev);
 static int kbase_pm_do_reset(struct kbase_device *kbdev)
 {
 	struct kbasep_reset_timeout_data rtdata;
@@ -3339,6 +3340,11 @@ static int kbase_pm_do_reset(struct kbase_device *kbdev)
 		dev_err(kbdev->dev,
 			"Failed to soft-reset GPU (timed out after %d ms), now attempting a hard reset\n",
 			RESET_TIMEOUT);
+		dev_err(kbdev->dev, "now attempting a top+dmc reset and hw reinit\n");
+		if (!mali_reset_top_dmc(kbdev)) {
+			dev_err(kbdev->dev, "skip hard reset\n");
+			return 0;
+		}
 		KBASE_KTRACE_ADD(kbdev, CORE_GPU_HARD_RESET, NULL, 0);
 
 		{
@@ -3365,6 +3371,7 @@ static int kbase_pm_do_reset(struct kbase_device *kbdev)
 
 		dev_err(kbdev->dev, "Failed to hard-reset the GPU (timed out after %d ms)\n",
 			RESET_TIMEOUT);
+
 #ifdef CONFIG_MALI_ARBITER_SUPPORT
 	}
 #endif /* CONFIG_MALI_ARBITER_SUPPORT */

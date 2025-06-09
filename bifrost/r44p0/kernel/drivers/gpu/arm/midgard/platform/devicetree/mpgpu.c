@@ -322,6 +322,66 @@ static ssize_t util_cl_share_read(struct class *class,
 	return sprintf(buf, "%d  %d\n", val[0], val[1]);
 }
 
+extern void mali_reset_top(void);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t gpu_reset_top(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t gpu_reset_top(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	mali_reset_top();
+	return 0;
+}
+
+extern void mali_hw_init_ext(struct kbase_device *kbdev);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t mali_hw_reinit(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t mali_hw_reinit(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	mali_hw_init_ext(kbdev);
+	return 0;
+}
+
+extern void reset_dmc_gpu(void);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t mali_dmc_reset(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t mali_dmc_reset(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	reset_dmc_gpu();
+	return 0;
+}
+
+extern int mali_reset_top_dmc(struct kbase_device *kbdev);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t mali_top_dmc_reset(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t mali_top_dmc_reset(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	mali_reset_top_dmc(kbdev);
+	return 0;
+}
+
 u32 mpgpu_get_gpu_err_count(void)
 {
 	return (meson_gpu_fault + meson_gpu_data_invalid_count);
@@ -372,6 +432,10 @@ static struct class_attribute mali_class_attrs[] = {
 	__ATTR(util_gl,	    0644, util_gl_share_read, NULL),
 	__ATTR(util_cl,	    0644, util_cl_share_read, NULL),
 	__ATTR(gpu_err,	    0644, meson_gpu_get_err_count, mpgpu_set_err_count),
+	__ATTR(gpu_reset,	0644, gpu_reset_top, NULL),
+	__ATTR(gpu_reinit,	0644, mali_hw_reinit, NULL),
+	__ATTR(dmc_reset,	0644, mali_dmc_reset, NULL),
+	__ATTR(top_dmc_reset,	0644, mali_top_dmc_reset, NULL),
 };
 
 static struct class mpgpu_class = {

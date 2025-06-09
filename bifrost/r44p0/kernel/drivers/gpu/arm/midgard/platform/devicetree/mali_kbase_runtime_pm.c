@@ -33,6 +33,7 @@
 #include "mali_clock.h"
 
 void *reg_base_reset = NULL;
+void *reg_base_dmc = NULL;
 static int first = 1;
 
 //remove this if sc2 worked fine.
@@ -54,15 +55,57 @@ static int first = 1;
 
 extern u64 kbase_pm_get_ready_cores(struct kbase_device *kbdev, enum kbase_pm_core_type type);
 
+void get_dmc_gpu_status(void)
+{
+	u32 dmc_chan_sts, rst1_value, rst2_value;
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	if (reg_base_dmc && pmali_plat->dmc_reset_flag) {
+		dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts << 2));
+		rst1_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst << 2));
+		rst2_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst1 << 2));
+		dev_info(kbdev->dev, "gpu dmc reset vale: 0x%x,0x%x, dmc chan sts: 0x%x\n",
+			rst1_value, rst2_value, dmc_chan_sts);
+	}
+}
+
+void reset_dmc_gpu(void)
+{
+	u32 rst1_gpu, rst2_gpu, rst1_value, rst2_value;
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	if (reg_base_dmc && pmali_plat->dmc_reset_flag) {
+		dev_info(kbdev->dev, "gpu dmc reset start\n");
+		rst1_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst << 2));
+		rst2_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst1 << 2));
+		rst1_gpu = rst1_value & (~(1 << pmali_plat->dmc_reset.reg_bit));
+		rst2_gpu = rst2_value & (~(1 << pmali_plat->dmc_reset.reg_bit));
+		dev_info(kbdev->dev, "gpu dmc reset vale 0x%x,0x%x,0x%x,0x%x\n",
+			rst1_value, rst2_value, rst1_gpu, rst2_gpu);
+		writel(rst1_gpu, reg_base_dmc + (pmali_plat->dmc_reset.reg_rst << 2));
+		writel(rst2_gpu, reg_base_dmc + (pmali_plat->dmc_reset.reg_rst1 << 2));
+		mdelay(1);
+		writel(rst1_value, reg_base_dmc + (pmali_plat->dmc_reset.reg_rst << 2));
+		writel(rst2_value, reg_base_dmc + (pmali_plat->dmc_reset.reg_rst1 << 2));
+		dev_info(kbdev->dev, "gpu dmc reset end\n");
+	}
+}
+
 //[0]:CG [1]:SC0 [2]:SC2
 static void  Mali_pwr_on_with_kdev( struct kbase_device *kbdev, uint32_t  mask)
 {
-	uint32_t    part1_done;
-	uint32_t    shader_present;
-	uint32_t    tiler_present;
-	uint32_t    l2_present;
+	uint32_t part1_done;
+	uint32_t shader_present;
+	uint32_t tiler_present;
+	uint32_t l2_present;
+	uint32_t timeout_ms;
 
 	part1_done = 0;
+	timeout_ms = 500;
 	Mali_WrReg(0x0000024, 0xffffffff); // clear interrupts
 
 	shader_present = Mali_RdReg(0x100);
@@ -88,7 +131,13 @@ static void  Mali_pwr_on_with_kdev( struct kbase_device *kbdev, uint32_t  mask)
 	}
 
 	part1_done = Mali_RdReg(0x0000020);
-	while (0 == part1_done) { part1_done = Mali_RdReg(0x00000020); }
+	while (!part1_done && timeout_ms) {
+		part1_done = Mali_RdReg(0x00000020);
+		mdelay(10);
+		timeout_ms -= 10;
+	}
+	if (!timeout_ms)
+		dev_info(kbdev->dev, "%s wait power change timeout\n", __func__);
 	Mali_WrReg(0x0000024, 0xffffffff); // clear interrupts
 }
 
@@ -178,6 +227,122 @@ static void mali_reset(void)
 	Wr(pmali_plat->module_reset.reg_level, value);
 }
 
+void mali_reset_top(void)
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	dev_info(kbdev->dev, "gpu reset top start\n");
+	mali_reset();
+	dev_info(kbdev->dev, "gpu reset top end\n");
+}
+
+static void mali_reset_low(void)
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	u32 value = 0;
+	int reset_g12a = pmali_plat->reset_g12a;
+
+	if (!pmali_plat->reset_flag) {
+		if (reset_g12a) {
+			value = Rd(RESET0_MASK);
+			value = value & (~(0x1<<20));
+			Wr(RESET0_MASK, value);
+
+			value = Rd(RESET0_LEVEL);
+			value = value & (~(0x1<<20));
+			Wr(RESET0_LEVEL, value);
+
+			value = Rd(RESET2_MASK);
+			value = value & (~(0x1<<14));
+			Wr(RESET2_MASK, value);
+
+			value = Rd(RESET2_LEVEL);
+			value = value & (~(0x1<<14));
+			Wr(RESET2_LEVEL, value);
+		} else {
+			value = ~(1 << 2);
+			Wr(RESETCTRL_RESET1_MASK, value);
+			Wr(RESETCTRL_RESET1_LEVEL, value);
+		}
+	} else {
+		value = Rd(pmali_plat->module_reset.reg_mask);
+		value = value & (~(0x1<<pmali_plat->module_reset.reg_bit));
+		Wr(pmali_plat->module_reset.reg_mask, value);
+
+		value = Rd(pmali_plat->module_reset.reg_level);
+		value = value & (~(0x1<<pmali_plat->module_reset.reg_bit));
+		Wr(pmali_plat->module_reset.reg_level, value);
+
+		value = Rd(pmali_plat->apb_reset.reg_mask);
+		value = value & (~(0x1<<pmali_plat->apb_reset.reg_bit));
+		Wr(pmali_plat->apb_reset.reg_mask, value);
+
+		value = Rd(pmali_plat->apb_reset.reg_level);
+		value = value & (~(0x1<<pmali_plat->apb_reset.reg_bit));
+		Wr(pmali_plat->apb_reset.reg_level, value);
+	}
+}
+
+static void mali_reset_high(void)
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	u32 value = 0;
+	int reset_g12a = pmali_plat->reset_g12a;
+
+	if (!pmali_plat->reset_flag) {
+		if (reset_g12a) {
+			value = Rd(RESET0_LEVEL);
+			value = value | ((0x1<<20));
+			Wr(RESET0_LEVEL, value);
+
+			value = Rd(RESET2_LEVEL);
+			value = value | ((0x1<<14));
+			Wr(RESET2_LEVEL, value);
+		} else {
+			Wr(RESETCTRL_RESET1_LEVEL, 0xFFFFFFFF);
+		}
+	} else {
+		value = Rd(pmali_plat->apb_reset.reg_level);
+		value = value | ((0x1<<pmali_plat->apb_reset.reg_bit));
+		Wr(pmali_plat->apb_reset.reg_level, value);
+
+		value = Rd(pmali_plat->module_reset.reg_level);
+		value = value | ((0x1<<pmali_plat->module_reset.reg_bit));
+		Wr(pmali_plat->module_reset.reg_level, value);
+	}
+}
+
+/* 1:skip dmc reset, 0:dmc reset done*/
+int mali_reset_top_dmc(struct kbase_device *kbdev)
+{
+	u32 value;
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+
+	if (!pmali_plat->dmc_reset_flag) {
+		dev_info(kbdev->dev, "no dmc reset config,skip dmc reset");
+		return 1;
+	}
+	get_dmc_gpu_status();
+	dev_info(kbdev->dev, "gpu reset top and dmc start");
+	dev_info(kbdev->dev, "gpu reset top to 0");
+	value = ~(1 << 2);
+	mali_reset_low();
+	mdelay(1);
+	reset_dmc_gpu();
+	dev_info(kbdev->dev, "gpu reset top level to 1");
+	mali_reset_high();
+	dev_info(kbdev->dev, "gpu hw init start");
+	udelay(10); // OR POLL for reset done
+	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
+	Mali_WrReg(GPU_CONTROL_REG(PWR_OVERRIDE1), 0xfff | (0x20<<16));
+	Mali_pwr_on_with_kdev(kbdev, 0x1);
+	dev_info(kbdev->dev, "gpu hw init end");
+	dev_info(kbdev->dev, "gpu reset top and dmc end");
+	return 0;
+}
+
 /*
  * 1.mali-reset;2.init pwr_override1;3.pwr_on one core manually
  */
@@ -190,13 +355,24 @@ static void mali_hw_init(struct kbase_device *kbdev)
 	Mali_pwr_on_with_kdev(kbdev, 0x1);
 }
 
+void mali_hw_init_ext(struct kbase_device *kbdev)
+{
+	dev_info(kbdev->dev, "gpu hw init start\n");
+	mali_reset_top();
+	udelay(10); // OR POLL for reset done
+	Mali_WrReg(GPU_CONTROL_REG(PWR_KEY), 0x2968A819);
+	Mali_WrReg(GPU_CONTROL_REG(PWR_OVERRIDE1), 0xfff | (0x20<<16));
+	Mali_pwr_on_with_kdev(kbdev, 0x1);
+	dev_info(kbdev->dev,"gpu hw init end\n");
+}
+
 static int pm_callback_power_on(struct kbase_device *kbdev)
 {
 	int ret = 0;
 
 	struct mali_plat_info_t *mpdata  = (struct mali_plat_info_t *) kbdev->platform_context;
 	reg_base_reset = mpdata->reg_base_reset;
-
+	reg_base_dmc = mpdata->dmc_reset.reg_base_dmc;
 
 	if (first == 0) goto out;
 	if (!pm_runtime_enabled(kbdev->dev)) {
