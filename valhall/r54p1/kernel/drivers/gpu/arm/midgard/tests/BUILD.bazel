@@ -53,7 +53,7 @@ kernel_module_group(
         ":mali_kutf_mgm_integration_test",
     ]
 )
-load("//common_drivers:amlogic_utils.bzl", "kernel_select")
+load("//common_drivers:amlogic_utils.bzl", "kernel_select", "ddk_deps_select")
 ddk_module(
     name = "mali_kutf",
     srcs = [
@@ -85,10 +85,10 @@ ddk_module(
     ],
     copts = KUTF_CFLAGS + COPTS_KBASE,
     kernel_build = kernel_select(),
-    deps = [
+    deps = ddk_deps_select([
         ":mali_kutf",
         "//drivers/gpu/arm/midgard:mali_kbase",
-    ],
+    ]),
 )
 
 ddk_module(
@@ -98,10 +98,10 @@ ddk_module(
     hdrs = ["mali_kutf_clk_rate_trace/mali_kutf_clk_rate_trace_test.h"],
     copts = KUTF_CFLAGS + COPTS_KBASE,
     kernel_build = kernel_select(),
-    deps = [
+    deps = ddk_deps_select([
         ":mali_kutf",
         "//drivers/gpu/arm/midgard:mali_kbase",
-    ],
+    ]),
 )
 
 ddk_module(
@@ -111,9 +111,9 @@ ddk_module(
     hdrs = ["//drivers/gpu/arm/midgard:kbase_kernel_headers"],
     copts = KUTF_CFLAGS + COPTS_KBASE,
     kernel_build = kernel_select(),
-    deps = [
+    deps = ddk_deps_select([
         ":mali_kutf",
         "//drivers/gpu/arm/midgard:mali_kbase",
-    ],
+    ]),
 )
 

@@ -61,7 +61,7 @@ filegroup(
     name = "hwtracing_coresight_kconfig",
     srcs = ["Kconfig"]
 )
-load("//common_drivers:amlogic_utils.bzl", "kernel_select")
+load("//common_drivers:amlogic_utils.bzl", "kernel_select", "ddk_deps_select")
 ddk_module(
     name = "coresight_mali_source_ela",
     srcs = [
@@ -76,7 +76,7 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kernel_build = kernel_select(),
-    deps = ["//drivers/gpu/arm/midgard:mali_kbase"]
+    deps = ddk_deps_select(["//drivers/gpu/arm/midgard:mali_kbase"]),
 )
 
 ddk_module(
@@ -92,7 +92,7 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kernel_build = kernel_select(),
-    deps = ["//drivers/gpu/arm/midgard:mali_kbase"]
+    deps = ddk_deps_select(["//drivers/gpu/arm/midgard:mali_kbase"]),
 )
 
 ddk_module(
@@ -108,6 +108,6 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kernel_build = kernel_select(),
-    deps = ["//drivers/gpu/arm/midgard:mali_kbase"]
+    deps = ddk_deps_select(["//drivers/gpu/arm/midgard:mali_kbase"]),
 )
 
