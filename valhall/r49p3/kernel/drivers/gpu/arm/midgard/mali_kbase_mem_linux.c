@@ -2819,7 +2819,7 @@ int kbase_context_mmap(struct kbase_context *const kctx, struct vm_area_struct *
 		err = -EINVAL;
 		goto out_unlock;
 	case PFN_DOWN(BASE_MEM_MMU_DUMP_HANDLE):
-#if defined(CONFIG_MALI_VECTOR_DUMP)
+#if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP)
 		/* MMU dump */
 		err = kbase_mmu_dump_mmap(kctx, vma, &reg, &kaddr);
 		if (err != 0)
@@ -2911,7 +2911,7 @@ int kbase_context_mmap(struct kbase_context *const kctx, struct vm_area_struct *
 	} /* switch */
 
 	err = kbase_cpu_mmap(kctx, reg, vma, kaddr, nr_pages, aligned_offset, free_on_close);
-#if defined(CONFIG_MALI_VECTOR_DUMP)
+#if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP)
 	if (vma->vm_pgoff == PFN_DOWN(BASE_MEM_MMU_DUMP_HANDLE)) {
 		/* MMU dump - userspace should now have a reference on
 		 * the pages, so we can now free the kernel mapping
