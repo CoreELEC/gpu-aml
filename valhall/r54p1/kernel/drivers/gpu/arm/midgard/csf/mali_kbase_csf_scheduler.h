@@ -637,7 +637,7 @@ static inline void kbase_csf_scheduler_append_protm_flag(struct kbase_device *kb
  * The function increase the protm_event's sequence number by one, and manages its wrap-over.
  * The p.mode active flags are cleared, marking the completion of the present p.mode window.
  * Additionally, kthread(s) waiting for the completion is waked-up and a bottom-half worker
- * thread is enqueued for processing any quarantined pages in pools.
+ * thread is enqueued for processing any deferred release of pages in pools.
  */
 static inline void kbase_csf_scheduler_complete_protm_event(struct kbase_device *kbdev)
 {
@@ -651,7 +651,7 @@ static inline void kbase_csf_scheduler_complete_protm_event(struct kbase_device 
 	cur_seq_nr = (cur_seq_nr == MAX_PROTM_EVENT_SEQ_NR) ? 0 : (cur_seq_nr + 1);
 
 	atomic_set(&pages_defer_ctrl->protm_event_id, cur_seq_nr << CSF_SCHED_PROTM_EVENT_NR_FLAGS);
-	if (pages_defer_ctrl->do_quarantine) {
+	if (pages_defer_ctrl->do_defer) {
 		wake_up_all(&pages_defer_ctrl->pools_term_wq);
 		queue_work(pages_defer_ctrl->mem_pools_op_workq,
 			   &pages_defer_ctrl->mem_pools_op_work);
@@ -702,6 +702,24 @@ static inline int kbase_csf_scheduler_get_protm_seq_num(struct kbase_device *kbd
 }
 
 /**
+ * kbase_csf_scheduler_delegate_imported_buf_alloc_free() - delegate an imported buf
+ *                                                 alloc object to scheduler's pages
+ *                                                 deferral control for managing its
+ *                                                 final clean-up and free, after a
+ *                                                 pmode session completes.
+ *
+ * @alloc: Pointer to an alloc object of imported buffer, to be freed later.
+ *
+ * This function delegates the alloc object to scheduler's pages_defer_ctrl for its
+ * last stage deferred free operation. The caller is restricted to kbase's kref
+ * free handler: kbase_mem_kref_free().
+ *
+ * Return: true when delegation is required and done. Otherwise, the caller should
+ *         proceed to handle its clean-up and free the alloc object directly.
+ */
+bool kbase_csf_scheduler_delegate_imported_buf_alloc_free(struct kbase_mem_phy_alloc *alloc);
+
+/**
  * kbase_csf_scheduler_pages_defer_ctrl_add_pool() - add a pool to scheduler's pages
  *                                                   deferral list for managing their
  *                                                   release from pages_defer_ctrl
@@ -720,13 +738,15 @@ void kbase_csf_scheduler_pages_defer_ctrl_add_pool(struct kbase_mem_pool *pool);
  *                                                    lists
  *
  * @pool: Pointer to the memory pool.
+ * @from_defer_ctrl: Indicating the caller is defer_controller.
  *
- * During operation a pool with deferred pages can be on one of the scheduler owned
+ * During operation a pool with deferred pages can be on one of the scheduler-owned
  * pages_defer_ctrl lists. This function removes the given pool from the managed lists.
  *
- * Note, the caller must own the pool by locking on its mutex lock.
+ * Note, the caller must own the pool by locking on its lock.
  */
-void kbase_csf_scheduler_pages_defer_ctrl_drop_pool(struct kbase_mem_pool *pool);
+void kbase_csf_scheduler_pages_defer_ctrl_drop_pool(struct kbase_mem_pool *pool,
+						    bool from_defer_ctrl);
 
 /**
  * kbase_csf_scheduler_reval_idleness_post_sleep() - Check GPU's idleness after
@@ -825,6 +845,20 @@ void kbase_csf_scheduler_force_wakeup(struct kbase_device *kbdev);
  * This function is only used for testing purpose.
  */
 void kbase_csf_scheduler_force_sleep(struct kbase_device *kbdev);
+
+/**
+ * kbase_csf_scheduler_revert_all_csg_suspension_preparation() - Revert the maintenance steps
+ *                                                               done before suspending all CSGs.
+ *
+ * @kbdev: Pointer to the device
+ *
+ * This function should be called if suspension of all CSGs must be aborted
+ * after calling prepare_all_csg_suspension(). This requirement does not apply
+ * in case of suspension failure, because the driver would trigger a GPU reset.
+ *
+ * Return: 0 on success, otherwise error.
+ */
+int kbase_csf_scheduler_revert_all_csg_suspension_preparation(struct kbase_device *kbdev);
 
 /**
  * kbase_csf_scheduler_check_gls_success() - Save CSG slots state after suspend

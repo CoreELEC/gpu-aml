@@ -597,6 +597,8 @@ struct kbase_protected_suspend_buffer {
  * @tiler_mask:     Mask of tiler endpoints the group is allowed to use.
  * @fragment_mask:  Mask of fragment endpoints the group is allowed to use.
  * @compute_mask:   Mask of compute endpoints the group is allowed to use.
+ * @fragment_endpoint_task_limit: The limit on outstanding tasks allowed in each
+ *                                fragment endpoint.
  * @group_uid:      32-bit wide unsigned identifier for the group, unique
  *                  across all kbase devices and contexts.
  * @link:           Link to this queue group in the 'runnable_groups' list of
@@ -693,6 +695,7 @@ struct kbase_queue_group {
 	u64 tiler_mask;
 	u64 fragment_mask;
 	u64 compute_mask;
+	u32 fragment_endpoint_task_limit;
 
 	u32 group_uid;
 
@@ -1121,13 +1124,11 @@ struct kbase_csf_mcu_shared_regions {
 };
 
 /**
- * struct kbase_csf_protm_mem_pages_defer_ctrl - Control data for managing the quarantined
- *                                       pages that are released back to a pool during a
- *                                       p.mode session.
+ * struct kbase_csf_protm_mem_pages_defer_ctrl - Control data for managing the deferred
+ *                                       release of pages during a p.mode session.
  *
  * @mem_pools_op_lock:  Lock for synchronising the access to the internal pool lists etc.
- * @mem_pools_list:     List that parks the pools where pages are qurantined for deferred
- *                      release operations.
+ * @mem_pools_list:     List that parks the pools where pages are deferred for releases.
  * @op_pending_list:    internal list holding the mem_pools that are potentially ready to be
  *                      released, before transition to in-flight state by the worker thread.
  * @op_inflight_list:   List holding the single mem_pool that is in-flight with the release
@@ -1140,13 +1141,14 @@ struct kbase_csf_mcu_shared_regions {
  *                      delegated task has been completed.
  * @mem_pools_op_workq: Workqueue for performing thread context pages release operations.
  * @mem_pools_op_work:  Work-item for triggering the release worker.
- * @pools_term_wq:      Wait-mechanism for pools that have quarantined pages undergoing a
+ * @pools_term_wq:      Wait-mechanism for pools that have deferred pages undergoing a
  *                      pool termination, which needs to be deferred until the relevant p.mode
  *                      session has completed.
+ * @imported_bufs:      Tracking struct for imported buffers that need pmode-defer to free
  * @protm_event_id:     P.mode event_id, consists of a sequence number and a flags field. The
  *                      latter has a bit width of CSF_SCHED_PROTM_EVENT_NR_FLAGS (lowest-bits).
- * @do_quarantine:      Flag indication the quarantining action is required or not for a GPU.
- *                      When it's false, no quarantine actions need to be undertaken.
+ * @do_defer:           Flag indicating the deferring release action is required or not.
+ *                      When it's false, no deferring release actions is needed.
  */
 struct kbase_csf_protm_mem_pages_defer_ctrl {
 	spinlock_t mem_pools_op_lock;
@@ -1158,9 +1160,15 @@ struct kbase_csf_protm_mem_pages_defer_ctrl {
 	struct workqueue_struct *mem_pools_op_workq;
 	struct work_struct mem_pools_op_work;
 	wait_queue_head_t pools_term_wq;
+	struct {
+		/** List that holds the buffer alloc items for deferred free */
+		struct list_head allocs_to_free;
+		/** The deferral sequence number for checking the ending condition */
+		int defer_seq;
+	} imported_bufs;
 	atomic_t protm_event_id;
 	/* Set at initialisation, true for GPUs up to Arch-15 */
-	bool do_quarantine;
+	bool do_defer;
 };
 
 /**
@@ -1334,7 +1342,7 @@ struct kbase_csf_protm_mem_pages_defer_ctrl {
  *                              that moment. When this happens, we wait for the
  *                              PM to inform us when it should be retried via
  *                              kbase_csf_scheduler_pm_single_refcount().
- * @pages_defer_ctrl:       Control data for manging p.mode quarantined pages.
+ * @pages_defer_ctrl:       Control data for managing p.mode deferred pages on release.
  */
 struct kbase_csf_scheduler {
 	struct mutex lock;
@@ -1508,6 +1516,9 @@ enum kbase_ipa_core_type {
  *                    GPU frequency. If true, returned values represent
  *                    an interval of time expressed in seconds (when the
  *                    scaling factor is set to 1).
+ * @gpu_active_cycle_wrap: Indicates how many times the GPU_ACTIVE
+ *                         counter value has wrapped around, to
+ *                         provide a 64-bit value to userspace.
  */
 struct kbase_ipa_control_prfcnt {
 	u64 latest_raw_value;
@@ -1516,6 +1527,7 @@ struct kbase_ipa_control_prfcnt {
 	enum kbase_ipa_core_type type;
 	u8 select_idx;
 	bool gpu_norm;
+	u64 gpu_active_cycle_wrap;
 };
 
 /**

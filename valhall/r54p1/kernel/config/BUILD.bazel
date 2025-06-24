@@ -229,11 +229,11 @@ string_flag(
     build_setting_default = "not_released",
     values = [
         "not_released",
-        "r54p0-00dev2",
+        "r54p1-11eac0",
     ],
 )
 
 config_setting(
-    name = "mali_release_name_r54p0-00dev2",
-    flag_values = {":mali_release_name": "r54p0-00dev2"},
+    name = "mali_release_name_r54p1-11eac0",
+    flag_values = {":mali_release_name": "r54p1-11eac0"},
 )

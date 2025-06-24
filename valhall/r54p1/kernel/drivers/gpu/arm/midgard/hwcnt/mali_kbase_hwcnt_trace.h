@@ -30,8 +30,8 @@ TRACE_EVENT(hwcnt_schedule_next_sample, TP_PROTO(u64 ts, u64 dts), TP_ARGS(ts, d
 TRACE_EVENT(hwcnt_skip_rearming, TP_PROTO(u64 ts), TP_ARGS(ts), TP_STRUCT__entry(__field(u64, ts)),
 	    TP_fast_assign(__entry->ts = ts;),
 	    TP_printk("hwcnt_skip_rearming ts = %llu", __entry->ts));
-TRACE_EVENT(hwcnt_client_dump, TP_PROTO(u64 ts, u64 dump_ts, bool dump), TP_ARGS(ts, dump_ts, dump),
-	    TP_STRUCT__entry(__field(u64, ts) __field(u64, dump_ts) __field(bool, dump)),
+TRACE_EVENT(hwcnt_client_dump, TP_PROTO(u64 ts, u64 dump_ts, u8 dump), TP_ARGS(ts, dump_ts, dump),
+	    TP_STRUCT__entry(__field(u64, ts) __field(u64, dump_ts) __field(u8, dump)),
 	    TP_fast_assign(__entry->ts = ts; __entry->dump_ts = dump_ts; __entry->dump = dump),
 	    TP_printk("client dump? ts = %llu, dump_time = %llu, %d", __entry->ts, __entry->dump_ts,
 		      __entry->dump));

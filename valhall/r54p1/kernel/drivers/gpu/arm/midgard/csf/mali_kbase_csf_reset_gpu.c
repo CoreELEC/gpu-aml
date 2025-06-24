@@ -511,7 +511,7 @@ static void kbase_csf_reset_gpu_worker(struct work_struct *data)
 		 * No pm active reference is taken here since GPU is in sleep
 		 * state and both runtime & system suspend synchronize with the
 		 * GPU reset before they wake up the GPU to suspend on-slot
-		 * groups. GPUCORE-29850 would add the proper handling.
+		 * groups.
 		 */
 		kbase_pm_lock(kbdev);
 		if (kbase_pm_force_mcu_wakeup_after_sleep(kbdev))
@@ -554,13 +554,6 @@ bool kbase_prepare_to_reset_gpu(struct kbase_device *kbdev, unsigned int flags)
 }
 KBASE_EXPORT_TEST_API(kbase_prepare_to_reset_gpu);
 
-bool kbase_prepare_to_reset_gpu_locked(struct kbase_device *kbdev, unsigned int flags)
-{
-	lockdep_assert_held(&kbdev->hwaccess_lock);
-
-	return kbase_prepare_to_reset_gpu(kbdev, flags);
-}
-
 void kbase_reset_gpu(struct kbase_device *kbdev)
 {
 	/* Note this is a WARN/atomic_set because it is a software issue for
@@ -577,13 +570,6 @@ void kbase_reset_gpu(struct kbase_device *kbdev)
 	queue_work(kbdev->csf.reset.workq, &kbdev->csf.reset.work);
 }
 KBASE_EXPORT_TEST_API(kbase_reset_gpu);
-
-void kbase_reset_gpu_locked(struct kbase_device *kbdev)
-{
-	lockdep_assert_held(&kbdev->hwaccess_lock);
-
-	kbase_reset_gpu(kbdev);
-}
 
 int kbase_reset_gpu_silent(struct kbase_device *kbdev)
 {

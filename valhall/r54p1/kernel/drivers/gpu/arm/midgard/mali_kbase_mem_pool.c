@@ -233,6 +233,7 @@ static bool is_pool_linked_to_pages_defer_ctrl(struct kbase_mem_pool *pool)
  *                                                      Caller must hold the pool lock
  *
  * @pool: Pointer to the memory pool.
+ * @from_defer_ctrl: Indicating the caller is defer_controller.
  *
  * This function depend on pool capacity,
  * Function pop pages from deferred list and
@@ -241,7 +242,8 @@ static bool is_pool_linked_to_pages_defer_ctrl(struct kbase_mem_pool *pool)
  *  - or do both.
  *
  */
-static void kbase_mem_pool_free_pages_from_defer_list_locked(struct kbase_mem_pool *pool)
+static void kbase_mem_pool_free_pages_from_defer_list_locked(struct kbase_mem_pool *pool,
+							     bool from_defer_ctrl)
 {
 	int nr_to_pool;
 	int nr_to_kernel;
@@ -250,13 +252,13 @@ static void kbase_mem_pool_free_pages_from_defer_list_locked(struct kbase_mem_po
 	struct page *p, *tmp;
 
 	lockdep_assert_held(&pool->pool_lock);
-	/* If the pool is hooked on a defer_ctrl list, check if page quarantine is completed */
+	/* If the pool is hooked on a defer_ctrl list, check if deferral window is passed */
 	if (is_pool_linked_to_pages_defer_ctrl(pool)) {
 		if (!is_csf_scheduler_protm_seq_completed(pool->kbdev,
 							  atomic_read(&pool->defer_seq)))
 			return;
 		/* Defer completed, remove pool from defer_ctrl list */
-		kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool);
+		kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool, from_defer_ctrl);
 	}
 
 	deferred_size = atomic_read(&pool->deferred_size);
@@ -301,12 +303,12 @@ static void kbase_mem_pool_free_pages_from_defer_list_locked(struct kbase_mem_po
 	atomic_set(&pool->deferred_size, 0);
 }
 
-void kbase_mem_pool_free_pages_from_deferred_list(struct kbase_mem_pool *pool)
+void kbase_mem_pool_free_pages_from_deferred_list(struct kbase_mem_pool *pool, bool from_defer_ctrl)
 {
 	kbase_mem_pool_lock(pool);
 	/* If the pool is dying, leave the action to be done by pool_term call */
 	if (!pool->dying)
-		kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+		kbase_mem_pool_free_pages_from_defer_list_locked(pool, from_defer_ctrl);
 	kbase_mem_pool_unlock(pool);
 }
 KBASE_EXPORT_TEST_API(kbase_mem_pool_free_pages_from_deferred_list);
@@ -316,8 +318,7 @@ KBASE_EXPORT_TEST_API(kbase_mem_pool_free_pages_from_deferred_list);
  *
  * @pool: Pointer to the memory pool.
  *
- * This function return number of pages stored in
- * deferred pages list (in quarantine)
+ * This function return number of pages stored in deferred pages list
  *
  * Return: size of deferred page list
  */
@@ -334,12 +335,12 @@ KBASE_EXPORT_TEST_API(kbase_mem_pool_deferred_list_size);
  * @pool: Pointer to the memory pool.
  * @p:    Pointer to page structure
  *
- * This function check if conditions to move page to quarantine
+ * This function check if conditions to move page to deferral
  * instead of returning it to free_pool or to kernel are meet.
  * It it is true page is added to deferred_pages list
- * This function also check if previouse quarantine is finish
- * ant if it is finished, move all pages in quarantine to
- * free_pages list ot to kernel, before adding page p to
+ * This function also check if previouse deferral window is passed
+ * and if it is, move all pages on deferred list to
+ * free_pages list ot to kernel, before adding page p to the
  * deferred list.
  *
  * Return: true if page was added to deferred_pages list
@@ -351,9 +352,9 @@ static bool kbase_mem_pool_add_deferred_if_required_locked(struct kbase_mem_pool
 	lockdep_assert_held(&pool->pool_lock);
 	/* remove pages from deferred list if page deferred is completed */
 	if (!pool->dying)
-		kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+		kbase_mem_pool_free_pages_from_defer_list_locked(pool, false);
 
-	/* check if page quarantine is required */
+	/* check if page deferral is required */
 	if (kbase_mem_is_pmode_deferral_required(pool->kbdev)) {
 		atomic_set(&pool->defer_seq, kbase_csf_scheduler_get_protm_seq_num(pool->kbdev));
 		list_add(&p->lru, &pool->deferred_pages_list);
@@ -373,9 +374,9 @@ static bool kbase_mem_pool_add_deferred_if_required_locked(struct kbase_mem_pool
  * This function check if conditions to move page to qarantine
  * instead of returning it to free_pool or to kernel are meet.
  * It it is true page is added to deferred_pages list
- * This function also check if previouse quarantine is finish
- * ant if it is finished, move all pages in quarantine to
- * free_pages list ot to kernel, before adding page p to
+ * This function also check if previouse deferral window is passed
+ * and if it is, move all pages in deferred list to the
+ * free_pages list or to kernel, before adding page p to the
  * deferred list.
  *
  * Return: true if page was added to deferred_pages list
@@ -417,7 +418,7 @@ static void kbase_mem_pool_add_array_deferred_locked(struct kbase_mem_pool *pool
 	lockdep_assert_held(&pool->pool_lock);
 	/* free pages form deferred list if page deferred is completed */
 	if (!pool->dying)
-		kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+		kbase_mem_pool_free_pages_from_defer_list_locked(pool, false);
 
 	if (unlikely(!nr_pages))
 		return;
@@ -474,8 +475,8 @@ static void kbase_mem_pool_add_array_deferred(struct kbase_mem_pool *pool, size_
 	size_t i;
 	LIST_HEAD(new_page_list);
 
-	/* free pages from deferred list if pages quarantine is completed */
-	kbase_mem_pool_free_pages_from_deferred_list(pool);
+	/* free pages from deferred list if pages deferral window is passed */
+	kbase_mem_pool_free_pages_from_deferred_list(pool, false);
 
 	if (unlikely(!nr_pages))
 		return;
@@ -703,7 +704,7 @@ static size_t kbase_mem_pool_shrink(struct kbase_mem_pool *pool, size_t nr_to_sh
 
 	kbase_mem_pool_lock(pool);
 	if (!pool->dying)
-		kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+		kbase_mem_pool_free_pages_from_defer_list_locked(pool, false);
 
 	nr_freed = kbase_mem_pool_shrink_locked(pool, nr_to_shrink);
 	kbase_mem_pool_unlock(pool);
@@ -722,7 +723,7 @@ int kbase_mem_pool_grow(struct kbase_mem_pool *pool, size_t nr_to_grow,
 	pool->reclaim_allowed = false;
 
 	if (!pool->dying)
-		kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+		kbase_mem_pool_free_pages_from_defer_list_locked(pool, false);
 
 	for (i = 0; i < nr_to_grow; i++) {
 		if (pool->dying) {
@@ -934,7 +935,7 @@ void kbase_mem_pool_mark_dying(struct kbase_mem_pool *pool)
 	kbase_mem_pool_lock(pool);
 	pool->dying = true;
 	/* Remove the pool from pmode pages defer control */
-	kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool);
+	kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool, false);
 	kbase_mem_pool_unlock(pool);
 }
 KBASE_EXPORT_TEST_API(kbase_mem_pool_mark_dying);
@@ -961,7 +962,7 @@ void kbase_mem_pool_term(struct kbase_mem_pool *pool)
 	pool->max_size = 0;
 
 	/* Remove it from defer control */
-	kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool);
+	kbase_csf_scheduler_pages_defer_ctrl_drop_pool(pool, false);
 
 	/* if the pool has deferred pages, has to wait for the pmode to complete or a reset */
 	while (atomic_read(&pool->deferred_size) && remaining) {
@@ -992,7 +993,7 @@ void kbase_mem_pool_term(struct kbase_mem_pool *pool)
 	}
 
 	/* Proceed to release the deferred pages */
-	kbase_mem_pool_free_pages_from_defer_list_locked(pool);
+	kbase_mem_pool_free_pages_from_defer_list_locked(pool, false);
 
 	/* Free normal pool pages */
 	while (!kbase_mem_pool_is_empty(pool)) {
@@ -1299,7 +1300,7 @@ void kbase_mem_pool_free_pages(struct kbase_mem_pool *pool, size_t nr_pages,
 
 	if (!reclaimed) {
 		/* Add to this pool */
-		nr_to_pool = kbase_mem_pool_capacity(pool);
+		nr_to_pool = kbase_mem_pool_capacity(pool) << pool->order;
 		nr_to_pool = min(nr_pages, nr_to_pool);
 
 		kbase_mem_pool_add_array(pool, nr_to_pool, pages, false, dirty);
@@ -1350,7 +1351,7 @@ void kbase_mem_pool_free_pages_locked(struct kbase_mem_pool *pool, size_t nr_pag
 
 	if (!reclaimed) {
 		/* Add to this pool */
-		nr_to_pool = kbase_mem_pool_capacity(pool);
+		nr_to_pool = kbase_mem_pool_capacity(pool) << pool->order;
 		nr_to_pool = min(nr_pages, nr_to_pool);
 
 		kbase_mem_pool_add_array_locked(pool, nr_to_pool, pages, false, dirty);

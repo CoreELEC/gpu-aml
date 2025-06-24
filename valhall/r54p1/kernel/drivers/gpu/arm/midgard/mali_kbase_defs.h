@@ -467,7 +467,7 @@ struct kbase_clk_rate_trace_manager {
  */
 struct kbase_pm_device_data {
 	struct mutex lock;
-	int active_count;
+	atomic_t active_count;
 	bool suspending;
 	bool resuming;
 	bool runtime_active;
@@ -508,8 +508,7 @@ struct kbase_pm_device_data {
  *                             @cur_size and @page_list
  * @page_list:                 List of free pages in the pool
  * @deferred_pages_list:       List of deferred pages.
- *                             This is to implement page quarantine for pages
- *                             freed during protected mode.
+ *                             This is to implement deferred release during protected mode.
  *                             Pages will be returned to free pages list
  *                             when GPU leaves protected mode.
  * @reclaim:                   Shrinker for kernel reclaim of free pages
@@ -1550,6 +1549,7 @@ struct kbase_sub_alloc {
 	struct list_head link;
 	struct page *page;
 	DECLARE_BITMAP(sub_pages, NUM_PAGES_IN_2MB_LARGE_PAGE);
+	int group_id;
 };
 
 /**

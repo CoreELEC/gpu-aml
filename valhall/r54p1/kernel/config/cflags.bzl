@@ -86,25 +86,9 @@ COPTS_KBASE = [
     "//conditions:default": ["-DMALI_KERNEL_TEST_API=0"],
 }) + select({
     "//conditions:default": [
-        "-DCONFIG_MALI_PLATFORM_NAME=\"devicetree\"",
+        "-DMALI_RELEASE_NAME=\"r54p1-11eac0\"",
     ],
-    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_meson": [
-        "-DCONFIG_MALI_PLATFORM_NAME=\"meson\"",
-    ],
-    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress": [
-        "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress\"",
-    ],
-    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": [
-        "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress_1xv7_a57\"",
-    ],
-    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": [
-        "-DCONFIG_MALI_PLATFORM_NAME=\"vexpress_6xvirtex7_10mhz\"",
-    ],
-}) + select({
-    "//conditions:default": [
-        "-DMALI_RELEASE_NAME=\"r54p0-00dev2\"",
-    ],
-    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_release_name_r54p0-00dev2": [
-        "-DMALI_RELEASE_NAME=\"r54p0-00dev2\"",
+    "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_release_name_r54p1-11eac0": [
+        "-DMALI_RELEASE_NAME=\"r54p1-11eac0\"",
     ],
 })

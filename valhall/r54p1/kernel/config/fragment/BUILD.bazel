@@ -54,7 +54,7 @@ filegroup(
         select({
             "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_coresight": [":coresight.fragment"],
             "//conditions:default": [":nocoresight.fragment"],
-        })
+        }),
 )
 
 genrule(
@@ -101,6 +101,13 @@ filegroup(
            }) +
            select({
                "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_coresight": ["coresight.fragment"],
+               "//conditions:default": [],
+           }) +
+           select({
+               "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_meson": ["platform/meson.fragment"],
+               "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress": ["platform/vexpress.fragment"],
+               "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57.fragment"],
+               "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz.fragment"],
                "//conditions:default": [],
            }),
 )

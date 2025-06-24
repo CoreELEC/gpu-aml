@@ -32,6 +32,13 @@ package(
     ],
 )
 
+genrule(
+    name = "remove_mali_kconfig_ext_prefix",
+    srcs = ["Kconfig"],
+    outs = ["post_process.kconfig"],
+    cmd = "sed -e '/MALI_KCONFIG_EXT_PREFIX/d' $(location Kconfig) > $@",
+    visibility = ["//visibility:public"],
+)
 
 ddk_headers(
     name = "kbase_kernel_headers",
@@ -82,7 +89,7 @@ ddk_headers(
 filegroup(
     name = "midgard_kconfig",
     srcs = [
-        "Kconfig",
+        "post_process.kconfig",
     ] + select({
         "//driver_modules/gpu/valhall/r54p1/kernel/config:mali_debug_kutf": ["//drivers/gpu/arm/midgard/tests:kutf_kconfig"],
         "//conditions:default": [],
@@ -106,10 +113,9 @@ ddk_module(
                    "mali_kbase_fpga_sysctl.c",
                ],
            ) + glob(
-               ["arbiter/*.c"],
-               exclude = [
-                   "arbiter/mali_kbase_aw.c",
-                   "arbiter/backend/mali_kbase_aw_backend_csf.c",
+               [
+                   "arbiter/*.c",
+                   "arbiter/backend/*.c",
                ],
            ) + glob(
                ["backend/gpu/*.c"],

@@ -477,8 +477,8 @@ static int wait_ready(struct kbase_device *kbdev)
 	dev_err(kbdev->dev,
 		"AS_ACTIVE bit stuck for MCU AS. Might be caused by unstable GPU clk/pwr or faulty system");
 
-	if (kbase_prepare_to_reset_gpu_locked(kbdev, RESET_FLAGS_HWC_UNRECOVERABLE_ERROR))
-		kbase_reset_gpu_locked(kbdev);
+	if (kbase_prepare_to_reset_gpu(kbdev, RESET_FLAGS_HWC_UNRECOVERABLE_ERROR))
+		kbase_reset_gpu(kbdev);
 
 	return -ETIMEDOUT;
 }
@@ -3572,12 +3572,8 @@ void kbase_csf_firmware_soi_update(struct kbase_device *kbdev)
 
 	kbase_csf_scheduler_lock(kbdev);
 
-	mutex_lock(&kbdev->pm.lock);
-	if (unlikely(kbdev->pm.active_count > 1)) {
-		mutex_unlock(&kbdev->pm.lock);
+	if (unlikely(atomic_read(&kbdev->pm.active_count) > 1))
 		goto out_unlock_scheduler_lock;
-	}
-	mutex_unlock(&kbdev->pm.lock);
 
 	if ((scheduler->state == SCHED_SUSPENDED) || (scheduler->state == SCHED_SLEEPING))
 		goto out_unlock_scheduler_lock;
@@ -3675,7 +3671,8 @@ int kbase_csf_firmware_soi_disable_on_scheduler_suspend(struct kbase_device *kbd
 
 	lockdep_assert_held(&scheduler->lock);
 
-	if (!atomic_read(&kbdev->csf.scheduler.fw_soi_enabled))
+	if (!atomic_read(&kbdev->csf.scheduler.fw_soi_enabled) ||
+	    (kbdev->pm.backend.mcu_state == KBASE_MCU_IN_SLEEP))
 		return 0;
 
 	kbase_csf_scheduler_spin_lock(kbdev, &flags);
