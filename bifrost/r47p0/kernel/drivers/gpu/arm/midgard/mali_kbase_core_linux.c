@@ -170,6 +170,19 @@ static void kbase_file_destroy_kctx_worker(struct work_struct *work);
 static ssize_t js_ctx_scheduling_mode_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count);
 
+#ifdef CONFIG_AMLOGIC_LEGACY_EARLY_SUSPEND
+#include <linux/amlogic/pm.h>
+static void mali_early_suspend(struct early_suspend *h);
+static void mali_late_resume(struct early_suspend *h);
+
+static struct early_suspend mali_early_suspend_handler = {
+	.suspend = mali_early_suspend,
+	.resume = mali_late_resume,
+};
+
+static bool power_policy_changed = false;
+#endif
+
 /**
  * mali_kbase_supports_cap - Query whether a kbase capability is supported
  *
@@ -6064,6 +6077,10 @@ static int kbase_platform_device_remove(struct platform_device *pdev)
 	if (!kbdev)
 		return -ENODEV;
 
+#ifdef CONFIG_AMLOGIC_LEGACY_EARLY_SUSPEND
+	unregister_early_suspend(&mali_early_suspend_handler);
+#endif
+
 	kbase_device_term(kbdev);
 	dev_set_drvdata(kbdev->dev, NULL);
 	kbase_device_free(kbdev);
@@ -6149,6 +6166,12 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 		mutex_lock(&kbdev->pm.lock);
 		kbase_arbiter_pm_vm_event(kbdev, KBASE_VM_GPU_INITIALIZED_EVT);
 		mutex_unlock(&kbdev->pm.lock);
+#endif
+
+
+#ifdef CONFIG_AMLOGIC_LEGACY_EARLY_SUSPEND
+		mali_early_suspend_handler.param = kbdev;
+		register_early_suspend(&mali_early_suspend_handler);
 #endif
 	}
 
@@ -6380,6 +6403,50 @@ static struct platform_driver kbase_platform_driver = {
 		   .probe_type = PROBE_PREFER_ASYNCHRONOUS,
 	},
 };
+
+#ifdef CONFIG_AMLOGIC_LEGACY_EARLY_SUSPEND
+static void mali_early_suspend(struct early_suspend* suspend)
+{
+	struct kbase_device *kbdev;
+	const struct kbase_pm_policy *current_policy;
+
+	kbdev = (struct kbase_device*)suspend->param;
+
+	if (!kbdev)
+		return;
+
+	current_policy = kbase_pm_get_policy(kbdev);
+
+	if (current_policy == &kbase_pm_always_on_policy_ops)
+	{
+		kbase_pm_set_policy(kbdev, &kbase_pm_coarse_demand_policy_ops);
+		power_policy_changed = true;
+	}
+
+	dev_info(kbdev->dev, "mali_early_suspend done\n");
+}
+
+static void mali_late_resume(struct early_suspend* suspend)
+{
+	struct kbase_device *kbdev;
+	const struct kbase_pm_policy *current_policy;
+
+	kbdev = (struct kbase_device*)suspend->param;
+
+	if (!kbdev)
+		return;
+
+	current_policy = kbase_pm_get_policy(kbdev);
+
+	if (current_policy == &kbase_pm_coarse_demand_policy_ops && power_policy_changed)
+	{
+		kbase_pm_set_policy(kbdev, &kbase_pm_always_on_policy_ops);
+		power_policy_changed = false;
+	}
+
+	dev_info(kbdev->dev, "mali_late_resume done\n");
+}
+#endif
 
 #if (KERNEL_VERSION(5, 3, 0) > LINUX_VERSION_CODE) && IS_ENABLED(CONFIG_OF)
 module_platform_driver(kbase_platform_driver);
