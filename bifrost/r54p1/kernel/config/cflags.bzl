@@ -60,8 +60,9 @@ CFLAGS_MODULE = [
 
 COPTS_KBASE = [
     "-DMALI_COVERAGE=0",
-    "-DMALI_JIT_PRESSURE_LIMIT_BASE=0",
+    "-DMALI_JIT_PRESSURE_LIMIT_BASE=1",
     "-DMALI_USE_CSF=0",
+    "-DMALI_RELEASE_NAME=\"r54p1-12eac0\"",
 ] + select({
     "//config:mali_debug": ["-DMALI_UNIT_TEST=1"],
     "//conditions:default": ["-DMALI_UNIT_TEST=0"],
@@ -75,13 +76,6 @@ COPTS_KBASE = [
     "//config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
     "//conditions:default": ["-DMALI_CUSTOMER_RELEASE=0"],
 }) + select({
-    "//config:mali_kutf": ["-DMALI_KERNEL_TEST_API=1"],
+    "//config:mali_expert_debug": ["-DMALI_KERNEL_TEST_API=1"],
     "//conditions:default": ["-DMALI_KERNEL_TEST_API=0"],
-}) + select({
-    "//conditions:default": [
-        "-DMALI_RELEASE_NAME=\"r54p1-08bet0\"",
-    ],
-    "//config:mali_release_name_r54p1-08bet0": [
-        "-DMALI_RELEASE_NAME=\"r54p1-08bet0\"",
-    ],
 })
