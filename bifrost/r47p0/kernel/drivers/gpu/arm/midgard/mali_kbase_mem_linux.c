@@ -83,7 +83,7 @@
 #endif
 
 #define IR_THRESHOLD_STEPS (256u)
-
+extern bool dmabuf_uvm_realloc(struct dma_buf *dmabuf);
 /*
  * fully_backed_gpf_memory - enable full physical backing of all grow-on-GPU-page-fault
  * allocations in the kernel.
@@ -1270,17 +1270,27 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx, struct kbase
 
 		for (j = 0; (j < pages) && (count < reg->nr_pages); j++, count++)
 			*pa++ = as_tagged(sg_dma_address(s) + (j << PAGE_SHIFT));
-		WARN_ONCE(j < pages, "sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+		if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+			(j < pages))
+			dev_info(kctx->kbdev->dev,"sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+		else
+			WARN_ONCE(j < pages, "sg list from dma_buf_map_attachment > dma_buf->size=%zu\n",
 			  alloc->imported.umm.dma_buf->size);
 	}
 
-	if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
-	    WARN_ONCE(count < reg->nr_pages,
+	if (dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
+	    !(reg->flags & KBASE_REG_IMPORT_PAD) &&
+	    (count < reg->nr_pages))
+		dev_info(kctx->kbdev->dev,"sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
+			alloc->imported.umm.dma_buf->size);
+	else if (!(reg->flags & KBASE_REG_IMPORT_PAD) &&
+			WARN_ONCE(count < reg->nr_pages,
 		      "sg list from dma_buf_map_attachment < dma_buf->size=%zu\n",
 		      alloc->imported.umm.dma_buf->size)) {
-		err = -EINVAL;
-		goto err_unmap_attachment;
-	}
+			err = -EINVAL;
+			goto err_unmap_attachment;
+		}
 
 	/* Update nents as we now have pages to map */
 	alloc->nents = count;
