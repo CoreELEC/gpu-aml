@@ -72,7 +72,7 @@ ddk_module(
     copts = CFLAGS_MODULE + COPTS_KBASE,
     defconfig = "//drivers/gpu/arm/arbitration:arbitration_defconfig",
     kconfig = "//drivers/gpu/arm:gpu_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
 )
 
 ddk_module(
@@ -85,5 +85,5 @@ ddk_module(
     copts = CFLAGS_MODULE + COPTS_KBASE,
     defconfig = "//drivers/gpu/arm/arbitration:arbitration_defconfig",
     kconfig = "//drivers/gpu/arm:gpu_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
 )

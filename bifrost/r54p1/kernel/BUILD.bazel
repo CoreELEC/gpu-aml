@@ -45,18 +45,18 @@ ddk_headers(
 filegroup(
     name = "kconfigs",
     srcs = [
-        "//drivers/base/arm:base_kconfig",
-        "//drivers/gpu/arm:gpu_kconfig",
+         "//driver_modules/gpu/bifrost/r54p1/kernel/drivers/base/arm:base_kconfig",
+         "//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm:gpu_kconfig",
     ],
 )
 
 kernel_module_group(
     name = "modules",
     srcs = [
-        "//drivers/base/arm:base",
-        "//drivers/gpu/arm:gpu",
+        "//driver_modules/gpu/bifrost/r54p1/kernel/drivers/base/arm:base",
+        "//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm:gpu",
     ] + select({
-        "//config:xen_arbiter": ["//drivers/xen/arm:xen_module"],
+        "//driver_modules/gpu/bifrost/r54p1/kernel/config:xen_arbiter": ["//driver_modules/gpu/bifrost/r54p1/kernel/drivers/xen/arm:xen_module"],
         "//conditions:default": [],
     }),
 )

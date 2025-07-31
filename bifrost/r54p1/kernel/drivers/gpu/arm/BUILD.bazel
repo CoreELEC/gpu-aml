@@ -37,7 +37,7 @@ ddk_headers(
         "midgard",
         ".",
     ] + select({
-        "//config:mali_arbitration": ["arbitration"],
+        "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_arbitration": ["arbitration"],
         "//conditions:default": [],
     }),
 )
@@ -45,21 +45,21 @@ ddk_headers(
 filegroup(
     name = "gpu_kconfig",
     srcs = [
-        "//drivers/gpu/arm/midgard:midgard_kconfig",
+        "//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm/midgard:midgard_kconfig",
     ] + select({
-        "//config:mali_arbitration": ["//drivers/gpu/arm/arbitration:arbitration_kconfig"],
+        "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_arbitration": ["//drivers/gpu/arm/arbitration:arbitration_kconfig"],
         "//conditions:default": [],
     }),
 )
 
 kernel_module_group(
     name = "gpu",
-    srcs = ["//drivers/gpu/arm/midgard:mali_kbase"] +
+    srcs = ["//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm/midgard:mali_kbase"] +
            select({
-               "//config:mali_arbitration": ["//drivers/gpu/arm/arbitration:arbitration"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_arbitration": ["//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm/arbitration:arbitration"],
                "//conditions:default": [],
            }) + select({
-        "//config:mali_expert_debug": ["//drivers/gpu/arm/midgard/tests:mali_kutf_tests"],
+        "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_expert_debug": ["//driver_modules/gpu/bifrost/r54p1/kernel/drivers/gpu/arm/midgard/tests:mali_kutf_tests"],
         "//conditions:default": [],
     }),
 )

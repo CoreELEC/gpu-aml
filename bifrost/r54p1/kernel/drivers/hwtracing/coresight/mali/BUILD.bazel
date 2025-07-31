@@ -90,7 +90,7 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kconfig = ":hwtracing_coresight_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
     deps = ["//drivers/gpu/arm/midgard:mali_kbase"],
 )
 
@@ -107,7 +107,7 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kconfig = ":hwtracing_coresight_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
     deps = ["//drivers/gpu/arm/midgard:mali_kbase"],
 )
 
@@ -124,7 +124,7 @@ ddk_module(
     ],
     copts = CFLAGS_MODULE,
     kconfig = ":hwtracing_coresight_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
     deps = ["//drivers/gpu/arm/midgard:mali_kbase"],
 )
 

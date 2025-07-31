@@ -92,22 +92,10 @@ config MALI_CSF_SUPPORT
 	help
 	  Enables support for CSF based GPUs.
 
-config MALI_DEVFREQ
-	bool "Enable devfreq support for Mali"
-	depends on MALI_MIDGARD && PM_DEVFREQ
-	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-	default y
-	help
-	  Support devfreq for Mali.
-
-	  Using the devfreq framework and, by default, the simple on-demand
-	  governor, the frequency of Mali will be dynamically selected from the
-	  available OPPs.
-
 config MALI_MIDGARD_DVFS
 	bool "Enable legacy DVFS"
-	depends on MALI_MIDGARD && !MALI_DEVFREQ
-	default n
+	depends on MALI_MIDGARD
+	default y
 	help
 	  Choose this option to enable legacy DVFS in the Mali Midgard DDK.
 

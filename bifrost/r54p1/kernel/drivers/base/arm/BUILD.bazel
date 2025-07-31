@@ -24,7 +24,7 @@ load(
     "ddk_module",
     "kernel_module_group",
 )
-load("//config:cflags.bzl", "CFLAGS_MODULE")
+load("//driver_modules/gpu/bifrost/r54p1/kernel/config:cflags.bzl", "CFLAGS_MODULE")
 
 package(
     default_visibility = [
@@ -36,7 +36,7 @@ package(
 ddk_headers(
     name = "mali_kernel_headers",
     hdrs = [
-        "//:kernel_headers",
+        "//driver_modules/gpu/bifrost/r54p1/kernel:kernel_headers",
         "@kleaf//common:all_headers",
     ],
 )
@@ -47,7 +47,7 @@ kernel_module_group(
                ":memory_group_manager",
            ] +
            select({
-               "//config:dma_shared_buffer": [
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:dma_shared_buffer": [
                    ":dma-buf-test-exporter",
                ],
                "//conditions:default": [],
@@ -65,9 +65,9 @@ ddk_module(
     out = "dma-buf-test-exporter.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    defconfig = "//config/fragment:base_defconfig",
+    defconfig = "//driver_modules/gpu/bifrost/r54p1/kernel/config/fragment:base_defconfig",
     kconfig = ":base_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
 )
 
 ddk_module(
@@ -76,9 +76,9 @@ ddk_module(
     out = "memory_group_manager.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    defconfig = "//config/fragment:base_defconfig",
+    defconfig = "//driver_modules/gpu/bifrost/r54p1/kernel/config/fragment:base_defconfig",
     kconfig = ":base_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
 )
 
 ddk_module(
@@ -87,8 +87,8 @@ ddk_module(
     out = "protected_memory_allocator.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    defconfig = "//config/fragment:base_defconfig",
+    defconfig = "//driver_modules/gpu/bifrost/r54p1/kernel/config/fragment:base_defconfig",
     kconfig = ":base_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = "@kleaf//common_drivers:amlogic",
 )
 

@@ -36,7 +36,7 @@ filegroup(
             ":base.fragment",
         ] +
         select({
-            "//config:dma_shared_buffer": [":dma_buff.fragment"],
+            "//driver_modules/gpu/bifrost/r54p1/kernel/config:dma_shared_buffer": [":dma_buff.fragment"],
             "//conditions:default": [],
         }),
 )
@@ -52,46 +52,46 @@ filegroup(
     name = "kbaseconfig",
     srcs = ["midgard.fragment"] +
            select({
-               "//config:no_mali": ["nomali.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:no_mali": ["nomali.fragment"],
                "//conditions:default": ["real_hw.fragment"],
            }) +
            select({
-               "//config:mali_expert": ["mali_expert.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_expert": ["mali_expert.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_sync_file": ["sync_file.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_sync_file": ["sync_file.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_debug": ["mali_debug.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_debug": ["mali_debug.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:expert_no_mali": ["mali_expert_no_mali.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:expert_no_mali": ["mali_expert_no_mali.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_expert_debug": ["mali_expert_debug.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_expert_debug": ["mali_expert_debug.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_expert_debug_sync_file": ["mali_expert_debug_sync_file.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_expert_debug_sync_file": ["mali_expert_debug_sync_file.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_expert_debug": ["debug_kutf.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_expert_debug": ["debug_kutf.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_debug_devfreq_no_mali": ["debug_kutf_devfreq_no_mali.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_debug_devfreq_no_mali": ["debug_kutf_devfreq_no_mali.fragment"],
                "//conditions:default": [],
            }) +
            select({
-               "//config:mali_platform_name_meson": ["platform/meson.fragment"],
-               "//config:mali_platform_name_vexpress": ["platform/vexpress.fragment"],
-               "//config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57.fragment"],
-               "//config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_platform_name_meson": ["platform/meson.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_platform_name_vexpress": ["platform/vexpress.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_platform_name_vexpress_1xv7_a57": ["platform/vexpress_1xv7_a57.fragment"],
+               "//driver_modules/gpu/bifrost/r54p1/kernel/config:mali_platform_name_vexpress_6xvirtex7_10mhz": ["platform/vexpress_6xvirtex7_10mhz.fragment"],
                "//conditions:default": [],
            }),
 )
