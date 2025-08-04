@@ -24,7 +24,7 @@ load(
     "ddk_module",
     "kernel_module_group",
 )
-load("//config:cflags.bzl", "CFLAGS_MODULE")
+load("//driver_modules/gpu/avalon/r54p1/kernel/config:cflags.bzl", "CFLAGS_MODULE")
 
 package(
     default_visibility = [
@@ -36,10 +36,10 @@ package(
 ddk_headers(
     name = "mali_kernel_headers",
     hdrs = [
-        "//:kernel_headers",
+        "//driver_modules/gpu/avalon/r54p1/kernel:kernel_headers",
         "@kleaf//common:all_headers",
     ],
-    defconfigs = ["//config/fragment:base_defconfig"],
+    defconfigs = ["//driver_modules/gpu/avalon/r54p1/kernel/config/fragment:base_defconfig"],
     kconfigs = [":base_kconfig"],
 )
 
@@ -55,20 +55,20 @@ kernel_module_group(
                ":protected_memory_allocator",
            ] +
            select({
-               "//config:dma_shared_buffer": [
+               "//driver_modules/gpu/avalon/r54p1/kernel/config:dma_shared_buffer": [
                    ":dma-buf-test-exporter",
                ],
                "//conditions:default": [],
            }),
 )
-
+load("//common_drivers:amlogic_utils.bzl", "kernel_select")
 ddk_module(
     name = "dma-buf-test-exporter",
     srcs = glob(["dma_buf_test_exporter/*.c"]),
     out = "dma-buf-test-exporter.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = kernel_select(),
 )
 
 ddk_module(
@@ -77,7 +77,7 @@ ddk_module(
     out = "memory_group_manager.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = kernel_select(),
 )
 
 ddk_module(
@@ -86,6 +86,6 @@ ddk_module(
     out = "protected_memory_allocator.ko",
     hdrs = [":mali_kernel_headers"],
     copts = CFLAGS_MODULE,
-    kernel_build = "@kleaf//common:kernel",
+    kernel_build = kernel_select(),
 )
 

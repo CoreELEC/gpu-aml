@@ -45,11 +45,11 @@ ddk_headers(
 filegroup(
     name = "kconfigs",
     srcs = [
-               "//drivers/base/arm:base_kconfig",
-               "//drivers/gpu/arm:gpu_kconfig",
-           ] 
+               "//driver_modules/gpu/avalon/r54p1/kernel/drivers/base/arm:base_kconfig",
+               "//driver_modules/gpu/avalon/r54p1/kernel/drivers/gpu/arm:gpu_kconfig",
+           ]
            + select({
-               "//config:mali_coresight": ["//drivers/hwtracing/coresight/mali:hwtracing_coresight_kconfig"],
+               "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_coresight": ["//driver_modules/gpu/avalon/r54p1/kernel/drivers/hwtracing/coresight/mali:hwtracing_coresight_kconfig"],
                "//conditions:default": [],
            }),
 )
@@ -57,11 +57,11 @@ filegroup(
 kernel_module_group(
     name = "modules",
     srcs = [
-               "//drivers/base/arm:base",
-               "//drivers/gpu/arm:gpu",
-           ] 
+               "//driver_modules/gpu/avalon/r54p1/kernel/drivers/base/arm:base",
+               "//driver_modules/gpu/avalon/r54p1/kernel/drivers/gpu/arm:gpu",
+           ]
            + select({
-               "//config:mali_coresight": ["//drivers/hwtracing/coresight/mali:hwtracing_coresight"],
+               "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_coresight": ["//driver_modules/gpu/avalon/r54p1/kernel/drivers/hwtracing/coresight/mali:hwtracing_coresight"],
                "//conditions:default": [],
            }),
 )

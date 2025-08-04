@@ -505,4 +505,9 @@ check_padding_KBASE_IOCTL_CS_TILER_HEAP_SIZE(union kbase_ioctl_cs_tiler_heap_siz
 	return 0;
 }
 
+static inline int
+check_padding_KBASE_IOCTL_STICKY_RESOURCE_MAP_AML(struct kbase_ioctl_sticky_resource_map *p)
+{
+	return 0;
+}
 #endif /* _KBASE_IOCTL_HELPERS_H_ */

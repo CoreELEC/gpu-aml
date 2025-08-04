@@ -33,7 +33,7 @@ CFLAGS_MODULE = [
     "-Wmissing-declarations",
     "-Wmissing-prototypes",
     "-Wold-style-definition",
-    "-Wunused-const-variable",
+    "-Wno-unused-const-variable",
     "-Wno-sign-compare",
     "-Wno-shift-negative-value",
     "-Wno-cast-function-type",
@@ -42,15 +42,16 @@ CFLAGS_MODULE = [
     "-Wmissing-field-initializers",
     "-Wno-type-limits",
     "-Wunused-macros",
+    "-Wno-missing-prototypes",
 ] + select({
-    "//config:mali_gcov_kernel": [
+    "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_gcov_kernel": [
         "-DGCOV_PROFILE=1",
         "-ftest-coverage",
         "-fprofile-arcs",
     ],
     "//conditions:default": [],
 }) + select({
-    "//config:mali_kcov": [
+    "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_kcov": [
         "-DKCOV=1",
         "-DKCOV_ENABLE_COMPARISONS=1",
         "-fsanitize-coverage=trace-cmp",
@@ -62,20 +63,26 @@ CFLAGS_CORESIGHT = [
     "-Wmissing-include-dirs",
     "-Wunused-but-set-variable",
     "-Wunused-const-variable",
-    # "-Wstringop-truncation",
+    "-Wunused-macros",
+    "-Wunused-const-variable",
+    "-Wstringop-truncation",
 ]
 
 COPTS_KBASE = [
     "-DMALI_COVERAGE=0",
     "-DMALI_JIT_PRESSURE_LIMIT_BASE=0",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-const-variable",
+    "-Wno-unused-macros",
+    "-Wno-unused-const-variable",
     "-DMALI_RELEASE_NAME=\"r54p1-11eac1\"",
 ] + select({
-    "//config:mali_debug": ["-DMALI_UNIT_TEST=1"],
+    "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_debug": ["-DMALI_UNIT_TEST=1"],
     "//conditions:default": ["-DMALI_UNIT_TEST=0"],
 }) + select({
-    "//config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
+    "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
     "//conditions:default": ["-DMALI_CUSTOMER_RELEASE=0"],
 }) + select({
-    "//config:mali_debug_kutf": ["-DMALI_KERNEL_TEST_API=1"],
+    "//driver_modules/gpu/avalon/r54p1/kernel/config:mali_debug_kutf": ["-DMALI_KERNEL_TEST_API=1"],
     "//conditions:default": ["-DMALI_KERNEL_TEST_API=0"],
 })
