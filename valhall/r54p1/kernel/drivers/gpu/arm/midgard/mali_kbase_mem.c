@@ -561,7 +561,7 @@ int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 			nr_phys_pages = alloc->nents + 1;
 
 		err = kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn,
-							alloc->pages, nr_phys_pages, nr_virt_pages,
+							alloc->pages, kbase_reg_current_backed_size(reg), nr_virt_pages,
 							kctx->as_nr);
 	} break;
 	case KBASE_MEM_TYPE_IMPORTED_USER_BUF: {
