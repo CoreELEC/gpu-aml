@@ -907,7 +907,7 @@ static int kbasep_mem_pool_init(struct kbase_mem_pool *pool, size_t max_size, un
 		reclaim->scan_objects = kbase_mem_pool_reclaim_scan_objects;
 		reclaim->seeks = DEFAULT_SEEKS;
 		reclaim->batch = 0;
-
+		pool->reclaim_allowed = true;
 		KBASE_REGISTER_SHRINKER(reclaim, "mali-mem-pool", pool);
 	}
 
