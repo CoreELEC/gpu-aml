@@ -2190,6 +2190,53 @@ static ssize_t set_ctx_mem_pool_size(struct device *dev, struct device_attribute
 
 static DEVICE_ATTR(ctx_mem_pool_size, S_IRUGO | S_IWUSR, show_ctx_mem_pool_size, set_ctx_mem_pool_size);
 
+static ssize_t show_mem_pool_size(struct device *dev, struct device_attribute *attr, char * const buf)
+{
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+	ssize_t ret = 0;
+
+	if (!to_kbase_device(dev))
+		return -ENODEV;
+
+	ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+			"%-24s %-16s\n",
+			"pool", "pages");
+	ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+			"------------------------------------\n");
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = list_entry(entry, struct kbase_device, entry);
+
+		if (kbdev) {
+			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"pgd_mem_pool        %10lu\n", kbdev->pgd_mem_pool.cur_size);
+			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"fw_mem_pool.small   %10lu\n", kbdev->fw_mem_pools.small.cur_size);
+			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"fw_mem_pool.large   %10lu\n", kbdev->fw_mem_pools.large.cur_size);
+		}
+	}
+
+	kbase_device_put_list(kbdev_list);
+	return ret;
+}
+
+static ssize_t set_mem_pool_size(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct kbase_device *kbdev;
+	ssize_t err = count;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	return err;
+}
+static DEVICE_ATTR(mem_pool_size, S_IRUGO | S_IWUSR, show_mem_pool_size, set_mem_pool_size);
+
 /**
  * power_policy_show - Show callback for the power_policy sysfs file.
  *
@@ -4487,6 +4534,7 @@ static struct attribute *kbase_attrs[] = {
 	&dev_attr_power_policy.attr,
 	&dev_attr_core_mask.attr,
 	&dev_attr_gpu_memory.attr,
+	&dev_attr_mem_pool_size.attr,
 	NULL
 };
 
