@@ -130,7 +130,7 @@ config MALI_ARBITER_SUPPORT
 config MALI_DMA_BUF_MAP_ON_DEMAND
 	bool "Enable map imported dma-bufs on demand"
 	depends on MALI_MIDGARD
-	default n
+	default y
 	help
 	  This option will cause kbase to set up the GPU mapping of imported
 	  dma-buf when needed to run atoms. This is the legacy behavior.
