@@ -55,7 +55,7 @@
 #define MCU_AS_BITMASK (1 << MCU_AS_NR)
 
 /* Number of available Doorbells */
-#define CSF_NUM_DOORBELL_MAX ((u8)64)
+#define CSF_NUM_DOORBELL_MAX ((u8)120)
 
 /* Offset to the first HW doorbell page */
 #define CSF_HW_DOORBELL_PAGE_OFFSET ((u32)DOORBELLS_BASE)
