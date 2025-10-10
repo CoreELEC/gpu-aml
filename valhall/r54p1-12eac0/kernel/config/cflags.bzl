@@ -33,7 +33,7 @@ CFLAGS_MODULE = [
     "-Wmissing-declarations",
     "-Wmissing-prototypes",
     "-Wold-style-definition",
-    "-Wunused-const-variable",
+    "-Wno-unused-const-variable",
     "-Wno-sign-compare",
     "-Wno-shift-negative-value",
     "-Wno-cast-function-type",
@@ -42,15 +42,16 @@ CFLAGS_MODULE = [
     "-Wmissing-field-initializers",
     "-Wno-type-limits",
     "-Wunused-macros",
+    "-Wno-missing-prototypes",
 ] + select({
-    "//config:cov_kernel": [
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:cov_kernel": [
         "-DGCOV_PROFILE=1",
         "-ftest-coverage",
         "-fprofile-arcs",
     ],
     "//conditions:default": [],
 }) + select({
-    "//config:mali_kcov": [
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_kcov": [
         "-DKCOV=1",
         "-DKCOV_ENABLE_COMPARISONS=1",
         "-fsanitize-coverage=trace-cmp",
@@ -63,19 +64,23 @@ COPTS_KBASE = [
     "-DMALI_JIT_PRESSURE_LIMIT_BASE=1",
     "-DMALI_USE_CSF=0",
     "-DMALI_RELEASE_NAME=\"r54p1-12eac0\"",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-const-variable",
+    "-Wno-unused-macros",
+    "-Wno-unused-const-variable",
 ] + select({
-    "//config:mali_debug": ["-DMALI_UNIT_TEST=1"],
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_debug": ["-DMALI_UNIT_TEST=1"],
     "//conditions:default": ["-DMALI_UNIT_TEST=0"],
 }) + select({
-    "//config:mali_has_cl": ["-DMALI_HAS_CL=1"],
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_has_cl": ["-DMALI_HAS_CL=1"],
     "//conditions:default": ["-DMALI_HAS_CL=0"],
 }) + select({
-    "//config:mali_has_gles": ["-DMALI_HAS_GLES=1"],
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_has_gles": ["-DMALI_HAS_GLES=1"],
     "//conditions:default": ["-DMALI_HAS_GLES=0"],
 }) + select({
-    "//config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_customer_release": ["-DMALI_CUSTOMER_RELEASE=0"],
     "//conditions:default": ["-DMALI_CUSTOMER_RELEASE=0"],
 }) + select({
-    "//config:mali_expert_debug": ["-DMALI_KERNEL_TEST_API=1"],
+    "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/config:mali_expert_debug": ["-DMALI_KERNEL_TEST_API=1"],
     "//conditions:default": ["-DMALI_KERNEL_TEST_API=0"],
 })

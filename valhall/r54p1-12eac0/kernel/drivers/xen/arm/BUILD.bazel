@@ -25,7 +25,7 @@ load(
     "kernel_module_group",
 )
 load("//config:cflags.bzl", "CFLAGS_MODULE", "COPTS_KBASE")
-
+load("//common_drivers:amlogic_utils.bzl", "kernel_select", "ddk_deps_select")
 package(
     default_visibility = [
         "//:__subpackages__",
@@ -70,9 +70,9 @@ ddk_module(
         ":mali_kernel_headers",
     ],
     copts = CFLAGS_MODULE + COPTS_KBASE,
-    defconfig = "//drivers/gpu/arm/arbitration:arbitration_defconfig",
-    kconfig = "//drivers/gpu/arm:gpu_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    defconfig = "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/drivers/gpu/arm/arbitration:arbitration_defconfig",
+    kconfig = "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/drivers/gpu/arm:gpu_kconfig",
+    kernel_build = kernel_select(),
 )
 
 ddk_module(
@@ -83,7 +83,7 @@ ddk_module(
         ":mali_kernel_headers",
     ],
     copts = CFLAGS_MODULE + COPTS_KBASE,
-    defconfig = "//drivers/gpu/arm/arbitration:arbitration_defconfig",
-    kconfig = "//drivers/gpu/arm:gpu_kconfig",
-    kernel_build = "@kleaf//common:kernel",
+    defconfig = "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/drivers/gpu/arm/arbitration:arbitration_defconfig",
+    kconfig = "//driver_modules/gpu/valhall/r54p1-12eac0/kernel/drivers/gpu/arm:gpu_kconfig",
+    kernel_build = kernel_select(),
 )
