@@ -31,6 +31,7 @@ extern "C" {
 struct base_mem_handle {
 	struct {
 		__u64 handle;
+		__u64 flags;/* flag for uvm realloc */
 	} basep;
 };
 
@@ -79,6 +80,11 @@ struct base_mem_handle {
  * Flag is only allowed on allocations originating from kbase.
  */
 #define BASEP_MEM_NO_USER_FREE ((base_mem_alloc_flags)1 << 7)
+
+/* OUT */
+/* UVM mem
+ */
+#define BASE_MEM_UVM_REALLOC ((base_mem_alloc_flags)1 << 8)
 
 /* Grow backing store on GPU Page Fault
  */
