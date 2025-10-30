@@ -246,7 +246,7 @@ static int mali_oom_notifier_handler(struct notifier_block *nb, unsigned long ac
 
 	kbdev_alloc_total = KBASE_PAGES_TO_KIB(atomic_read(&(kbdev->memdev.used_pages)));
 
-	dev_err(kbdev->dev, "OOM notifier: dev %s  %lu kB\n", kbdev->devname, kbdev_alloc_total);
+	dev_dbg(kbdev->dev, "OOM notifier: dev %s  %lu kB\n", kbdev->devname, kbdev_alloc_total);
 
 	mutex_lock(&kbdev->kctx_list_lock);
 
@@ -255,7 +255,7 @@ static int mali_oom_notifier_handler(struct notifier_block *nb, unsigned long ac
 		unsigned long task_alloc_total =
 			KBASE_PAGES_TO_KIB(atomic_read(&(kctx->used_pages)));
 
-		dev_err(kbdev->dev, "OOM notifier: tsk %s  tgid (%u)  pid (%u) %lu kB\n",
+		dev_dbg(kbdev->dev, "OOM notifier: tsk %s  tgid (%u)  pid (%u) %lu kB\n",
 			task ? task->comm : "[null task]", kctx->tgid, kctx->pid, task_alloc_total);
 	}
 
