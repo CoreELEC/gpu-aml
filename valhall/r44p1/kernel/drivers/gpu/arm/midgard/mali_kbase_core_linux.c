@@ -3681,6 +3681,7 @@ static ssize_t gpuinfo_show(struct device *dev,
 #endif /* MALI_USE_CSF */
 
 	char cve_commits[] = "r44p1 ddk fixed cve ID:commit ID\n"
+						"CVE-2025-1246:e4a501b5\n"
 						"CVE-2025-0819:631fb20b\n"
 						"CVE-2025-0050:38adbc26\n"
 						"CVE-2025-0072:800346e4\n"
