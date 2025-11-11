@@ -83,8 +83,10 @@ int kbase_csf_cpu_queue_dump_buffer(struct kbase_context *kctx, u64 buffer, size
 		kctx->csf.cpu_queue.buffer = dump_buffer;
 		kctx->csf.cpu_queue.buffer_size = buf_size;
 		complete_all(&kctx->csf.cpu_queue.dump_cmp);
-	} else
+	} else {
 		kfree(dump_buffer);
+		kctx->csf.cpu_queue.buffer = NULL;
+	}
 
 	mutex_unlock(&kctx->csf.lock);
 
@@ -93,7 +95,7 @@ int kbase_csf_cpu_queue_dump_buffer(struct kbase_context *kctx, u64 buffer, size
 
 int kbasep_csf_cpu_queue_dump_print(struct kbase_context *kctx, struct kbasep_printer *kbpr)
 {
-	bool timed_out = false;
+	bool timed_out;
 
 	mutex_lock(&kctx->csf.lock);
 	if (atomic_read(&kctx->csf.cpu_queue.dump_req_status) != BASE_CSF_CPU_QUEUE_DUMP_COMPLETE) {
@@ -110,14 +112,15 @@ int kbasep_csf_cpu_queue_dump_print(struct kbase_context *kctx, struct kbasep_pr
 	kbasep_print(kbpr, "CPU Queues table (version:v" __stringify(
 				   MALI_CSF_CPU_QUEUE_DUMP_VERSION) "):\n");
 
-	if (WARN_ON(!wait_for_completion_timeout(&kctx->csf.cpu_queue.dump_cmp,
-						 msecs_to_jiffies(3000)))) {
+	timed_out =
+		!wait_for_completion_timeout(&kctx->csf.cpu_queue.dump_cmp, msecs_to_jiffies(3000));
+	if (timed_out) {
+		dev_warn(kctx->kbdev->dev, "Wait for cpu_queue dump completion time_out");
 		kbasep_print(kbpr, "Failed to wait for completion of dump request\n");
-		timed_out = true;
 	}
 
 	mutex_lock(&kctx->csf.lock);
-	if (!timed_out && kctx->csf.cpu_queue.buffer) {
+	if (kctx->csf.cpu_queue.buffer) {
 		WARN_ON(atomic_read(&kctx->csf.cpu_queue.dump_req_status) !=
 			BASE_CSF_CPU_QUEUE_DUMP_PENDING);
 
