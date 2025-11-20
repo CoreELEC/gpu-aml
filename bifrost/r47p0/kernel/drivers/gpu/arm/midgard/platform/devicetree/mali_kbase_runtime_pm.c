@@ -62,20 +62,40 @@ extern u64 kbase_pm_get_ready_cores(struct kbase_device *kbdev, enum kbase_pm_co
 
 void get_dmc_gpu_status(void)
 {
-	u32 dmc_chan_sts, rst1_value, rst2_value, dmc_chan_sts1;
+	u32 dmc_chan_sts;
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
 	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
 
 	if (reg_base_dmc && pmali_plat->dmc_reset_flag) {
-		if (pmali_plat->dmc_reset.reg_sts)
+		if (pmali_plat->dmc_reset.reg_sts) {
 			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts << 2));
-		if (pmali_plat->dmc_reset.reg_sts1)
-			dmc_chan_sts1 = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts1 << 2));
-		dev_info(kbdev->dev, "gpu dmc chan reg[0x%x,0x%x] sts: 0x%x,0x%x\n",
-			 pmali_plat->dmc_reset.reg_sts,
-			 pmali_plat->dmc_reset.reg_sts1,
-			 dmc_chan_sts, dmc_chan_sts1);
+			dev_info(kbdev->dev, "dmc_chan_sts: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts1) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts1 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts1: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts2) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts2 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts2: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts3) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts3 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts3: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts4) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts4 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts4: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts5) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts5 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts5: 0x%x\n", dmc_chan_sts);
+		}
+		if (pmali_plat->dmc_reset.reg_sts6) {
+			dmc_chan_sts = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_sts6 << 2));
+			dev_info(kbdev->dev, "dmc_chan_sts6: 0x%x\n", dmc_chan_sts);
+		}
 	}
 }
 
@@ -88,6 +108,11 @@ void reset_dmc_gpu(void)
 
 	if (reg_base_dmc && pmali_plat->dmc_reset_flag) {
 		dev_info(kbdev->dev, "gpu dmc reset start\n");
+		dev_info(kbdev->dev, "gpu dmc reset reg info 0x%x,0x%x,0x%x,0x%x\n",
+			 pmali_plat->dmc_reset.reg_rst,
+			 pmali_plat->dmc_reset.reg_rst1,
+			 pmali_plat->dmc_reset.reg_bit,
+			 pmali_plat->dmc_reset.reg_sts);
 		rst1_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst << 2));
 		rst2_value = readl(reg_base_dmc + (pmali_plat->dmc_reset.reg_rst1 << 2));
 		rst1_gpu = rst1_value & (~(1 << pmali_plat->dmc_reset.reg_bit));
@@ -325,7 +350,6 @@ static void mali_reset_high(void)
 /* 1:skip dmc reset, 0:dmc reset done*/
 int mali_reset_top_dmc(struct kbase_device *kbdev)
 {
-	u32 value;
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 
 	if (!pmali_plat->dmc_reset_flag) {
@@ -335,7 +359,6 @@ int mali_reset_top_dmc(struct kbase_device *kbdev)
 	get_dmc_gpu_status();
 	dev_info(kbdev->dev, "gpu reset top and dmc start");
 	dev_info(kbdev->dev, "gpu reset top to 0");
-	value = ~(1 << 2);
 	mali_reset_low();
 	mdelay(1);
 	reset_dmc_gpu();

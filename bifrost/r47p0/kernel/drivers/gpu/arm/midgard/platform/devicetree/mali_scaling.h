@@ -72,6 +72,11 @@ typedef struct mali_dmc_reset_info_t {
 	u32 reg_bit;
 	u32 reg_sts;
 	u32 reg_sts1;
+	u32 reg_sts2;
+	u32 reg_sts3;
+	u32 reg_sts4;
+	u32 reg_sts5;
+	u32 reg_sts6;
 } mali_dmc_reset_info_t;
 
 /**

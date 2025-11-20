@@ -586,13 +586,43 @@ int mali_dmc_reset_info(struct platform_device *pdev, struct device_node *gpu_dn
 		ret = of_property_read_u32(dmc_reset_dn,"reg_sts",
 			&mpdata->dmc_reset.reg_sts);
 		if (ret) {
-			dev_err(&pdev->dev, "no reg_sts for dmc_reset\n");
+			dev_dbg(&pdev->dev, "no reg_sts for dmc_reset\n");
 			ret = 0;
 		}
 		ret = of_property_read_u32(dmc_reset_dn,"reg_sts1",
 			&mpdata->dmc_reset.reg_sts1);
 		if (ret) {
-			dev_err(&pdev->dev, "no reg_sts1 for dmc_reset\n");
+			dev_dbg(&pdev->dev, "no reg_sts1 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts2",
+			&mpdata->dmc_reset.reg_sts2);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts2 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts3",
+			&mpdata->dmc_reset.reg_sts3);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts3 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts4",
+			&mpdata->dmc_reset.reg_sts4);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts4 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts5",
+			&mpdata->dmc_reset.reg_sts5);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts5 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts6",
+			&mpdata->dmc_reset.reg_sts6);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts6 for dmc_reset\n");
 			ret = 0;
 		}
 		mpdata->dmc_reset.reg_base_dmc = ioremap(mpdata->dmc_reset.reg_base, 0x1000);

@@ -976,6 +976,7 @@ void kbase_reset_gpu_assert_failed_or_prevented(struct kbase_device *kbdev)
 	WARN(true, "%s Not implemented for JM GPUs", __func__);
 }
 
+extern void get_dmc_gpu_status(void);
 static void kbase_debug_dump_registers(struct kbase_device *kbdev)
 {
 	unsigned int i;
@@ -1010,6 +1011,7 @@ static void kbase_debug_dump_registers(struct kbase_device *kbdev)
 	dev_err(kbdev->dev, "  TILER_CONFIG=0x%08x    JM_CONFIG=0x%08x",
 		kbase_reg_read32(kbdev, GPU_CONTROL_ENUM(TILER_CONFIG)),
 		kbase_reg_read32(kbdev, GPU_CONTROL_ENUM(JM_CONFIG)));
+	get_dmc_gpu_status();
 }
 
 static void kbasep_reset_timeout_worker(struct work_struct *data)
