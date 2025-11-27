@@ -164,6 +164,7 @@ static int lock_region(struct kbase_gpu_props const *gpu_props, u64 *lockaddr,
  *
  * Return: 0 on successful completion. negative error on failure.
  */
+extern void get_dmc_gpu_status(void);
 static int wait_ready(struct kbase_device *kbdev, unsigned int as_nr)
 {
 	u32 val;
@@ -182,6 +183,7 @@ static int wait_ready(struct kbase_device *kbdev, unsigned int as_nr)
 	dev_err(kbdev->dev,
 		"AS_ACTIVE bit stuck for as %u. Might be caused by unstable GPU clk/pwr or faulty system",
 		as_nr);
+	get_dmc_gpu_status();
 	kbdev->mmu_unresponsive = true;
 	if (kbase_prepare_to_reset_gpu_locked(kbdev, RESET_FLAGS_HWC_UNRECOVERABLE_ERROR))
 		kbase_reset_gpu_locked(kbdev);

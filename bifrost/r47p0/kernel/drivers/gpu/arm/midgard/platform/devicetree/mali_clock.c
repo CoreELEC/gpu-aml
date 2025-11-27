@@ -589,6 +589,12 @@ int mali_dmc_reset_info(struct platform_device *pdev, struct device_node *gpu_dn
 			dev_err(&pdev->dev, "no reg_sts for dmc_reset\n");
 			ret = 0;
 		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts1",
+			&mpdata->dmc_reset.reg_sts1);
+		if (ret) {
+			dev_err(&pdev->dev, "no reg_sts1 for dmc_reset\n");
+			ret = 0;
+		}
 		mpdata->dmc_reset.reg_base_dmc = ioremap(mpdata->dmc_reset.reg_base, 0x1000);
 		dev_dbg(&pdev->dev, "dmc base 0x%p\n", mpdata->dmc_reset.reg_base_dmc);
 		mpdata->dmc_reset_flag = 1;
