@@ -540,9 +540,13 @@ int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 		if (reg->flags & KBASE_REG_IMPORT_PAD)
 			nr_phys_pages = alloc->nents + 1;
 
-		err = kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn,
-							alloc->pages, kbase_reg_current_backed_size(reg), nr_virt_pages,
-							kctx->as_nr);
+		if (reg->is_umm_mapped)
+		{
+			err = kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn,
+								alloc->pages, kbase_reg_current_backed_size(reg), nr_virt_pages,
+								kctx->as_nr);
+			reg->is_umm_mapped = false;
+		}
 	} break;
 	case KBASE_MEM_TYPE_IMPORTED_USER_BUF: {
 		/** Progress GPU mappings to pinned state.
