@@ -569,6 +569,9 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	int length = 0, i = 0;
 	u32 u;
 
+	u32 qchannel_addr[2];
+	struct resource qchannel_res = {0};
+
 	int ret = 0;
 	if (!gpu_dn) {
 		dev_err(&pdev->dev, "gpu device node not right\n");
@@ -750,6 +753,35 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 		clk_sample ++;
 	}
 	dev_dbg(&pdev->dev, "clock dvfs table size is %d\n", mpdata->dvfs_table_size);
+
+	ret = of_property_read_u32(gpu_dn, "qchannel-enable", &mpdata->qchannel_enable);
+	if (ret) {
+		mpdata->qchannel_enable = 0;
+		mpdata->qchannel_res_valid = 0;
+		dev_dbg(&pdev->dev, "qchannel-enable not specified, default to false\n");
+	} else {
+		mpdata->qchannel_enable = (mpdata->qchannel_enable != 0);
+		dev_dbg(&pdev->dev, "qchannel-enable parsed: %s\n", mpdata->qchannel_enable ? "true" : "false");
+
+		if (mpdata->qchannel_enable) {
+			ret = of_property_read_u32_array(gpu_dn, "qchannel-reg", qchannel_addr, 2);
+			if (ret) {
+				dev_err(&pdev->dev, "Parse qchannel-reg failed (ret=%d)\n", ret);
+				mpdata->qchannel_enable = 0;
+				mpdata->qchannel_res_valid = 0;
+			} else {
+				qchannel_res.start = qchannel_addr[0];
+				qchannel_res.end = qchannel_addr[0] + qchannel_addr[1] - 1;
+				qchannel_res.flags = IORESOURCE_MEM;
+				mpdata->qchannel_res = qchannel_res;
+				mpdata->qchannel_res_valid = 1;
+				dev_dbg(&pdev->dev, "QChannel reg parsed: base=0x%x, size=0x%x\n",qchannel_addr[0], qchannel_addr[1]);
+			}
+		} else {
+			mpdata->qchannel_res_valid = 0;
+			dev_err(&pdev->dev, "QChannel disabled, skip parsing qchannel-reg\n");
+		}
+	}
 
 	mpdata->clk_mali = devm_clk_get(&pdev->dev, "gpu_mux");
 	if (IS_ERR(mpdata->clk_mali)) {

@@ -33,6 +33,10 @@
 #include "mali_scaling.h"
 #include "mali_clock.h"
 
+#define QCHANNEL_REG_QREQN_SEL_MASK    (1U << 17)  //Q channel control,reg_dvalin_clk_en，set 0 to open
+#define QCHANNEL_REG_CLK_EN_MASK       (1U << 18)  //Q channel control,reg_dvalin_qreqn_sel，set 0 to open
+#define QCHANNEL_REG_AXI_AUTO_EN_MASK  (1U << 20)  //auto cg control,axi_active_auto_en，set 1 to open gate
+
 void *reg_base_reset = NULL;
 static int first = 1;
 
@@ -191,6 +195,32 @@ static void mali_hw_init(struct kbase_device *kbdev)
 	Mali_pwr_on_with_kdev(kbdev, 0x1);
 }
 
+static void mali_enable_qchannel(struct kbase_device *kbdev)
+{
+	struct mali_plat_info_t *mpdata = kbdev->platform_context;
+	void __iomem *qchannel_reg = NULL;
+
+	if (!mpdata->qchannel_enable || !mpdata->qchannel_res_valid) {
+		dev_dbg(kbdev->dev, "QChannel: Skip enable (enable=%d, res_valid=%d)\n",
+			mpdata->qchannel_enable, mpdata->qchannel_res_valid);
+		return;
+	}
+
+	qchannel_reg = ioremap(mpdata->qchannel_res.start, resource_size(&mpdata->qchannel_res));
+	if (IS_ERR(qchannel_reg)) {
+		dev_err(kbdev->dev, "QChannel: Failed to ioremap reg (err=%ld)\n", PTR_ERR(qchannel_reg));
+		return;
+	}
+
+	u32 reg_val = readl(qchannel_reg);
+	reg_val &= ~(QCHANNEL_REG_QREQN_SEL_MASK | QCHANNEL_REG_CLK_EN_MASK);
+	reg_val |= QCHANNEL_REG_AXI_AUTO_EN_MASK;
+	writel(reg_val, qchannel_reg);
+
+	iounmap(qchannel_reg);
+	dev_dbg(kbdev->dev, "QChannel: Enabled (reg_val=0x%x)\n", reg_val);
+}
+
 static int pm_callback_power_on(struct kbase_device *kbdev)
 {
 	int ret = 0;
@@ -212,6 +242,7 @@ static int pm_callback_power_on(struct kbase_device *kbdev)
 
 	first = 0;
 	mali_hw_init(kbdev);
+	mali_enable_qchannel(kbdev);
 out:
 	return ret;
 }
