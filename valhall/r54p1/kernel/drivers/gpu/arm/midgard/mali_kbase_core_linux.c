@@ -2801,9 +2801,13 @@ static ssize_t gpuinfo_show(struct device *dev, struct device_attribute *attr, c
 			product_id, nr_cores);
 	}
 
-	return scnprintf(buf, PAGE_SIZE, "%s %d cores r%dp%d 0x%08X\n", product_name,
+	char cve_commits[] = "r54p1 ddk fixed cve ID:commit ID\n"
+						"CVE-2025-8045:479f608c\n"
+						"CVE-2025-6349:1859fbd0\n";
+
+	return scnprintf(buf, PAGE_SIZE, "%s %d cores r%dp%d 0x%08X \n%s\n", product_name,
 			 kbdev->gpu_props.num_cores, gpu_props->gpu_id.version_major,
-			 gpu_props->gpu_id.version_minor, product_id);
+			 gpu_props->gpu_id.version_minor, product_id, cve_commits);
 }
 static DEVICE_ATTR_RO(gpuinfo);
 
