@@ -195,30 +195,46 @@ static void mali_hw_init(struct kbase_device *kbdev)
 	Mali_pwr_on_with_kdev(kbdev, 0x1);
 }
 
-static void mali_enable_qchannel(struct kbase_device *kbdev)
+int mali_control_qchannel(struct kbase_device *kbdev, bool enable)
 {
 	struct mali_plat_info_t *mpdata = kbdev->platform_context;
 	void __iomem *qchannel_reg = NULL;
+	u32 reg_val;
+	const char *op_name = enable ? "enable" : "disable";
 
-	if (!mpdata->qchannel_enable || !mpdata->qchannel_res_valid) {
-		dev_dbg(kbdev->dev, "QChannel: Skip enable (enable=%d, res_valid=%d)\n",
-			mpdata->qchannel_enable, mpdata->qchannel_res_valid);
-		return;
+	if (!mpdata || !mpdata->qchannel_supported || !mpdata->qchannel_res_valid) {
+		dev_dbg(kbdev->dev, "QChannel: Skip %s (enable=%d, res_valid=%d)\n",
+				op_name,
+				mpdata ? mpdata->qchannel_supported : 0,
+				mpdata ? mpdata->qchannel_res_valid : 0);
+		return -EINVAL;
 	}
 
-	qchannel_reg = ioremap(mpdata->qchannel_res.start, resource_size(&mpdata->qchannel_res));
-	if (IS_ERR(qchannel_reg)) {
-		dev_err(kbdev->dev, "QChannel: Failed to ioremap reg (err=%ld)\n", PTR_ERR(qchannel_reg));
-		return;
+	qchannel_reg = ioremap(mpdata->qchannel_res.start,
+				resource_size(&mpdata->qchannel_res));
+	if (!qchannel_reg || IS_ERR(qchannel_reg)) {
+		dev_err(kbdev->dev, "QChannel: Failed to ioremap reg for %s\n", op_name);
+		return IS_ERR(qchannel_reg) ? PTR_ERR(qchannel_reg) : -ENOMEM;
 	}
 
-	u32 reg_val = readl(qchannel_reg);
-	reg_val &= ~(QCHANNEL_REG_QREQN_SEL_MASK | QCHANNEL_REG_CLK_EN_MASK);
-	reg_val |= QCHANNEL_REG_AXI_AUTO_EN_MASK;
+	reg_val = readl(qchannel_reg);
+
+	if (enable) {
+		reg_val &= ~(QCHANNEL_REG_QREQN_SEL_MASK | QCHANNEL_REG_CLK_EN_MASK);
+		reg_val |= QCHANNEL_REG_AXI_AUTO_EN_MASK;
+	} else {
+		reg_val |= (QCHANNEL_REG_QREQN_SEL_MASK | QCHANNEL_REG_CLK_EN_MASK);
+		reg_val &= ~QCHANNEL_REG_AXI_AUTO_EN_MASK;
+	}
+
 	writel(reg_val, qchannel_reg);
 
 	iounmap(qchannel_reg);
-	dev_dbg(kbdev->dev, "QChannel: Enabled (reg_val=0x%x)\n", reg_val);
+
+	dev_dbg(kbdev->dev, "QChannel: %s (reg_val=0x%x)\n",
+			enable ? "Enabled" : "Disabled", reg_val);
+
+	return 0;
 }
 
 static int pm_callback_power_on(struct kbase_device *kbdev)
@@ -242,7 +258,7 @@ static int pm_callback_power_on(struct kbase_device *kbdev)
 
 	first = 0;
 	mali_hw_init(kbdev);
-	mali_enable_qchannel(kbdev);
+	mali_control_qchannel(kbdev, true);
 out:
 	return ret;
 }

@@ -38,6 +38,8 @@
 
 #include "meson_main2.h"
 
+extern int mali_control_qchannel(struct kbase_device *kbdev, bool enable);
+
 int meson_gpu_data_invalid_count = 0;
 int meson_gpu_fault = 0;
 
@@ -374,6 +376,83 @@ static ssize_t mpgpu_set_err_count(struct class *class,
 	return count;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t qchannel_enable_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+#else
+static ssize_t qchannel_enable_read(struct class *class,
+		struct class_attribute *attr, char *buf)
+#endif
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	int qchannel_status = 0;
+
+	if (pmali_plat) {
+		if (!pmali_plat->qchannel_supported) {
+			return sprintf(buf, "0 (Not Supported)\n");
+		}
+		qchannel_status = pmali_plat->qchannel_enabled;
+		printk("QChannel: Read status = %d (pmali_plat=%p)\n", qchannel_status, pmali_plat);
+	}
+
+	return sprintf(buf, "%d\n", qchannel_status);
+}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+static ssize_t qchannel_enable_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+#else
+static ssize_t qchannel_enable_write(struct class *class,
+		struct class_attribute *attr, const char *buf, size_t count)
+#endif
+{
+	int ret;
+	unsigned int val;
+	mali_plat_info_t* pmali_plat;
+	struct kbase_device *kbdev = NULL;
+
+	ret = kstrtouint(buf, 10, &val);
+	if (ret != 0) {
+		printk(KERN_ERR "QChannel: Invalid value (err=%d)\n", ret);
+		return -EINVAL;
+	}
+
+	pmali_plat = get_mali_plat_data();
+	if (!pmali_plat || !pmali_plat->qchannel_supported) {
+		printk(KERN_ERR "QChannel: Hardware not supported on this chip\n");
+		return -EINVAL;
+	}
+	if (!pmali_plat->pdev || !(kbdev = dev_get_drvdata(&pmali_plat->pdev->dev))) {
+		printk(KERN_ERR "QChannel: Get mali/kbase device failed\n");
+		return -EINVAL;
+	}
+
+	if (val == 1) {
+		ret = mali_control_qchannel(kbdev, true);
+		if (ret == 0) {
+			pmali_plat->qchannel_enabled = 1;
+			printk("QChannel: Enabled\n");
+		} else {
+			printk(KERN_ERR "QChannel: Enable failed (err=%d)\n", ret);
+			return ret;
+		}
+	} else if (val == 0) {
+		ret = mali_control_qchannel(kbdev, false);
+		if (ret == 0) {
+			pmali_plat->qchannel_enabled = 0;
+			printk("QChannel: Disabled\n");
+		} else {
+			printk(KERN_ERR "QChannel: Disable failed (err=%d)\n", ret);
+			return ret;
+		}
+	} else {
+		printk(KERN_ERR "QChannel: Only 0/1 supported (val=%d)\n", val);
+		return -EINVAL;
+	}
+
+	return count;
+}
+
 static struct class_attribute mali_class_attrs[] = {
 	__ATTR(domain_stat,	0644, domain_stat_read, NULL),
 	__ATTR(mpgpucmd,	0644, NULL,		mpgpu_write),
@@ -388,6 +467,7 @@ static struct class_attribute mali_class_attrs[] = {
 	__ATTR(util_gl,	    0644, util_gl_share_read, NULL),
 	__ATTR(util_cl,	    0644, util_cl_share_read, NULL),
 	__ATTR(gpu_err,	    0644, meson_gpu_get_err_count, mpgpu_set_err_count),
+	__ATTR(qchannel_enable,	0644, qchannel_enable_read, qchannel_enable_write),
 };
 
 static struct class mpgpu_class = {

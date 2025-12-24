@@ -754,20 +754,18 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	}
 	dev_dbg(&pdev->dev, "clock dvfs table size is %d\n", mpdata->dvfs_table_size);
 
-	ret = of_property_read_u32(gpu_dn, "qchannel-enable", &mpdata->qchannel_enable);
-	if (ret) {
-		mpdata->qchannel_enable = 0;
+	ret = of_property_read_u32(gpu_dn, "qchannel-supported", &mpdata->qchannel_supported);
+	if (ret || mpdata->qchannel_supported == 0) {
+		mpdata->qchannel_supported = 0;
 		mpdata->qchannel_res_valid = 0;
-		dev_dbg(&pdev->dev, "qchannel-enable not specified, default to false\n");
+		dev_dbg(&pdev->dev, "qchannel-supported not specified, default to false\n");
 	} else {
-		mpdata->qchannel_enable = (mpdata->qchannel_enable != 0);
-		dev_dbg(&pdev->dev, "qchannel-enable parsed: %s\n", mpdata->qchannel_enable ? "true" : "false");
 
-		if (mpdata->qchannel_enable) {
+		if (mpdata->qchannel_supported) {
 			ret = of_property_read_u32_array(gpu_dn, "qchannel-reg", qchannel_addr, 2);
 			if (ret) {
 				dev_err(&pdev->dev, "Parse qchannel-reg failed (ret=%d)\n", ret);
-				mpdata->qchannel_enable = 0;
+				mpdata->qchannel_supported = 0;
 				mpdata->qchannel_res_valid = 0;
 			} else {
 				qchannel_res.start = qchannel_addr[0];
@@ -780,6 +778,13 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 		} else {
 			mpdata->qchannel_res_valid = 0;
 			dev_err(&pdev->dev, "QChannel disabled, skip parsing qchannel-reg\n");
+		}
+	}
+
+	if (mpdata->qchannel_res_valid) {
+		ret = of_property_read_u32(gpu_dn, "qchannel-enabled", &mpdata->qchannel_enabled);
+		if (ret) {
+			mpdata->qchannel_enabled = 0;
 		}
 	}
 
