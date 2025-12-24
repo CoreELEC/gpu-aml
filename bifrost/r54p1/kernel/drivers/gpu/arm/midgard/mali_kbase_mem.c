@@ -425,6 +425,8 @@ int kbase_gpu_mmap(struct kbase_context *kctx, struct kbase_va_region *reg, u64 
 				kctx->kbdev, &kctx->mmu, reg->start_pfn,
 				kbase_get_gpu_phy_pages(reg), kbase_reg_current_backed_size(reg),
 				reg->flags & gwt_mask, kctx->as_nr, group_id, mmu_sync_info, reg);
+
+			reg->is_umm_mapped = err == 0;
 		} else {
 			err = kbase_mmu_insert_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn,
 						     kbase_get_gpu_phy_pages(reg),
