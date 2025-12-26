@@ -536,6 +536,9 @@ void set_mali_schel_mode(u32 mode)
 	if (scaling_mode == MALI_PP_FS_SCALING) {
 		pmali_plat->scale_info.maxclk = pmali_plat->cfg_clock;
 		enable_pp_cores(pmali_plat->sc_mpp);
+	} else if (scaling_mode == MALI_FREQ_ONLY_SCALING) {
+		pmali_plat->scale_info.maxclk = pmali_plat->cfg_clock;
+		enable_max_num_cores();
 	} else if (scaling_mode == MALI_SCALING_DISABLE) {
 		pmali_plat->scale_info.maxclk = pmali_plat->cfg_clock;
 		enable_max_num_cores();
@@ -554,6 +557,28 @@ u32 get_current_frequency(void)
 	return get_mali_freq(currentStep);
 }
 
+#ifndef CONFIG_MALI_DVFS
+void mali_freq_only_scaling_update(struct mali_gpu_utilization_data *data)
+{
+	int ret = 0;
+	int pp_change_flag = 0;
+	u32 next_idx = 0;
+
+	mali_decide_next_status(data, &next_idx, &pp_change_flag);
+
+	if (next_idx != currentStep) {
+		scalingdbg(2, "[FREQ_ONLY] Frequency changing: %d -> %d\n",
+			get_mali_freq(currentStep), get_mali_freq(next_idx));
+		ret = 1;
+		currentStep = next_idx;
+	}
+
+	if (ret == 1) {
+		schedule_work(&wq_work);
+	}
+}
+#endif
+
 void mali_gpu_utilization_callback(struct mali_gpu_utilization_data *data)
 {
 #ifndef CONFIG_MALI_DVFS
@@ -563,6 +588,9 @@ void mali_gpu_utilization_callback(struct mali_gpu_utilization_data *data)
 	switch (scaling_mode) {
 		case MALI_PP_FS_SCALING:
 			mali_pp_fs_scaling_update(data);
+			break;
+		case MALI_FREQ_ONLY_SCALING:
+			mali_freq_only_scaling_update(data);
 			break;
 		case MALI_PP_SCALING:
 			mali_pp_scaling_update(data);
