@@ -1758,7 +1758,7 @@ static int kbasep_ioctl_set_limited_core_count(
 static int kbasep_ioctl_set_scheduling_mode(struct kbase_context *kctx,
 			struct kbase_ioctl_set_scheduling_mode *scheduling_mode)
 {
-	char buf[2] = { 0 };
+	char buf[3] = { 0 }; /* buf length:3, including character + \0 + extra access */
 
 	buf[0] = (scheduling_mode->mode == 0) ? '0' : '1';
 	dev_info(kctx->kbdev->dev, "%s: try change scheduling mode to %s", __func__, buf);
@@ -5942,6 +5942,84 @@ static struct attribute *kbase_scheduling_attrs[] = {
 	NULL
 };
 
+static ssize_t total_gpu_mem_show(struct device *dev, struct device_attribute *attr,
+				char *const buf)
+{
+	struct kbase_device *kbdev;
+	kbdev = to_kbase_device(dev);
+	if (!kbdev)
+		return -ENODEV;
+
+	return sysfs_emit(buf, "%lu\n",
+		(unsigned long) kbdev->total_gpu_pages << PAGE_SHIFT);
+}
+static DEVICE_ATTR_RO(total_gpu_mem);
+
+static ssize_t total_dma_buf_gpu_mem_show(struct device *dev, struct device_attribute *attr,
+				char *const buf)
+{
+	struct kbase_device *kbdev;
+	kbdev = to_kbase_device(dev);
+	if (!kbdev)
+		return -ENODEV;
+
+	return sysfs_emit(buf, "%lu\n",
+		(unsigned long) kbdev->dma_buf_pages << PAGE_SHIFT);
+}
+static DEVICE_ATTR_RO(total_dma_buf_gpu_mem);
+
+static ssize_t gpu_dma_buf_memory_show(struct device *dev, struct device_attribute *attr,
+				char *const buf)
+{
+	struct kbase_device *kbdev;
+	ssize_t ret = 0;
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = NULL;
+		struct kbase_context *kctx;
+
+		kbdev = list_entry(entry, struct kbase_device, entry);
+		/* output the total memory usage and cap for this device */
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %25s %16lu\n",
+				kbdev->devname,
+				"total dma_buf_bytes",
+				(unsigned long) kbdev->dma_buf_pages << PAGE_SHIFT);
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------------------\n");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %16s %10s %16s\n",
+				"kprcs", "name", "pid", "dma_buf_bytes");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------------------\n");
+		mutex_lock(&kbdev->kctx_list_lock);
+		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
+			/* output the memory usage and cap for each kctx
+			* opened on this device */
+			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%p %16s %10u %16lu\n",
+				kctx->kprcs,
+				kctx->kprcs->name,
+				kctx->kprcs->tgid,
+				(unsigned long) kctx->kprcs->dma_buf_pages << PAGE_SHIFT);
+		}
+		mutex_unlock(&kbdev->kctx_list_lock);
+	}
+
+	kbase_device_put_list(kbdev_list);
+
+	return ret;
+}
+static DEVICE_ATTR_RO(gpu_dma_buf_memory);
+
 static struct attribute *kbase_attrs[] = {
 #ifdef CONFIG_MALI_DEBUG
 	&dev_attr_debug_command.attr,
@@ -5972,6 +6050,7 @@ static struct attribute *kbase_attrs[] = {
 	&dev_attr_power_policy.attr,
 	&dev_attr_core_mask.attr,
 	&dev_attr_gpu_memory.attr,
+	&dev_attr_gpu_dma_buf_memory.attr,
 	&dev_attr_mem_pool_size.attr,
 	&dev_attr_mem_pool_max_size.attr,
 	&dev_attr_lp_mem_pool_size.attr,
@@ -5979,6 +6058,8 @@ static struct attribute *kbase_attrs[] = {
 #if !MALI_USE_CSF
 	&dev_attr_js_ctx_scheduling_mode.attr,
 #endif /* !MALI_USE_CSF */
+	&dev_attr_total_gpu_mem.attr,
+	&dev_attr_total_dma_buf_gpu_mem.attr,
 	NULL
 };
 
@@ -6041,6 +6122,9 @@ int kbase_sysfs_init(struct kbase_device *kbdev)
 		sysfs_remove_group(&kbdev->dev->kobj, &kbase_attr_group);
 	}
 
+	kbdev->proc_sysfs_node = kobject_create_and_add("kprcs",
+			&kbdev->dev->kobj);
+
 	return err;
 }
 
@@ -6050,6 +6134,8 @@ void kbase_sysfs_term(struct kbase_device *kbdev)
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_mempool_attr_group);
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_scheduling_attr_group);
 	sysfs_remove_group(&kbdev->dev->kobj, &kbase_attr_group);
+	kobject_del(kbdev->proc_sysfs_node);
+	kobject_put(kbdev->proc_sysfs_node);
 	put_device(kbdev->dev);
 }
 
@@ -6057,6 +6143,7 @@ void kbase_sysfs_term(struct kbase_device *kbdev)
 static int kbase_platform_device_remove(struct platform_device *pdev)
 {
 	struct kbase_device *kbdev = to_kbase_device(&pdev->dev);
+	struct kbase_mem_dmabuf_list *entry, *tmp;
 
 	if (!kbdev)
 		return -ENODEV;
@@ -6072,6 +6159,7 @@ static void kbase_platform_device_remove(struct platform_device *pdev)
 #endif
 {
 	struct kbase_device *kbdev = to_kbase_device(&pdev->dev);
+	struct kbase_mem_dmabuf_list *entry, *tmp;
 
 	if (!kbdev)
 #if (KERNEL_VERSION(6, 11, 0) > LINUX_VERSION_CODE)
@@ -6079,6 +6167,14 @@ static void kbase_platform_device_remove(struct platform_device *pdev)
 #else
 		return;
 #endif
+
+	mutex_lock(&kbdev->kbase_dmabuf_lock);
+	list_for_each_entry_safe(entry, tmp, &kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
+		list_del(&entry->dmabuf_list);
+
+		kfree(entry);
+	}
+	mutex_unlock(&kbdev->kbase_dmabuf_lock);
 
 	kbase_device_term(kbdev);
 	dev_set_drvdata(kbdev->dev, NULL);
@@ -6171,6 +6267,9 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 		mutex_unlock(&kbdev->pm.lock);
 #endif
 	}
+	kbdev->kbase_dmabuf_list.dma_buf = NULL;
+	INIT_LIST_HEAD(&kbdev->kbase_dmabuf_list.dmabuf_list);
+	mutex_init(&kbdev->kbase_dmabuf_lock);
 
 	return err;
 }
