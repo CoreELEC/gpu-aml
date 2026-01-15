@@ -1297,6 +1297,7 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx, struct kbase
 
 	/* Update nents as we now have pages to map */
 	alloc->nents = count;
+	mutex_lock(&kctx->kbdev->kbase_dmabuf_lock);
 	list_for_each_entry_safe(entry, tmp, &kctx->kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
 		if (!entry->flag && entry->dma_buf && alloc->imported.umm.dma_buf &&
 		    entry->name == alloc->imported.umm.kctx->kprcs->name &&
@@ -1306,6 +1307,7 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx, struct kbase
 			break;
 		}
 	}
+	mutex_unlock(&kctx->kbdev->kbase_dmabuf_lock);
 
 	return 0;
 
