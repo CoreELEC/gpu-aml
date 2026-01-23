@@ -1215,7 +1215,7 @@ int kbase_sync_imported_umm(struct kbase_context *kctx, struct kbase_va_region *
 static void kbase_mem_umm_unmap_attachment(struct kbase_context *kctx,
 					   struct kbase_mem_phy_alloc *alloc)
 {
-	struct tagged_addr *pa = alloc->pages;
+	//struct tagged_addr *pa = alloc->pages;
 
 #if (KERNEL_VERSION(6, 1, 55) <= LINUX_VERSION_CODE)
 	dma_buf_unmap_attachment_unlocked(alloc->imported.umm.dma_attachment,
@@ -1226,10 +1226,10 @@ static void kbase_mem_umm_unmap_attachment(struct kbase_context *kctx,
 #endif
 	alloc->imported.umm.sgt = NULL;
 
-	kbase_remove_dma_buf_usage(kctx, alloc);
+	//kbase_remove_dma_buf_usage(kctx, alloc);
 
-	memset(pa, 0xff, sizeof(*pa) * alloc->nents);
-	alloc->nents = 0;
+	//memset(pa, 0xff, sizeof(*pa) * alloc->nents);
+	//alloc->nents = 0;
 }
 
 /**
@@ -1251,6 +1251,7 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx, struct kbase
 	int err;
 	size_t count = 0;
 	struct kbase_mem_phy_alloc *alloc = reg->gpu_alloc;
+	struct kbase_mem_dmabuf_list *entry, *tmp;
 
 	WARN_ON_ONCE(alloc->type != KBASE_MEM_TYPE_IMPORTED_UMM);
 	WARN_ON_ONCE(alloc->imported.umm.sgt);
@@ -1307,8 +1308,17 @@ static int kbase_mem_umm_map_attachment(struct kbase_context *kctx, struct kbase
 
 	/* Update nents as we now have pages to map */
 	alloc->nents = count;
-	kbase_add_dma_buf_usage(kctx, alloc);
-
+	mutex_lock(&kctx->kbdev->kbase_dmabuf_lock);
+	list_for_each_entry_safe(entry, tmp, &kctx->kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
+		if (!entry->flag && entry->dma_buf && alloc->imported.umm.dma_buf &&
+		    entry->name == alloc->imported.umm.kctx->kprcs->name &&
+		    entry->dma_buf == alloc->imported.umm.dma_buf) {
+			entry->flag = true;
+			kbase_add_dma_buf_usage(kctx, alloc);
+			break;
+		}
+	}
+	mutex_unlock(&kctx->kbdev->kbase_dmabuf_lock);
 	return 0;
 
 err_unmap_attachment:
@@ -1457,10 +1467,13 @@ static struct kbase_va_region *kbase_mem_from_umm(struct kbase_context *kctx, in
 	struct kbase_va_region *reg;
 	struct dma_buf *dma_buf;
 	struct dma_buf_attachment *dma_attachment;
+	struct kbase_mem_dmabuf_list *new_node;
+	struct kbase_mem_dmabuf_list *entry, *tmp;
 	enum kbase_memory_zone zone;
 	bool shared_zone = false;
 	bool need_sync = false;
 	int group_id;
+	bool same_buf = false;
 
 	dma_buf = dma_buf_get(fd);
 	if (IS_ERR_OR_NULL(dma_buf))
@@ -1572,6 +1585,25 @@ static struct kbase_va_region *kbase_mem_from_umm(struct kbase_context *kctx, in
 	reg->gpu_alloc->imported.umm.need_sync = need_sync;
 	reg->gpu_alloc->imported.umm.kctx = kctx;
 	reg->extension = 0;
+
+	list_for_each_entry_safe(entry, tmp, &kctx->kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
+		if (entry->dma_buf == reg->gpu_alloc->imported.umm.dma_buf) {
+			same_buf = true;
+			break;
+		}
+	}
+	if (!same_buf) {
+		new_node = kmalloc(sizeof(*new_node), GFP_KERNEL);
+		if (!new_node) {
+			goto error_out;
+		}
+		new_node->flag = false;
+		new_node->name = kctx->kprcs->name;
+		new_node->dma_buf = reg->gpu_alloc->imported.umm.dma_buf;
+		mutex_lock(&kctx->kbdev->kbase_dmabuf_lock);
+		list_add_tail(&new_node->dmabuf_list, &kctx->kbdev->kbase_dmabuf_list.dmabuf_list);
+		mutex_unlock(&kctx->kbdev->kbase_dmabuf_lock);
+	}
 
 	if (dmabuf_uvm_realloc(dma_buf)) {
 		*flags |= BASE_MEM_UVM_REALLOC;

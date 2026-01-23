@@ -690,9 +690,13 @@ struct kbase_devfreq_queue_info {
  * struct kbase_process - Representing an object of a kbase process instantiated
  *                        when the first kbase context is created under it.
  * @tgid:               Thread group ID.
+ * @name:               Thread group name.
  * @total_gpu_pages:    Total gpu pages allocated across all the contexts
  *                      of this process, it accounts for both native allocations
  *                      and dma_buf imported allocations.
+ * @dma_buf_pages:      Total dma_buf pages allocated across all the contexts
+ *                      of this process, native allocations can be accounted for
+ *                      by subtracting this from &total_gpu_pages.
  * @kctx_list:          List of kbase contexts created for the process.
  * @kprcs_node:         Node to a rb_tree, kbase_device will maintain a rb_tree
  *                      based on key tgid, kprcs_node is the node link to
@@ -702,15 +706,39 @@ struct kbase_devfreq_queue_info {
  *                      Used to ensure that pages of allocation are accounted
  *                      only once for the process, even if the allocation gets
  *                      imported multiple times for the process.
+ * @kobj:               Links to the per-process sysfs node
+ *                      &kbase_device.proc_sysfs_node.
  */
 struct kbase_process {
 	pid_t tgid;
+	char *name;
 	size_t total_gpu_pages;
+	size_t dma_buf_pages;
 	struct list_head kctx_list;
 
 	struct rb_node kprcs_node;
 	struct rb_root dma_buf_root;
+
+	struct kobject kobj;
 };
+
+
+/**
+ * struct kbase_mem_dmabuf_list - kbase_mem_phy_alloc dma_buf list
+ * @flag:             dmabuf really used.
+ * @name:             process name.
+ * @dma_buf:          dma_buf pointer.
+ * @dmabuf_list:      List of dma_buf.
+ */
+struct kbase_mem_dmabuf_list {
+	bool flag;
+	char *name;
+	struct dma_buf *dma_buf;
+	struct list_head dmabuf_list;
+};
+
+
+
 
 /**
  * struct kbase_mem_migrate - Object representing an instance for managing
@@ -1019,6 +1047,7 @@ struct kbase_mem_migrate {
  *                          mapping and gpu memory usage at device level and
  *                          other one at process level.
  * @total_gpu_pages:        Total GPU pages used for the complete GPU device.
+ * @dma_buf_pages:          Total dma_buf pages used for GPU platform device.
  * @dma_buf_lock:           This mutex should be held while accounting for
  *                          @total_gpu_pages from imported dma buffers.
  * @gpu_mem_usage_lock:     This spinlock should be held while accounting
@@ -1283,6 +1312,7 @@ struct kbase_device {
 	struct rb_root dma_buf_root;
 
 	size_t total_gpu_pages;
+	size_t dma_buf_pages;
 	struct mutex dma_buf_lock;
 	spinlock_t gpu_mem_usage_lock;
 
@@ -1300,7 +1330,9 @@ struct kbase_device {
 
 	struct notifier_block oom_notifier_block;
 
-
+	struct kobject *proc_sysfs_node;
+	struct kbase_mem_dmabuf_list kbase_dmabuf_list;
+	struct mutex kbase_dmabuf_lock;
 	struct kbase_mem_migrate mem_migrate;
 
 #if IS_ENABLED(CONFIG_SYNC_FILE)
@@ -1816,6 +1848,7 @@ struct kbase_context {
 	wait_queue_head_t event_queue;
 	pid_t tgid;
 	pid_t pid;
+	char *name;
 	atomic_t prioritized;
 	atomic_t used_pages;
 	atomic_t nonmapped_pages;
