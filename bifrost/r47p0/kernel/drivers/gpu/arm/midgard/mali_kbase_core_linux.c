@@ -3521,9 +3521,20 @@ static ssize_t gpuinfo_show(struct device *dev, struct device_attribute *attr, c
 
 #endif /* MALI_USE_CSF */
 
-	return scnprintf(buf, PAGE_SIZE, "%s %d cores r%dp%d 0x%08X\n", product_name,
+		char cve_commits[] = "r47p0 ddk fixed cve ID:commit ID\n"
+						"CVE-2025-1246:6552c6aa\n"
+						"CVE-2025-0819:25ef2e7a\n"
+						"CVE-2025-0427:466eb2d5\n"
+						"CVE-2025-0050:b191b454\n"
+						"CVE-2024-3655:86504a1a\n"
+						"CVE-2024-4607:ebd6bc9d\n"
+						"CVE-2024-2937:2bf0d574\n"
+						"CVE-2024-1065:4d305016\n"
+						"CVE-2024-0671:703760a5\n"
+						"CVE-2024-1067:da2ee575\n";
+	return scnprintf(buf, PAGE_SIZE, "%s %d cores r%dp%d 0x%08X \n%s\n", product_name,
 			 kbdev->gpu_props.num_cores, gpu_props->gpu_id.version_major,
-			 gpu_props->gpu_id.version_minor, product_id);
+			 gpu_props->gpu_id.version_minor, product_id,cve_commits);
 }
 static DEVICE_ATTR_RO(gpuinfo);
 
