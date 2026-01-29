@@ -28,6 +28,10 @@
 
 #include <linux/version.h>
 
+#if (KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE)
+#include <linux/minmax.h>
+#endif
+
 /**
  * MIN - Return the lesser of two values.
  * @x: value1
@@ -36,7 +40,9 @@
  * As a macro it may evaluate its arguments more than once.
  * Refer to MAX macro for more details
  */
+#ifndef MIN
 #define MIN(x, y)	((x) < (y) ? (x) : (y))
+#endif
 
 /**
  * MAX - Return the greater of two values.
@@ -50,7 +56,9 @@
  * to retrieve the min and max of two values, consider using a conditional swap
  * instead.
  */
+#ifndef MAX
 #define MAX(x, y)	((x) < (y) ? (y) : (x))
+#endif
 
 /**
  * CSTD_UNUSED - Function-like macro for suppressing unused variable warnings.
