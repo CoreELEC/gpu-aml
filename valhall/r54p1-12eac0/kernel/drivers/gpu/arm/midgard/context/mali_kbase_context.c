@@ -41,6 +41,61 @@
 #include <tl/mali_kbase_timeline.h>
 #include <mmu/mali_kbase_mmu.h>
 #include <context/mali_kbase_context_internal.h>
+#include <linux/sched.h>
+#include <linux/pid.h>
+
+#define to_kprcs(kobj) container_of(kobj, struct kbase_process, kobj)
+
+static void kbase_kprcs_release(struct kobject *kobj)
+{
+	// Nothing to release
+}
+
+static ssize_t process_name_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	struct kbase_process *kprcs = to_kprcs(kobj);
+	if (WARN_ON(!kprcs))
+		return 0;
+
+	return sysfs_emit(buf, "%s\n", kprcs->name);
+}
+static struct kobj_attribute process_name_attr = __ATTR_RO(process_name);
+
+static ssize_t total_gpu_mem_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	struct kbase_process *kprcs = to_kprcs(kobj);
+	if (WARN_ON(!kprcs))
+		return 0;
+
+	return sysfs_emit(buf, "%lu\n",
+			(unsigned long) kprcs->total_gpu_pages << PAGE_SHIFT);
+}
+static struct kobj_attribute total_gpu_mem_attr = __ATTR_RO(total_gpu_mem);
+
+static ssize_t total_dma_buf_gpu_mem_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	struct kbase_process *kprcs = to_kprcs(kobj);
+	if (WARN_ON(!kprcs))
+		return 0;
+
+	return sysfs_emit(buf, "%lu\n",
+			(unsigned long) kprcs->dma_buf_pages << PAGE_SHIFT);
+}
+static struct kobj_attribute total_dma_buf_gpu_mem_attr = __ATTR_RO(total_dma_buf_gpu_mem);
+
+static struct attribute *kprcs_attrs[] = {
+	&process_name_attr.attr,
+	&total_gpu_mem_attr.attr,
+	&total_dma_buf_gpu_mem_attr.attr,
+	NULL
+};
+ATTRIBUTE_GROUPS(kprcs);
+
+static struct kobj_type kprcs_ktype = {
+	.release = kbase_kprcs_release,
+	.sysfs_ops = &kobj_sysfs_ops,
+	.default_groups = kprcs_groups,
+};
 
 /**
  * find_process_node - Used to traverse the process rb_tree to find if
@@ -105,9 +160,15 @@ static int kbase_insert_kctx_to_process(struct kbase_context *kctx)
 		if (kprcs == NULL)
 			return -ENOMEM;
 		kprcs->tgid = tgid;
+		kprcs->name = kctx->name;
 		INIT_LIST_HEAD(&kprcs->kctx_list);
 		kprcs->dma_buf_root = RB_ROOT;
 		kprcs->total_gpu_pages = 0;
+		kprcs->dma_buf_pages = 0;
+		WARN_ON(kobject_init_and_add(
+					&kprcs->kobj, &kprcs_ktype,
+					kctx->kbdev->proc_sysfs_node,
+					"%d", tgid));
 
 		while (*new) {
 			struct kbase_process *prcs_node;
@@ -133,12 +194,17 @@ int kbase_context_common_init(struct kbase_context *kctx)
 {
 	const unsigned long cookies_mask = KBASE_COOKIE_MASK;
 	int err = 0;
+	struct task_struct *task;
+	struct pid *pid_struct;
 
 	/* creating a context is considered a disjoint event */
 	kbase_disjoint_event(kctx->kbdev);
 
 	kctx->tgid = current->tgid;
 	kctx->pid = current->pid;
+	pid_struct = find_get_pid(current->tgid);
+	task = pid_task(pid_struct, PIDTYPE_PID);
+	kctx->name = task->comm;
 
 	/* Check if this is a Userspace created context */
 	if (likely(kctx->filp)) {
@@ -268,6 +334,8 @@ static void kbase_remove_kctx_from_process(struct kbase_context *kctx)
 		WARN_ON(kprcs->total_gpu_pages);
 		spin_unlock(&kctx->kbdev->gpu_mem_usage_lock);
 		WARN_ON(!RB_EMPTY_ROOT(&kprcs->dma_buf_root));
+		kobject_del(&kprcs->kobj);
+		kobject_put(&kprcs->kobj);
 		kfree(kprcs);
 	}
 }

@@ -242,6 +242,7 @@ int kbase_mem_init(struct kbase_device *kbdev)
 	spin_lock_init(&kbdev->gpu_mem_usage_lock);
 	kbdev->process_root = RB_ROOT;
 	kbdev->dma_buf_root = RB_ROOT;
+	kbdev->dma_buf_pages = 0;
 	mutex_init(&kbdev->dma_buf_lock);
 
 	kbdev->mgm_dev = &kbase_native_mgm_dev;
@@ -1925,7 +1926,9 @@ void kbase_mem_kref_free(struct kref *kref)
 	case KBASE_MEM_TYPE_RAW:
 		/* raw pages, external cleanup */
 		break;
-	case KBASE_MEM_TYPE_IMPORTED_UMM:
+	case KBASE_MEM_TYPE_IMPORTED_UMM: {
+		struct kbase_device *kbdev = alloc->imported.umm.kctx->kbdev;
+		struct kbase_mem_dmabuf_list *entry, *tmp;
 		if (!dmabuf_uvm_realloc(alloc->imported.umm.dma_buf) &&
 		    !IS_ENABLED(CONFIG_MALI_DMA_BUF_MAP_ON_DEMAND)) {
 			WARN_ONCE(alloc->imported.umm.current_mapping_usage_count != 1,
@@ -1939,11 +1942,22 @@ void kbase_mem_kref_free(struct kref *kref)
 			dma_buf_unmap_attachment(alloc->imported.umm.dma_attachment,
 						 alloc->imported.umm.sgt, DMA_BIDIRECTIONAL);
 #endif
-			kbase_remove_dma_buf_usage(alloc->imported.umm.kctx, alloc);
 		}
+		mutex_lock(&kbdev->kbase_dmabuf_lock);
+		list_for_each_entry_safe(entry, tmp, &kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
+			if (entry->name == alloc->imported.umm.kctx->kprcs->name &&
+				entry->dma_buf == alloc->imported.umm.dma_buf && entry->flag) {
+					kbase_remove_dma_buf_usage(alloc->imported.umm.kctx,alloc);
+					list_del(&entry->dmabuf_list);
+					kfree(entry);
+					break;
+			}
+		}
+		mutex_unlock(&kbdev->kbase_dmabuf_lock);
 		dma_buf_detach(alloc->imported.umm.dma_buf, alloc->imported.umm.dma_attachment);
 		dma_buf_put(alloc->imported.umm.dma_buf);
 		break;
+	}
 	case KBASE_MEM_TYPE_IMPORTED_USER_BUF:
 		switch (alloc->imported.user_buf.state) {
 		case KBASE_USER_BUF_STATE_PINNED:
