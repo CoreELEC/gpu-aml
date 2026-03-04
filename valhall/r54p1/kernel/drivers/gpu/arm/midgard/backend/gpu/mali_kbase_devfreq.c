@@ -37,6 +37,10 @@
 #ifdef CONFIG_AMLOGIC_MODIFY
 #include <platform/devicetree/mali_scaling.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+#include <linux/units.h>
+#endif
+
 struct devfreq_simple_ondemand_data data;
 #endif
 
@@ -129,21 +133,48 @@ static int kbase_devfreq_target(struct device *dev, unsigned long *target_freq, 
 #ifdef CONFIG_AMLOGIC_MODIFY
 	struct devfreq_dev_profile *dp;
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	unsigned long actual_max_freq =0;
+	bool freq_matched = false;
 #endif
 
 	nominal_freq = *target_freq;
 #ifdef CONFIG_AMLOGIC_MODIFY
+	// get the value of /sys/class/devfreq/*.valhall/max_freq
+	actual_max_freq = (unsigned long)kbdev->devfreq->user_max_freq_req.data.freq.qos->max_freq.target_value;
+	/*
+	 * the original value of max_freq.target_value is 2147483647
+	 * if max_freq is not set, we need use scaling_max_freq as default
+	 */
+	if (actual_max_freq <= kbdev->devfreq->scaling_max_freq) {
+		unsigned long *freq_table;
+		freq_table = kbdev->devfreq->profile->freq_table;
+		if (freq_table) {
+			for (i = 0; i < kbdev->devfreq->profile->max_state; i++) {
+				if (actual_max_freq == DIV_ROUND_UP(freq_table[i], HZ_PER_KHZ)) {
+					actual_max_freq = freq_table[i];
+					freq_matched = true;
+					break;
+				}
+			}
+		}
+		else
+			dev_err(dev, "freq_table is NULL\n");
+	}
+
+	if (!freq_matched)
+		actual_max_freq = kbdev->devfreq->scaling_max_freq;
+
 	dp = &kbdev->devfreq_profile;
 	switch (pmali_plat->status) {
 		case PREHEAT_NULL:
 			break;
 		case PREHEAT_START:
 			dp->polling_ms = 2000;
-			nominal_freq = kbdev->devfreq->scaling_max_freq;
+			nominal_freq = actual_max_freq;
 			pmali_plat->status = PREHEAT_DOING;
 			break;
 		case PREHEAT_DOING:
-			nominal_freq = kbdev->devfreq->scaling_max_freq;
+			nominal_freq = actual_max_freq;
 			pmali_plat->status = PREHEAT_END;
 			break;
 		case PREHEAT_END:
