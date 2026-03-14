@@ -271,6 +271,8 @@ ifeq ($(CONFIG_MALI_KCOV),y)
     EXTRA_CFLAGS += -DKCOV_ENABLE_COMPARISONS=1
 endif
 
+EXTRA_CFLAGS += -Wno-macro-redefined -Wno-self-assign -Wno-unused-function
+
 all:
 	$(MAKE) -C $(KDIR) M=$(CURDIR) $(MAKE_ARGS) EXTRA_CFLAGS="$(EXTRA_CFLAGS)" KBUILD_EXTRA_SYMBOLS="$(EXTRA_SYMBOLS)" modules
 
