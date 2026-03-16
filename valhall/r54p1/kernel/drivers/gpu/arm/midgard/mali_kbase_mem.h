@@ -686,6 +686,7 @@ struct kbase_va_region {
 
 	kbase_refcount_t va_refcnt;
 	atomic64_t no_user_free_count;
+	bool is_umm_mapped;
 };
 
 /* Special marker for failed JIT allocations that still must be marked as

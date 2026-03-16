@@ -1372,6 +1372,7 @@ int kbase_mem_umm_map(struct kbase_context *kctx, struct kbase_va_region *reg)
 	if (err)
 		goto bad_insert;
 
+	reg->is_umm_mapped = true;
 	if (reg->flags & KBASE_REG_IMPORT_PAD && !WARN_ON(reg->nr_pages < alloc->nents)) {
 		/* For padded imported dma-buf memory, map the dummy aliasing
 		 * page from the end of the dma-buf pages, to the end of the
@@ -1392,8 +1393,10 @@ int kbase_mem_umm_map(struct kbase_context *kctx, struct kbase_va_region *reg)
 	return 0;
 
 bad_pad_insert:
-	kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn, alloc->pages,
-					  alloc->nents, alloc->nents, kctx->as_nr);
+	if (reg->is_umm_mapped)
+		kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn, alloc->pages,
+						alloc->nents, alloc->nents, kctx->as_nr);
+	reg->is_umm_mapped = false;
 bad_insert:
 	kbase_mem_umm_unmap_attachment(kctx, alloc);
 bad_map_attachment:
@@ -1417,12 +1420,13 @@ void kbase_mem_umm_unmap(struct kbase_context *kctx, struct kbase_va_region *reg
 		return;
 	}
 
-	if (!kbase_is_region_invalid_or_free(reg) && reg->gpu_alloc == alloc) {
+	if (!kbase_is_region_invalid_or_free(reg) && reg->gpu_alloc == alloc && reg->is_umm_mapped) {
 		int err;
 
 		err = kbase_mmu_teardown_imported_pages(kctx->kbdev, &kctx->mmu, reg->start_pfn,
 							alloc->pages, reg->nr_pages, reg->nr_pages,
 							kctx->as_nr);
+		reg->is_umm_mapped = false;
 		WARN_ON(err);
 	}
 
