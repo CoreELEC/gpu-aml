@@ -2270,11 +2270,11 @@ static ssize_t show_mem_pool_size(struct device *dev, struct device_attribute *a
 
 		if (kbdev) {
 			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
-				"pgd_mem_pool        %10lu\n", kbdev->pgd_mem_pool.cur_size);
+				"pgd_mem_pool        %10zu\n", kbdev->pgd_mem_pool.cur_size);
 			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
-				"fw_mem_pool.small   %10lu\n", kbdev->fw_mem_pools.small.cur_size);
+				"fw_mem_pool.small   %10zu\n", kbdev->fw_mem_pools.small.cur_size);
 			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
-				"fw_mem_pool.large   %10lu\n", kbdev->fw_mem_pools.large.cur_size);
+				"fw_mem_pool.large   %10zu\n", kbdev->fw_mem_pools.large.cur_size);
 		}
 	}
 
