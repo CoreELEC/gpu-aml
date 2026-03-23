@@ -554,6 +554,90 @@ int mali_reset_info(struct platform_device *pdev, struct device_node *gpu_dn,
 	return ret;
 }
 
+int mali_dmc_reset_info(struct platform_device *pdev, struct device_node *gpu_dn,
+			struct mali_plat_info_t *mpdata)
+{
+	struct device_node *dmc_reset_dn;
+	int ret = 0;
+
+	dmc_reset_dn = of_get_child_by_name(gpu_dn, "dmc_reset");
+	if (!dmc_reset_dn) {
+		mpdata->dmc_reset_flag = 0;
+		dev_dbg(&pdev->dev, "no dmc_reset\n");
+	} else {
+		ret = of_property_read_u32(dmc_reset_dn,"reg_base",
+			&mpdata->dmc_reset.reg_base);
+		if (ret) {
+			dev_err(&pdev->dev, "no reg_base for dmc_reset\n");
+			return -ENOMEM;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_rst",
+			&mpdata->dmc_reset.reg_rst);
+		if (ret) {
+			dev_err(&pdev->dev, "no reg_mask for dmc_reset\n");
+			return -ENOMEM;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_rst1",
+			&mpdata->dmc_reset.reg_rst1);
+		if (ret) {
+			dev_err(&pdev->dev, "no reg_rst1 for dmc_reset\n");
+			return -ENOMEM;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_bit",
+			&mpdata->dmc_reset.reg_bit);
+		if (ret) {
+			dev_err(&pdev->dev, "no reg_bit for dmc_reset\n");
+			return -ENOMEM;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts",
+			&mpdata->dmc_reset.reg_sts);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts1",
+			&mpdata->dmc_reset.reg_sts1);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts1 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts2",
+			&mpdata->dmc_reset.reg_sts2);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts2 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts3",
+			&mpdata->dmc_reset.reg_sts3);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts3 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts4",
+			&mpdata->dmc_reset.reg_sts4);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts4 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts5",
+			&mpdata->dmc_reset.reg_sts5);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts5 for dmc_reset\n");
+			ret = 0;
+		}
+		ret = of_property_read_u32(dmc_reset_dn,"reg_sts6",
+			&mpdata->dmc_reset.reg_sts6);
+		if (ret) {
+			dev_dbg(&pdev->dev, "no reg_sts6 for dmc_reset\n");
+			ret = 0;
+		}
+		mpdata->dmc_reset.reg_base_dmc = ioremap(mpdata->dmc_reset.reg_base, 0x1000);
+		dev_dbg(&pdev->dev, "dmc base 0x%p\n", mpdata->dmc_reset.reg_base_dmc);
+		mpdata->dmc_reset_flag = 1;
+	}
+	return ret;
+}
+
 int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 {
 	struct device_node *gpu_dn = pdev->dev.of_node;
@@ -653,6 +737,10 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 	clk_sample = mpdata->clk_sample;
 	/* mali external reset reg */
 	ret = mali_reset_info(pdev, gpu_dn, mpdata);
+	if (ret)
+		return ret;
+	/* mali dmc reset reg */
+	ret = mali_dmc_reset_info(pdev, gpu_dn, mpdata);
 	if (ret)
 		return ret;
 	/* dvfs clk table */

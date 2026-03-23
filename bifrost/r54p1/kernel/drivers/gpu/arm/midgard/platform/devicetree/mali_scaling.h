@@ -64,6 +64,21 @@ typedef struct mali_reset_info_t {
 	u32 reg_bit;
 } mali_reset_info_t;
 
+typedef struct mali_dmc_reset_info_t {
+	void __iomem *reg_base_dmc;
+	u32 reg_base;
+	u32 reg_rst;
+	u32 reg_rst1;
+	u32 reg_bit;
+	u32 reg_sts;
+	u32 reg_sts1;
+	u32 reg_sts2;
+	u32 reg_sts3;
+	u32 reg_sts4;
+	u32 reg_sts5;
+	u32 reg_sts6;
+} mali_dmc_reset_info_t;
+
 /**
  * Platform specific data for meson chips.
  */
@@ -96,6 +111,8 @@ typedef struct mali_plat_info_t {
 	u32 reset_flag;
 	mali_reset_info_t module_reset;
 	mali_reset_info_t apb_reset;
+	mali_dmc_reset_info_t dmc_reset;
+	u32 dmc_reset_flag;
 
 	/* set upper limit of pp or frequency, for THERMAL thermal or band width saving.*/
 	u32 limit_on;
