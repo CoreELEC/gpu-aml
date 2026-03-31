@@ -51,6 +51,7 @@ struct tagged_addr { phys_addr_t tagged_addr; };
 #define KBASE_INVALID_PHYSICAL_ADDRESS (~(phys_addr_t)0 & PAGE_MASK)
 
 #define NUM_4K_PAGES_IN_2MB_PAGE (SZ_2M / SZ_4K)
+#define KBASE_INVALID_PHYSICAL_ADDRESS (~(phys_addr_t)0 & PAGE_MASK)
 
 /*
  * Note: if macro for converting physical address to page is not defined

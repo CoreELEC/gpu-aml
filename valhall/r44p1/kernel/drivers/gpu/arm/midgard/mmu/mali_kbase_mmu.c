@@ -3475,10 +3475,19 @@ int kbase_mmu_migrate_page(struct tagged_addr old_phys, struct tagged_addr new_p
 	 */
 	spin_lock_irqsave(&kbdev->hwaccess_lock, hwaccess_flags);
 	if (unlikely(!kbase_pm_l2_allow_mmu_page_migration(kbdev))) {
-		/* Defer the migration as L2 is in a transitional phase */
+
 		spin_unlock_irqrestore(&kbdev->hwaccess_lock, hwaccess_flags);
 		mutex_unlock(&kbdev->mmu_hw_mutex);
 		dev_dbg(kbdev->dev, "%s: L2 in transition, abort PGD page migration", __func__);
+
+		ret = -EAGAIN;
+		goto l2_state_defer_out;
+	}
+
+	if (unlikely(kbase_mem_is_pmode_deferral_required(kbdev))) {
+		/* Defer the migration if we're in pmode */
+		spin_unlock_irqrestore(&kbdev->hwaccess_lock, hwaccess_flags);
+		dev_dbg(kbdev->dev, "%s: In protectd mode, abort PGD page migration", __func__);
 		ret = -EAGAIN;
 		goto l2_state_defer_out;
 	}
