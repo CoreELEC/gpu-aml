@@ -152,7 +152,7 @@ KBASE_EXPORT_TEST_API(kbasep_pm_metrics_init);
 
 void kbasep_pm_metrics_term(struct kbase_device *kbdev)
 {
-#ifdef CONFIG_MALI_MIDGARD_DVFS
+#if defined(CONFIG_MALI_DEVFREQ) || defined(CONFIG_MALI_MIDGARD_DVFS)
 	unsigned long flags;
 
 	KBASE_DEBUG_ASSERT(kbdev != NULL);
@@ -163,7 +163,7 @@ void kbasep_pm_metrics_term(struct kbase_device *kbdev)
 
 	hrtimer_cancel(&kbdev->pm.backend.metrics.timer);
 	kbdev->pm.backend.metrics.initialized = false;
-#endif /* CONFIG_MALI_MIDGARD_DVFS */
+#endif
 
 #if MALI_USE_CSF
 	kbase_ipa_control_unregister(
