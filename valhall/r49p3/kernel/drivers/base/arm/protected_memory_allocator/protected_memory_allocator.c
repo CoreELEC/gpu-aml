@@ -478,9 +478,7 @@ static int protected_memory_allocator_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	err = tee_protect_mem_by_type(TEE_MEM_TYPE_GPU,
-				      (u32)rmem->base,
-				      (u32)rmem->size,
-				      &protected_memory_handle);
+			(u32)rmem->base, (u32)rmem->size, &protected_memory_handle);
 	if (err)
 		dev_err(&pdev->dev, "tee protect protected_memory fail!\n");
 	else
