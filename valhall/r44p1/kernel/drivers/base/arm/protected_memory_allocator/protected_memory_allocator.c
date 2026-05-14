@@ -492,7 +492,7 @@ static int protected_memory_allocator_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	err = tee_protect_mem_by_type(TEE_MEM_TYPE_GPU,
-			(u32)rmem->base, (u32)rmem->size, &protected_memory_handle);
+			rmem->base, rmem->size, &protected_memory_handle);
 	if (err)
 		dev_err(&pdev->dev, "tee protect protected_memory fail!\n");
 	else
@@ -515,8 +515,8 @@ static int protected_memory_allocator_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, &epma_dev->pma_dev);
 	dev_info(&pdev->dev,
 		"Protected memory allocator probed successfully\n");
-	dev_info(&pdev->dev, "Protected memory region: base=%llx num pages=%zu\n",
-		(unsigned long long)rmem_base, rmem_size);
+	dev_info(&pdev->dev, "Protected memory region: base=%pa num pages=%zu\n",
+		&rmem_base, rmem_size);
 
 	return 0;
 }
