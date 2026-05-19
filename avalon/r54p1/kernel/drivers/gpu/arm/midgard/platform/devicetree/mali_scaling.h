@@ -126,6 +126,10 @@ typedef struct mali_plat_info_t {
 	void __iomem *reg_base_reset;
 	void __iomem *reg_base_hiu;
 	u32 clk_cntl_reg;
+	u32 qchannel_enabled;
+	u32 qchannel_supported;
+	u32 qchannel_res_addr;
+	u32 qchannel_res_valid;
 } mali_plat_info_t;
 mali_plat_info_t* get_mali_plat_data(void);
 

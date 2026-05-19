@@ -40,15 +40,11 @@
 
 int meson_gpu_data_invalid_count = 0;
 int meson_gpu_fault = 0;
-
 extern u64 kbase_pm_get_ready_cores(struct kbase_device *kbdev, enum kbase_pm_core_type type);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+extern int mali_control_qchannel(struct kbase_device *kbdev, bool enable);
+
 static ssize_t domain_stat_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t domain_stat_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	unsigned int val;
 	u64 core_ready;
@@ -69,13 +65,8 @@ static ssize_t domain_stat_read(struct class *class,
 #define LIMIT_CMD "lmt"  /* lmt [0 or 1] */
 #define FULL_UTILIZATION 256
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t mpgpu_write(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t mpgpu_write(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	char *pstart, *cprt = NULL;
 	u32 val = 0;
@@ -138,24 +129,14 @@ quit:
 }
 
 #ifdef CONFIG_MALI_MIDGARD_DVFS
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t scale_mode_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t scale_mode_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	return sprintf(buf, "%d\n", get_mali_schel_mode());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t scale_mode_write(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t scale_mode_write(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	int ret;
 	unsigned int val;
@@ -171,13 +152,8 @@ static ssize_t scale_mode_write(struct class *class,
 	return count;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t thermal_max_freq_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t thermal_max_freq_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	u32 idx = pmali_plat->scale_info.maxclk;
@@ -186,13 +162,8 @@ static ssize_t thermal_max_freq_read(struct class *class,
 	return sprintf(buf, "%d\n", pmali_plat->clk_sample[idx]);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t max_freq_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t max_freq_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	printk("maxclk:%d, maxclk_sys:%d, max gpu level=%d\n",
@@ -200,13 +171,8 @@ static ssize_t max_freq_read(struct class *class,
 	return sprintf(buf, "%d\n", get_gpu_max_clk_level());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t max_freq_write(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t max_freq_write(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	int ret;
 	unsigned int val;
@@ -227,25 +193,15 @@ static ssize_t max_freq_write(struct class *class,
 	return count;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t min_freq_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t min_freq_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
 	return sprintf(buf, "%d\n", pmali_plat->scale_info.minclk);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t min_freq_write(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t min_freq_write(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	int ret;
 	unsigned int val;
@@ -265,24 +221,14 @@ static ssize_t min_freq_write(struct class *class,
 	return count;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t freq_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t freq_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	return sprintf(buf, "%d\n", get_current_frequency());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t freq_write(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t freq_write(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	int ret;
 	unsigned int val;
@@ -297,37 +243,22 @@ static ssize_t freq_write(struct class *class,
 
 	return count;
 }
-#endif /* end of #ifndef CONFIG_MALI_DEVFREQ */
+#endif /* end of #ifdef CONFIG_MALI_MIDGARD_DVFS */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t utilization_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t utilization_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	return sprintf(buf, "%d\n", mpgpu_get_utilization());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t util_gl_share_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t util_gl_share_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	return sprintf(buf, "%d\n", mpgpu_get_util_gl_share());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t util_cl_share_read(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t util_cl_share_read(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	u32 val[2];
 
@@ -341,24 +272,14 @@ u32 mpgpu_get_gpu_err_count(void)
 	return (meson_gpu_fault + meson_gpu_data_invalid_count);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t meson_gpu_get_err_count(const struct class *class,
 		const struct class_attribute *attr, char *buf)
-#else
-static ssize_t meson_gpu_get_err_count(struct class *class,
-		struct class_attribute *attr, char *buf)
-#endif
 {
 	return sprintf(buf, "%d\n", mpgpu_get_gpu_err_count());
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t mpgpu_set_err_count(const struct class *class,
 		const struct class_attribute *attr, const char *buf, size_t count)
-#else
-static ssize_t mpgpu_set_err_count(struct class *class,
-		struct class_attribute *attr, const char *buf, size_t count)
-#endif
 {
 	int ret;
 	unsigned int val;
@@ -368,6 +289,57 @@ static ssize_t mpgpu_set_err_count(struct class *class,
 		return -EINVAL;
 
 	meson_gpu_fault = val;
+
+	return count;
+}
+
+static ssize_t qchannel_enable_read(const struct class *class,
+		const struct class_attribute *attr, char *buf)
+{
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+
+	return sprintf(buf, "%d\n", pmali_plat->qchannel_enabled);
+}
+
+static ssize_t qchannel_enable_write(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	unsigned int val;
+	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	struct platform_device* ptr_plt_dev = pmali_plat->pdev;
+	struct kbase_device *kbdev = dev_get_drvdata(&ptr_plt_dev->dev);
+
+	if (!pmali_plat->qchannel_supported) {
+		printk("qchannel: dts not supported\n");
+		return -EINVAL;
+	}
+
+	ret = kstrtouint(buf, 10, &val);
+	if (ret) {
+		printk("kstrtouint fail\n");
+		return -EINVAL;
+	}
+
+	if (val) {
+		ret = mali_control_qchannel(kbdev, true);
+		if (ret == 0) {
+			pmali_plat->qchannel_enabled = 1;
+			printk("qchannel: enabled\n");
+		} else {
+			printk("qchannel: enable failed\n");
+			return ret;
+		}
+	} else {
+		ret = mali_control_qchannel(kbdev, false);
+		if (ret == 0) {
+			pmali_plat->qchannel_enabled = 0;
+			printk("qchannel: disabled\n");
+		} else {
+			printk("qchannel: disable failed\n");
+			return ret;
+		}
+	}
 
 	return count;
 }
@@ -386,6 +358,7 @@ static struct class_attribute mali_class_attrs[] = {
 	__ATTR(util_gl,	    0644, util_gl_share_read, NULL),
 	__ATTR(util_cl,	    0644, util_cl_share_read, NULL),
 	__ATTR(gpu_err,	    0644, meson_gpu_get_err_count, mpgpu_set_err_count),
+	__ATTR(qchannel_enable,	0644, qchannel_enable_read, qchannel_enable_write),
 };
 
 static struct class mpgpu_class = {

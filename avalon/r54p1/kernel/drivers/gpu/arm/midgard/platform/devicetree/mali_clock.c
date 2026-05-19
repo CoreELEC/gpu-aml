@@ -389,6 +389,36 @@ int mali_dt_info(struct platform_device *pdev, struct mali_plat_info_t *mpdata)
 		mpdata->clk_stack = NULL;
 	}
 
+	ret = of_property_read_u32(gpu_dn, "qchannel-supported", &mpdata->qchannel_supported);
+	if (ret || mpdata->qchannel_supported == 0) {
+		mpdata->qchannel_supported = 0;
+		mpdata->qchannel_res_valid = 0;
+		dev_err(&pdev->dev, "qchannel is not supported\n");
+	} else {
+		if (mpdata->qchannel_supported) {
+			ret = of_property_read_u32(gpu_dn, "qchannel-reg", &mpdata->qchannel_res_addr);
+			if (ret) {
+				dev_err(&pdev->dev, "read qchannel-reg failed\n");
+				mpdata->qchannel_supported = 0;
+				mpdata->qchannel_res_valid = 0;
+			} else {
+				mpdata->qchannel_res_valid = 1;
+				dev_info(&pdev->dev, "qchannel reg base=%pa\n", &mpdata->qchannel_res_addr);
+			}
+		} else {
+			mpdata->qchannel_res_valid = 0;
+			dev_err(&pdev->dev, "qchannel disabled, skip read qchannel-reg\n");
+		}
+	}
+
+	if (mpdata->qchannel_res_valid) {
+		ret = of_property_read_u32(gpu_dn, "qchannel-enabled", &mpdata->qchannel_enabled);
+		if (ret) {
+			mpdata->qchannel_enabled = 0;
+			dev_err(&pdev->dev, "qchannel is not enabled\n");
+		}
+	}
+
 	pmali_plat = mpdata;
 	mpdata->pdev = pdev;
 	return 0;

@@ -27,14 +27,24 @@
 #include <linux/regulator/consumer.h>
 #include <linux/delay.h>
 #include <linux/io.h>
+#include <linux/amlogic/tee.h>
 #include <hw_access/mali_kbase_hw_access_regmap_legacy.h>
 
 #include "mali_kbase_config_platform.h"
 #include "mali_scaling.h"
 #include "mali_clock.h"
 
+#define QCHANNEL_REG_QREQN       19  //q channel control, req_qreqn, set 0 to open
+#define QCHANNEL_REG_QREQN_SEL   18  //q channel control, reg_qreqn_sel, set 0 to open
+#define QCHANNEL_REG_CLK_EN      17  //q channel control, reg_clk_en, set 0 to open
+
 void *reg_base_reset = NULL;
 static int first = 1;
+const int reg_bits[] = {
+    QCHANNEL_REG_QREQN,
+    QCHANNEL_REG_QREQN_SEL,
+    QCHANNEL_REG_CLK_EN
+};
 
 #define Rd(r)                           readl((reg_base_reset) + ((r)<<2))
 #define Wr(r, v)                        writel((v), ((reg_base_reset) + ((r)<<2)))
@@ -140,6 +150,41 @@ static void mali_hw_init(struct kbase_device *kbdev)
 	Mali_pwr_on_with_kdev(kbdev, 0x1);
 }
 
+int mali_control_qchannel(struct kbase_device *kbdev, bool enable)
+{
+	struct mali_plat_info_t *mpdata = kbdev->platform_context;
+	int ret;
+
+	if (!mpdata || !mpdata->qchannel_supported || !mpdata->qchannel_res_valid) {
+		dev_dbg(kbdev->dev, "qchannel: supported=%d, res_valid=%d\n",
+				mpdata ? mpdata->qchannel_supported : 0,
+				mpdata ? mpdata->qchannel_res_valid : 0);
+		return -EINVAL;
+	}
+
+	if (enable) {
+		for (int i = 0; i < ARRAY_SIZE(reg_bits); i++) {
+			ret = tee_write_reg_bits((u32)mpdata->qchannel_res_addr, 0, reg_bits[i], 1);
+			if (ret) {
+				dev_err(kbdev->dev, "failed to write reg:%pa bit:%d\n", &mpdata->qchannel_res_addr, reg_bits[i]);
+				return -EINVAL;
+			}
+		}
+		dev_dbg(kbdev->dev, "tee_write_reg_bits 0 success\n");
+	} else {
+		for (int i = 0; i < ARRAY_SIZE(reg_bits); i++) {
+			ret = tee_write_reg_bits((u32)mpdata->qchannel_res_addr, 1, reg_bits[i], 1);
+			if (ret) {
+				dev_err(kbdev->dev, "failed to write reg:%pa bit:%d\n", &mpdata->qchannel_res_addr, reg_bits[i]);
+				return -EINVAL;
+			}
+		}
+		dev_dbg(kbdev->dev, "tee_write_reg_bits 1 success\n");
+	}
+
+	return 0;
+}
+
 static int pm_callback_power_on(struct kbase_device *kbdev)
 {
 	int ret = 0;
@@ -161,6 +206,7 @@ static int pm_callback_power_on(struct kbase_device *kbdev)
 
 	first = 0;
 	mali_hw_init(kbdev);
+	mali_control_qchannel(kbdev, true);
 out:
 	return ret;
 }
