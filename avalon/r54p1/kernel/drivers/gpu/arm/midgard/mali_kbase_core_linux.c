@@ -2190,6 +2190,65 @@ static ssize_t set_ctx_mem_pool_size(struct device *dev, struct device_attribute
 
 static DEVICE_ATTR(ctx_mem_pool_size, S_IRUGO | S_IWUSR, show_ctx_mem_pool_size, set_ctx_mem_pool_size);
 
+static ssize_t show_ctx_lp_mem_pool_size(struct device *dev, struct device_attribute *attr, char * const buf)
+{
+	struct list_head *entry;
+	const struct list_head *kbdev_list;
+	ssize_t ret = 0;
+	int i = 0;
+	struct kbase_device *const kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	kbdev_list = kbase_device_get_list();
+	list_for_each(entry, kbdev_list) {
+		struct kbase_device *kbdev = NULL;
+		struct kbase_context *kctx;
+
+		kbdev = list_entry(entry, struct kbase_device, entry);
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%-16s %-16s %-16s\n",
+				"kctx", "pid", "cached_pages");
+		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"----------------------------------------------------\n");
+		mutex_lock(&kbdev->kctx_list_lock);
+		list_for_each_entry(kctx, &kbdev->kctx_list, kctx_list_link) {
+			/* output the memory cached and cap for each kctx
+			* opened on this device */
+				unsigned long cached_mem = 0;
+				for (i = 0; i < MEMORY_GROUP_MANAGER_NR_GROUPS; i++)
+					//pr_info("[%d]:kctx->mem_pools.large[%d] = %d", kctx->tgid, i, kctx->mem_pools.large[i].cur_size);
+					cached_mem += kctx->mem_pools.large[i].cur_size;
+				ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+				"%p %10u %10lu\n",
+				kctx,
+				kctx->tgid,
+				cached_mem);
+		}
+		mutex_unlock(&kbdev->kctx_list_lock);
+	}
+
+	kbase_device_put_list(kbdev_list);
+
+	return ret;
+}
+
+static ssize_t set_ctx_lp_mem_pool_size(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct kbase_device *kbdev;
+	ssize_t err = count;
+
+	kbdev = to_kbase_device(dev);
+
+	if (!kbdev)
+		return -ENODEV;
+
+	return err;
+}
+
+static DEVICE_ATTR(ctx_lp_mem_pool_size, S_IRUGO | S_IWUSR, show_ctx_lp_mem_pool_size, set_ctx_lp_mem_pool_size);
+
 static ssize_t show_mem_pool_size(struct device *dev, struct device_attribute *attr, char * const buf)
 {
 	struct list_head *entry;
@@ -4551,6 +4610,7 @@ static const struct attribute_group kbase_attr_group = {
 
 static struct attribute *ctx_attrs[] = {
 	&dev_attr_ctx_mem_pool_size.attr,
+	&dev_attr_ctx_lp_mem_pool_size.attr,
 	NULL
 };
 
