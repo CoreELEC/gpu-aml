@@ -1590,12 +1590,14 @@ static struct kbase_va_region *kbase_mem_from_umm(struct kbase_context *kctx, in
 	reg->gpu_alloc->imported.umm.kctx = kctx;
 	reg->extension = 0;
 
+	mutex_lock(&kctx->kbdev->kbase_dmabuf_lock);
 	list_for_each_entry_safe(entry, tmp, &kctx->kbdev->kbase_dmabuf_list.dmabuf_list, dmabuf_list) {
 		if (entry->dma_buf == reg->gpu_alloc->imported.umm.dma_buf) {
 			same_buf = true;
 			break;
 		}
 	}
+	mutex_unlock(&kctx->kbdev->kbase_dmabuf_lock);
 	if (!same_buf) {
 		new_node = kmalloc(sizeof(*new_node), GFP_KERNEL);
 		if (!new_node) {
@@ -1664,6 +1666,7 @@ static struct kbase_va_region *kbase_mem_from_user_buffer(struct kbase_context *
 	struct kbase_alloc_import_user_buf *user_buf;
 	int write;
 	long faulted_pages;
+	struct kbase_mem_phy_alloc *alloc;
 
 	/* Flag supported only for dma-buf imported memory */
 	if (*flags & BASE_MEM_IMPORT_SYNC_ON_MAP_UNMAP)
@@ -1740,7 +1743,8 @@ static struct kbase_va_region *kbase_mem_from_user_buffer(struct kbase_context *
 	reg->flags |= KBASE_REG_GPU_NX; /* User-buffers are always No eXecute */
 	reg->flags &= ~KBASE_REG_GROWABLE; /* Cannot be grown */
 
-	user_buf = &reg->gpu_alloc->imported.user_buf;
+	alloc = reg->gpu_alloc;
+	user_buf = &alloc->imported.user_buf;
 
 	user_buf->size = size;
 	user_buf->address = address;
