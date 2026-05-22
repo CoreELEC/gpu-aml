@@ -157,7 +157,8 @@ static void do_scaling(struct work_struct *work)
 {
 	mali_dvfs_threshold_table * pdvfs = pmali_plat->dvfs_table;
 	int err = mali_perf_set_num_pp_cores(num_cores_enabled);
-    if (err < 0) scalingdbg(1, "set pp failed");
+	if (err < 0)
+		scalingdbg(1, "set pp failed");
 
 	scalingdbg(1, "set pp cores to %d\n", num_cores_enabled);
 	scalingdbg(1, "pdvfs[%d].freq_index=%d, pdvfs[%d].freq_index=%d\n",
@@ -206,7 +207,7 @@ void get_mali_rt_clkpp(u32* clk, u32* pp)
 #endif
 }
 
-u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
+u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush, u32 keep_count)
 {
 	u32 ret = 0;
 #ifndef CONFIG_MALI_DEVFREQ
@@ -227,8 +228,12 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 			ret = 1;
 	}
 
-	if (flush)
-		mali_stay_count = pmali_plat->dvfs_table[currentStep].keep_count;
+	if (flush) {
+		if (keep_count)
+			mali_stay_count = keep_count;
+		else
+			mali_stay_count = pmali_plat->dvfs_table[currentStep].keep_count;
+	}
 
 	if (pp < pinfo->minpp)
 		pp = pinfo->minpp;
@@ -252,7 +257,7 @@ u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush)
 void revise_mali_rt(void)
 {
 #ifndef CONFIG_MALI_DEVFREQ
-	set_mali_rt_clkpp(currentStep, num_cores_enabled, 1);
+	set_mali_rt_clkpp(currentStep, num_cores_enabled, 1, 0);
 #endif
 }
 
@@ -267,24 +272,24 @@ void flush_scaling_job(void)
 static u32 enable_one_core(void)
 {
 	scalingdbg(2, "meson:	 one more pp, current has %d pp cores\n",  num_cores_enabled + 1);
-	return set_mali_rt_clkpp(currentStep, num_cores_enabled + 1, 0);
+	return set_mali_rt_clkpp(currentStep, num_cores_enabled + 1, 0, 0);
 }
 
 static u32 disable_one_core(void)
 {
 	scalingdbg(2, "meson: disable one pp, current has %d pp cores\n",  num_cores_enabled - 1);
-	return set_mali_rt_clkpp(currentStep, num_cores_enabled - 1, 0);
+	return set_mali_rt_clkpp(currentStep, num_cores_enabled - 1, 0, 0);
 }
 
 static u32 enable_max_num_cores(void)
 {
-	return set_mali_rt_clkpp(currentStep, pmali_plat->scale_info.maxpp, 0);
+	return set_mali_rt_clkpp(currentStep, pmali_plat->scale_info.maxpp, 0, 0);
 }
 
 static u32 enable_pp_cores(u32 val)
 {
 	scalingdbg(2, "meson: enable %d pp cores\n", val);
-	return set_mali_rt_clkpp(currentStep, val, 0);
+	return set_mali_rt_clkpp(currentStep, val, 0, 0);
 }
 #endif
 

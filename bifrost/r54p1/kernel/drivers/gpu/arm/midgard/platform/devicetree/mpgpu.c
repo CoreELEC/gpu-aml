@@ -63,13 +63,20 @@ static ssize_t domain_stat_read(struct class *class,
 	return sprintf(buf, "%x\n", val);
 }
 
-#define PREHEAT_CMD "preheat"
+#define PREHEAT_CMD "preheat"    /* for boost up gpu by user for a period of time (fixed by driver). */
+#define BOOSTGPU_CMD "boostgpu"  /* for boost up gpu by user for a period of time (specified by user). */
 #define PLL2_CMD "mpl2"  /* mpl2 [11] or [0xxxxxxx] */
 #define SCMPP_CMD "scmpp"  /* scmpp [number of pp your want in most of time]. */
 #define BSTGPU_CMD "bstgpu"  /* bstgpu [0-256] */
 #define BSTPP_CMD "bstpp"  /* bstpp [0-256] */
 #define LIMIT_CMD "lmt"  /* lmt [0 or 1] */
 #define FULL_UTILIZATION 256
+
+#ifdef CONFIG_MALI_DEVFREQ
+#define PREHEAT_TIME_MS 2000
+#else
+#define PREHEAT_TIME_MS 0 /* will be set by keep_count in dvfs_table */
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t mpgpu_write(const struct class *class,
@@ -89,8 +96,20 @@ static ssize_t mpgpu_write(struct class *class,
 		goto quit;
 
 	if (!strncmp(pstart, PREHEAT_CMD, strlen(PREHEAT_CMD))) {
-		if (pmali_plat->plat_preheat) {
-			pmali_plat->plat_preheat();
+		if (pmali_plat->plat_boost) {
+#ifdef CONFIG_MALI_DEVFREQ
+			pmali_plat->boost_type = BOOST_TYPE_PREHEAT;
+#endif
+			pmali_plat->plat_boost(PREHEAT_TIME_MS);
+		}
+	} else if (!strncmp(pstart, BOOSTGPU_CMD, strlen(BOOSTGPU_CMD))) {
+		if (!cprt || (kstrtouint(cprt, 10, &val) < 0) || !pmali_plat)
+			goto quit;
+		if ((val >= 100) && pmali_plat->plat_boost) {
+#ifdef CONFIG_MALI_DEVFREQ
+			pmali_plat->boost_type = BOOST_TYPE_BOOSTGPU;
+#endif
+			pmali_plat->plat_boost(val);
 		}
 	} else if (!strncmp(pstart, PLL2_CMD, strlen(PLL2_CMD))) {
 		int base = 10;
@@ -296,11 +315,11 @@ static ssize_t freq_write(struct class *class,
 	if (0 != ret)
 		return -EINVAL;
 
-	set_mali_rt_clkpp(val, pp, 1);
+	set_mali_rt_clkpp(val, pp, 1, 0);
 
 	return count;
 }
-#endif /* end of #ifndef CONFIG_MALI_DEVFREQ */
+#endif /* end of #ifdef CONFIG_MALI_MIDGARD_DVFS */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
 static ssize_t utilization_read(const struct class *class,

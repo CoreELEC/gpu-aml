@@ -107,14 +107,23 @@ typedef struct mali_plat_info_t {
 	u32 limit_on;
 
 	/* for boost up gpu by user. */
-	void (*plat_preheat)(void);
+	void (*plat_boost)(u32 time_ms);
 #ifdef CONFIG_MALI_DEVFREQ
-	enum preheat_status{
-		PREHEAT_NULL,
-		PREHEAT_START,
-		PREHEAT_DOING,
-		PREHEAT_END
-	}status;
+	enum {
+		BOOST_TYPE_NONE,
+		BOOST_TYPE_PREHEAT,
+		BOOST_TYPE_BOOSTGPU
+	} boost_type;
+
+	unsigned long boost_freq;
+	u32 boost_time_ms;
+
+	enum {
+		BOOST_STATUS_NULL,
+		BOOST_STATUS_START,
+		BOOST_STATUS_DOING,
+		BOOST_STATUS_END
+	} boost_status;
 #endif
 
 	struct platform_device *pdev;
@@ -128,6 +137,10 @@ typedef struct mali_plat_info_t {
 	u32 clk_cntl_reg;
 } mali_plat_info_t;
 mali_plat_info_t* get_mali_plat_data(void);
+
+#ifdef CONFIG_MALI_DEVFREQ
+extern int previous_boost_type;
+#endif
 
 /**
  * Initialize core scaling policy.
@@ -150,7 +163,7 @@ void flush_scaling_job(void);
 
 /* get current state(pp, clk). */
 void get_mali_rt_clkpp(u32* clk, u32* pp);
-u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush);
+u32 set_mali_rt_clkpp(u32 clk, u32 pp, u32 flush, u32 keep_count);
 void revise_mali_rt(void);
 /* get max gpu clk level of this chip*/
 int get_gpu_max_clk_level(void);

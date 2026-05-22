@@ -129,27 +129,41 @@ static int kbase_devfreq_target(struct device *dev, unsigned long *target_freq, 
 #ifdef CONFIG_AMLOGIC_MODIFY
 	struct devfreq_dev_profile *dp;
 	mali_plat_info_t* pmali_plat = get_mali_plat_data();
+	static unsigned long actual_boost_freq = 0;
 #endif
 
 	nominal_freq = *target_freq;
 #ifdef CONFIG_AMLOGIC_MODIFY
 	dp = &kbdev->devfreq_profile;
-	switch (pmali_plat->status) {
-		case PREHEAT_NULL:
-			break;
-		case PREHEAT_START:
-			dp->polling_ms = 2000;
-			nominal_freq = kbdev->devfreq->scaling_max_freq;
-			pmali_plat->status = PREHEAT_DOING;
-			break;
-		case PREHEAT_DOING:
-			nominal_freq = kbdev->devfreq->scaling_max_freq;
-			pmali_plat->status = PREHEAT_END;
-			break;
-		case PREHEAT_END:
-			dp->polling_ms = 100;
-			pmali_plat->status = PREHEAT_NULL;
-			break;
+
+	if ((BOOST_TYPE_PREHEAT == pmali_plat->boost_type) && (BOOST_TYPE_PREHEAT != previous_boost_type)) {
+		actual_boost_freq = kbdev->devfreq->scaling_max_freq;
+	} else if (BOOST_TYPE_BOOSTGPU == pmali_plat->boost_type) {
+		actual_boost_freq = (pmali_plat->boost_freq > kbdev->current_nominal_freq) ?
+			pmali_plat->boost_freq : kbdev->current_nominal_freq;
+	}
+
+	if (pmali_plat->boost_type != BOOST_TYPE_NONE) {
+		switch (pmali_plat->boost_status) {
+			case BOOST_STATUS_NULL:
+				break;
+			case BOOST_STATUS_START:
+				dp->polling_ms = pmali_plat->boost_time_ms;
+				nominal_freq = actual_boost_freq;
+				pmali_plat->boost_status = BOOST_STATUS_DOING;
+				break;
+			case BOOST_STATUS_DOING:
+				nominal_freq = actual_boost_freq;
+				pmali_plat->boost_status = BOOST_STATUS_END;
+				break;
+			case BOOST_STATUS_END:
+				dp->polling_ms = 100;
+				pmali_plat->boost_status = BOOST_STATUS_NULL;
+				pmali_plat->boost_time_ms = 100;
+				pmali_plat->boost_freq = kbdev->devfreq->scaling_min_freq;
+				pmali_plat->boost_type = BOOST_TYPE_NONE;
+				break;
+		}
 	}
 #endif
 

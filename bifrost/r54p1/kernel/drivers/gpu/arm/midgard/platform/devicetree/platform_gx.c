@@ -48,16 +48,25 @@
  *    For Meson 8 M2.
  *
  */
-static void mali_plat_preheat(void);
+static void mali_plat_boost(u32 time_ms);
 static mali_plat_info_t mali_plat_data = {
     .bst_gpu = 210, /* threshold for boosting gpu. */
     .bst_pp = 160, /* threshold for boosting PP. */
     .have_switch = 1,
     .limit_on = 1,
-    .plat_preheat = mali_plat_preheat,
+#ifdef CONFIG_MALI_DEVFREQ
+    .boost_type = BOOST_TYPE_NONE,
+    .boost_time_ms = 100,
+    .boost_status = BOOST_STATUS_NULL,
+#endif
+    .plat_boost = mali_plat_boost,
 };
 
-static void mali_plat_preheat(void)
+#ifdef CONFIG_MALI_DEVFREQ
+int previous_boost_type = BOOST_TYPE_NONE;
+#endif
+
+static void mali_plat_boost(u32 time_ms)
 {
 #ifdef CONFIG_MALI_DEVFREQ
     mali_plat_info_t* pmali_plat = get_mali_plat_data();
@@ -75,9 +84,38 @@ static void mali_plat_preheat(void)
         return;
     }
 
+    if ((pmali_plat->boost_status > BOOST_STATUS_NULL) &&
+        (BOOST_TYPE_BOOSTGPU == previous_boost_type)) {
+        if ((BOOST_TYPE_BOOSTGPU == pmali_plat->boost_type) ||
+            ((BOOST_TYPE_PREHEAT == pmali_plat->boost_type) &&
+                (time_ms >= pmali_plat->boost_time_ms))) {
+            unsigned int new_polling_ms = 100;
+            devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_UPDATE_INTERVAL, &new_polling_ms);
+        }
+    }
+
     mutex_lock(&devfreq->lock);
-    pmali_plat->status = PREHEAT_START;
-    devfreq->profile->target(devfreq->dev.parent, &devfreq->scaling_max_freq, 0);
+
+    switch (pmali_plat->boost_type) {
+        case BOOST_TYPE_PREHEAT:
+            pmali_plat->boost_freq = devfreq->scaling_max_freq;
+            break;
+        case BOOST_TYPE_BOOSTGPU:
+            pmali_plat->boost_freq = pmali_plat->dvfs_table[pmali_plat->def_clock + 1].clk_freq;
+            break;
+        default:
+            dev_err(kbdev->dev, "%s, unknown boost type: %d\n", __func__, pmali_plat->boost_type);
+            mutex_unlock(&devfreq->lock);
+            return;
+    }
+
+    pmali_plat->boost_time_ms = time_ms;
+    pmali_plat->boost_status = BOOST_STATUS_START;
+
+    devfreq->profile->target(devfreq->dev.parent, &pmali_plat->boost_freq, 0);
+
+    previous_boost_type = pmali_plat->boost_type;
+
     mutex_unlock(&devfreq->lock);
 #else
     u32 pre_fs;
@@ -92,7 +130,7 @@ static void mali_plat_preheat(void)
         clk = pre_fs;
     if (pp < mali_plat_data.sc_mpp)
         pp = mali_plat_data.sc_mpp;
-    set_mali_rt_clkpp(clk, pp, 1);
+    set_mali_rt_clkpp(clk, pp, 1, time_ms / 100);
 #endif
 }
 
