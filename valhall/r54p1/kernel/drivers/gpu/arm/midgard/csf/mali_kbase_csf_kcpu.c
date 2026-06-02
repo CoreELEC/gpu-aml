@@ -2734,7 +2734,7 @@ out:
 int kbase_csf_kcpu_queue_context_init(struct kbase_context *kctx)
 {
 	kctx->csf.kcpu_queues.kcpu_wq =
-		alloc_workqueue("mali_kcpu_wq_%i_%i", 0, 0, kctx->tgid, kctx->id);
+		alloc_workqueue("mali_kcpu_wq_%i_%i", WQ_HIGHPRI, 0, kctx->tgid, kctx->id);
 	if (kctx->csf.kcpu_queues.kcpu_wq == NULL) {
 		dev_err(kctx->kbdev->dev,
 			"Failed to initialize KCPU queue high-priority workqueue");
