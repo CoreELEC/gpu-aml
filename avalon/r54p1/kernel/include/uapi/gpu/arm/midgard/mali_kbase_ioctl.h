@@ -516,6 +516,8 @@ struct kbase_ioctl_set_limited_core_count {
 #define KBASE_IOCTL_SET_LIMITED_CORE_COUNT \
 	_IOW(KBASE_IOCTL_TYPE, 55, struct kbase_ioctl_set_limited_core_count)
 
+#define KBASE_IOCTL_REPORT_CLK_RATE _IO(KBASE_IOCTL_TYPE, 0xFE)
+
 /**
  * struct kbase_ioctl_kinstr_prfcnt_enum_info - Enum Performance counter
  *                                              information

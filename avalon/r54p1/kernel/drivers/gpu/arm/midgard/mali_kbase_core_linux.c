@@ -33,6 +33,7 @@
 #include <ipa/mali_kbase_ipa_debugfs.h>
 #endif /* CONFIG_DEVFREQ_THERMAL */
 #endif /* CONFIG_MALI_DEVFREQ */
+#include "backend/gpu/mali_kbase_clk_rate_trace_mgr.h"
 #include "backend/gpu/mali_kbase_model_linux.h"
 #include "uapi/gpu/arm/midgard/mali_kbase_mem_profile_debugfs_buf_size.h"
 #include "mali_kbase_mem.h"
@@ -1649,6 +1650,13 @@ static int kbasep_ioctl_set_limited_core_count(
 	return 0;
 }
 
+static int kbase_api_report_clk_rate(struct kbase_context *kctx)
+{
+	struct kbase_device *kbdev = kctx->kbdev;
+	kbase_clk_rate_trace_manager_notify_all(&kbdev->pm.clk_rtm, 0, kbdev->current_freqs[0]);
+	return 0;
+}
+
 static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	struct kbase_file *const kfile = filp->private_data;
@@ -1916,6 +1924,10 @@ static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_SET_LIMITED_CORE_COUNT,
 				      kbasep_ioctl_set_limited_core_count,
 				      struct kbase_ioctl_set_limited_core_count, kctx);
+		break;
+
+	case KBASE_IOCTL_REPORT_CLK_RATE:
+		KBASE_HANDLE_IOCTL(KBASE_IOCTL_REPORT_CLK_RATE, kbase_api_report_clk_rate, kctx);
 		break;
 	}
 
