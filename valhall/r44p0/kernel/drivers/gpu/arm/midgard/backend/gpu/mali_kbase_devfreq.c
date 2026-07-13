@@ -717,10 +717,10 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 
 #ifdef CONFIG_AMLOGIC_MODIFY
 	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
-				"simple_ondemand", &data);
+				"performance", &data);
 #else
 	kbdev->devfreq = devfreq_add_device(kbdev->dev, dp,
-				"simple_ondemand", NULL);
+				"performance", NULL);
 #endif
 	if (IS_ERR(kbdev->devfreq)) {
 		err = PTR_ERR(kbdev->devfreq);
