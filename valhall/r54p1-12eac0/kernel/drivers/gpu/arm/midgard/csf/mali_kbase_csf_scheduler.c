@@ -6854,6 +6854,7 @@ void kbase_csf_scheduler_term(struct kbase_device *kbdev)
 		scheduler->kthread_running = false;
 		complete(&scheduler->kthread_signal);
 		kthread_stop(scheduler->gpuq_kthread);
+		scheduler->gpuq_kthread = NULL;
 	}
 
 	if (kbdev->csf.scheduler.csg_slots) {
